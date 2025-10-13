@@ -1,0 +1,55 @@
+
+chouka.png
+size: 772, 500
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+baikaka1
+  rotate: false
+  xy: 242, 2
+  size: 169, 240
+  orig: 169, 240
+  offset: 0, 0
+  index: -1
+kb
+  rotate: false
+  xy: 413, 2
+  size: 169, 240
+  orig: 169, 240
+  offset: 0, 0
+  index: -1
+sankai
+  rotate: false
+  xy: 527, 293
+  size: 239, 205
+  orig: 266, 239
+  offset: 14, 27
+  index: -1
+sankai2yellow
+  rotate: true
+  xy: 270, 244
+  size: 254, 255
+  orig: 256, 256
+  offset: 1, 0
+  index: -1
+sankai3yellow
+  rotate: false
+  xy: 584, 105
+  size: 186, 186
+  orig: 186, 186
+  offset: 0, 0
+  index: -1
+xuanwoguang
+  rotate: false
+  xy: 2, 252
+  size: 266, 246
+  orig: 305, 287
+  offset: 19, 21
+  index: -1
+zhongjianyellow
+  rotate: false
+  xy: 2, 12
+  size: 238, 238
+  orig: 244, 244
+  offset: 3, 3
+  index: -1
