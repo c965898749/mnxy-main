@@ -7757,8 +7757,8 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": -640.573,
-      "y": -22.151999999999987,
+      "x": 0,
+      "y": 0,
       "z": 0
     },
     "_lrot": {
@@ -7911,7 +7911,7 @@
     "_anchorPoint": {
       "__type__": "cc.Vec2",
       "x": 0.5,
-      "y": 0.49588235294117644
+      "y": 0.495882370892693
     },
     "_id": "7d4YaPhOlIrLQ4n61zJNdU"
   },
@@ -7940,8 +7940,8 @@
       "__expectedType__": "sp.SkeletonData"
     },
     "defaultSkin": "default",
-    "defaultAnimation": "animation",
-    "_premultipliedAlpha": true,
+    "defaultAnimation": "",
+    "_premultipliedAlpha": false,
     "_timeScale": 1,
     "_preCacheMode": 0,
     "_cacheMode": 0,
@@ -7951,7 +7951,7 @@
     "_debugBones": false,
     "_debugSlots": false,
     "_enableBatch": false,
-    "loop": false,
+    "loop": true,
     "_id": "f9yPOhISpPl5peh58ctPOo"
   },
   {

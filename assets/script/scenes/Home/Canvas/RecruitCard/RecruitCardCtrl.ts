@@ -68,7 +68,6 @@ export class RecruitCardCtrl extends Component {
                         comp.init(dto.hero, recruitCardCtrl.cb);
                         config.userData.characters = dto.characters
                         config.userData.diamond = user.diamond
-                        config.userData.useCardCount = user.useCardCount
                         localStorage.setItem("UserConfigData", JSON.stringify(config))
                     } else {
                         const nodePool = util.resource.getNodePool(
@@ -83,7 +82,6 @@ export class RecruitCardCtrl extends Component {
                         });
                         config.userData.characters = dto.characters
                         config.userData.diamond = user.diamond
-                        config.userData.useCardCount = user.useCardCount
                         localStorage.setItem("UserConfigData", JSON.stringify(config))
                     }
                 } else {
@@ -151,7 +149,6 @@ export class RecruitCardCtrl extends Component {
                         }
                         config.userData.characters = dto.characters
                         config.userData.diamond = user.diamond
-                        config.userData.useCardCount = user.useCardCount
                         localStorage.setItem("UserConfigData", JSON.stringify(config))
                     }
 

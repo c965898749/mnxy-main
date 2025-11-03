@@ -30,6 +30,8 @@ export class HeroCharacterDetailPorperty extends Component {
     // 是否询问升级
     private $answerLevelUp: boolean = true
 
+
+
     // 渲染属性
     async renderProperty(create: CharacterStateCreate) {
         this.$state = new CharacterState(create, null)
@@ -149,6 +151,7 @@ export class HeroCharacterDetailPorperty extends Component {
 
     // 英雄升级
     async characterLevelUp() {
+        this.node.getChildByName("Name").getComponent(Label).string = "名称: " + this.$state.meta.name
         const config = getConfig()
         // 是否询问
         if (this.$answerLevelUp) {

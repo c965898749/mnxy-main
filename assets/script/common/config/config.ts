@@ -23,6 +23,7 @@ class VolumeDetail {
 }
 
 class ServerUrl {
+    // redis-server.exe redis.windows.conf
     // url = "http://192.168.0.104:8080/"
     url = "http://127.0.0.1:8080/YIMEM_war/"
     // url="http://czx.yimem.com:3000/"
@@ -35,9 +36,13 @@ class UserData extends Resource {
 
     public userId: number
 
+    public signCount: number;
+
     public lv: number = 1
 
     public exp: number = 0
+
+    public chapter: string = '1-1-1'
 
     public nickname: string = "用户12138"
 
@@ -49,6 +54,8 @@ class UserData extends Resource {
 
     public useCardCount: string
 
+    public gameImg: string
+
 
     // 已经收集到的英雄
     public hasCollectCharacterId: string[] = []
@@ -57,12 +64,15 @@ class UserData extends Resource {
         super()
         if (!or) { return }
         this.userId = or.userId
+        this.signCount = or.signCount
         this.lv = or.lv || 1
         this.nickname = or.nickname || "用户12138"
         this.exp = or.exp || 1
+        this.chapter = or.chapter || '1-1-1'
         this.gold = or.gold || 1000
         this.diamond = or.diamond || 100
         this.soul = or.soul || 1000
+        this.gameImg = or.gameImg
         this.useCardCount = or.useCardCount || "0/0"
         this.hasCollectCharacterId = or.hasCollectCharacterId || []
             // 原有的物品

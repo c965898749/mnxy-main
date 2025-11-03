@@ -1,7 +1,8 @@
-import { _decorator, AudioClip, AudioSource, Component, director, EventTouch, Label, math, Node, screen, Sprite, SpriteFrame, UITransform, v3, Vec3 } from 'cc';
+import { _decorator, AudioClip, AudioSource, Component, director, EventTouch, Label, math, Node, screen, Sprite, SpriteFrame, tween, UITransform, v3, Vec3 } from 'cc';
 import { util } from '../../../util/util';
 import { getConfig } from '../../../common/config/config';
 import { AudioMgr } from "../../../util/resource/AudioMgr";
+import { CharacterState, CharacterStateCreate } from '../../../game/fight/character/CharacterState';
 const { ccclass, property } = _decorator;
 
 @ccclass('HomeBuildings')
@@ -10,6 +11,8 @@ export class HomeBuildings extends Component {
     @property(UITransform)
     maskUITransform: UITransform = null!
 
+    @property(Node)
+    expBar: Node
     /**跑马灯label */
     @property(Node)
     pmdNode: Node = null!
@@ -26,39 +29,69 @@ export class HomeBuildings extends Component {
     speed = 1
     @property(Node)
     Item: Node
-
+    power: number = 0;
     notices = []
     initialized = false;
     /**跑马灯文本初始坐标 */
     private pmdOriginPos: Vec3 = null!
+
+    @property(Node)
+    Tili: Node
+    @property(Node)
+    energyLabel: Node//体力显示
+    @property({ type: cc.Integer, tooltip: "固定尺寸" })
+    MaxEnergy: 720//最大体力值
+    // EnergyReturnTime: 600//体力回复时间
+    timer = 0
+    @property({ type: cc.Integer, tooltip: "固定尺寸" })
+    energy = 0
     protected async start() {
         const config = getConfig()
         this.node.getChildByName("Top").getChildByName("Gold").getComponent(Label).string =
             util.sundry.formateNumber(config.userData.gold)
         this.node.getChildByName("Top").getChildByName("Lv").getComponent(Label).string = "Lv " +
             util.sundry.formateNumber(config.userData.lv)
+        // this.node.getChildByName("Top").getChildByName("Diamond").getChildByName("Label").getComponent(Label).string = config.userData.diamond + ""
         this.node.getChildByName("Top").getChildByName("Nickname").getComponent(Label).string = config.userData.nickname
-        this.node.getChildByName("Top").getChildByName("Tili").getChildByName("TiliCount").getComponent(Label).string = "360/720"
         this.node.getChildByName("Top").getChildByName("Huoli").getChildByName("HuoliCount").getComponent(Label).string = "360/720"
-        this.node.getChildByName("Top").getChildByName("Exp").getChildByName("ExpCount").getComponent(Label).string = "450/900"
+        this.node.getChildByName("Top").getChildByName("Exp").getChildByName("ExpCount").getComponent(Label).string = config.userData.exp + "/1000"
+        this.expBar.setScale(
+            config.userData.exp / 1000,
+            1,
+            1
+        )
         const create = config.userData.characters.filter(x => x.goIntoNum != 0)
-        // 渲染队伍
+        if (config.userData.gameImg) {
+            this.node.getChildByName("Top").getChildByName("head_img").getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
+                await util.bundle.load(config.userData.gameImg, SpriteFrame)
+        }
+        //初始化战力
+        this.power = 0
+        // 渲染队伍gameImg
         this.Item.children.forEach(n => n.children[0].getComponent(Sprite).spriteFrame = null)
-        this.node.getChildByName("mid").getChildByName("user_card_count").getComponent(Label).string = config.userData.useCardCount
+        this.node.getChildByName("mid").getChildByName("user_card_count").getComponent(Label).string = config.userData.characters.length + "/" + config.userData.useCardCount
         for (let i = 0; i < create.length; i++) {
             var goIntoNum = create[i].goIntoNum
             this.Item.children[goIntoNum - 1].children[0].getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`game/texture/frames/hero/Header/${create[i].id}/spriteFrame`, SpriteFrame)
+            this.power = this.power + parseInt(this.getZhanli(create[i]).toString())
         }
-        // 战力 = (nHP + (nAttack * 3.2)) * (1 + nSkillLevel / 20) / 10
-        var nHP = 0;
-        var nAttack = 0;
-        var nSkillLevel = 0;
         //初始化跑马灯文本的位置
         //因为mask和label节点x锚点都是0，所以x坐标的初始位置是mask的长度
         let pos = this.pmdNode.getPosition()
         this.pmdOriginPos = v3(this.maskUITransform.width, pos.y, pos.z)
         this.pmdNode.setPosition(this.pmdOriginPos)
+        // 弹窗弹跳入场效果
+        if (!this.checkIfTimeIsToday()) {
+            this.node.parent.getChildByName("SignInCtrl").active = true
+        }
+        this.node.parent.getChildByName("SignInCtrl").scale = new Vec3(0, 0, 0)
+        tween(this.node.parent.getChildByName("SignInCtrl"))
+            // .to(0, { scale: new Vec3(0.5, 0.5, 0.5) }, { easing: 'quadOut' })
+            .to(1, { scale: new Vec3(1, 1, 1) }, { easing: 'elasticOut' })
+            // .to(0.2, { scale: new Vec3(1, 1, 1) }, { easing: 'quadOut' })
+            // .to(0.5, { scale: new Vec3(1, 1, 1) }, { easing: 'elasticIn' })
+            .start();
         //     this.Star.children[i].active = true
         // if (create.goIntoNum != 0) {
         //     this.isBattle.active = true
@@ -74,8 +107,17 @@ export class HomeBuildings extends Component {
         // this.node.on(Node.EventType.TOUCH_END, this.onNodeTouchEnd, this)
         // // 初始化宽度
         // this.$FrameSize = screen.windowSize
+        //战力计算
+        this.node.getChildByName("mid").getChildByName("user_fight_count").getComponent(Label).string = this.power + ""
+
     }
 
+    public getZhanli(create: CharacterStateCreate) {
+        // let zhanli = propts[PART_PROPTS.GongJi] * 25 + propts[PART_PROPTS.FangYu] * 25 + propts[PART_PROPTS.XueLiang] + propts[PART_PROPTS.BaoJi] * 2 + 500 * propts[PART_PROPTS.ShanBi] + 300 * (propts[PART_PROPTS.HuoGong] + propts[PART_PROPTS.HuoKang] + propts[PART_PROPTS.BingGong] + propts[PART_PROPTS.BingKang])
+        var state = new CharacterState(create, null)
+        let zhanli = state.attack * 25 + state.defence * 25 + state.maxHp + state.critical * 2 + 500 * state.FreeInjuryPercent + 300 * state.speed
+        return zhanli;
+    }
 
 
     onEnable() {
@@ -94,15 +136,35 @@ export class HomeBuildings extends Component {
         const config = getConfig()
         const create = config.userData.characters.filter(x => x.goIntoNum != 0)
         this.Item.children.forEach(n => n.children[0].getComponent(Sprite).spriteFrame = null)
+        //初始化战力
+        this.power = 0
         for (let i = 0; i < create.length; i++) {
             var goIntoNum = create[i].goIntoNum
             this.Item.children[goIntoNum - 1].children[0].getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`game/texture/frames/hero/Header/${create[i].id}/spriteFrame`, SpriteFrame)
+            this.power = this.power + parseInt(this.getZhanli(create[i]).toString())
         }
-        this.node.getChildByName("mid").getChildByName("user_card_count").getComponent(Label).string = config.userData.useCardCount
+        this.node.getChildByName("mid").getChildByName("user_card_count").getComponent(Label).string = config.userData.characters.length + "/" + config.userData.useCardCount
+        // this.node.getChildByName("Top").getChildByName("Diamond").getChildByName("Label").getComponent(Label).string = config.userData.diamond + ""
+        this.node.getChildByName("Top").getChildByName("head_img").getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
+            await util.bundle.load(config.userData.gameImg, SpriteFrame)
+        this.node.getChildByName("mid").getChildByName("user_fight_count").getComponent(Label).string = this.power + ""
+        this.expBar.setScale(
+            config.userData.exp / 900,
+            1,
+            1
+        )
+        this.node.getChildByName("Top").getChildByName("Exp").getChildByName("ExpCount").getComponent(Label).string = config.userData.exp + "/900"
     }
 
     async update(deltaTime: number) {
+        if (this.timer >= 50) {
+            this.setTili();
+            this.timer = 0;
+        }
+        else {
+            this.timer++;
+        }
         const config = getConfig()
         await new Promise(res => setTimeout(res, 5000))
         if (this.pmdNode) {
@@ -146,6 +208,106 @@ export class HomeBuildings extends Component {
         }
     }
 
+
+
+    //体力系统
+    setTili() {
+        var EnergyReturnTime = 600
+        this.energy = this.GetLeaveEnergy();
+        //cc.log(this.energy);
+        var LeaveEnergy = this.GetLeaveEnergy();
+        var lastTime = parseInt(localStorage.getItem('LastGetTime1'));
+        if (!lastTime) {
+            lastTime = 0;
+        }
+        let nowTime = new Date().getTime();
+        var tiliCount = Math.round((nowTime - lastTime) / 1000 / EnergyReturnTime)
+        var EnergyTime = EnergyReturnTime - Math.round(((nowTime - lastTime) / 1000 % EnergyReturnTime))
+        this.SetLeaveEnergyTime(EnergyTime);
+        if (tiliCount < 0) {
+            tiliCount = 0;
+        }
+        if (this.energy > this.MaxEnergy) {
+            let lastDate = this.GetLeaveEnergyTime();
+            if (this.CheckLoginDate(lastDate)) {
+                this.energy = this.MaxEnergy;
+                this.SetLeaveEnergy(this.MaxEnergy);
+            }
+        }
+        else if ((tiliCount + LeaveEnergy) >= this.MaxEnergy) {
+            this.energy = this.MaxEnergy;
+            localStorage.setItem('LastGetTime1', nowTime + "");
+            this.SetLeaveEnergy(this.energy);
+        }
+        else if (tiliCount > 0) {
+            this.energy = tiliCount + LeaveEnergy;
+            localStorage.setItem('LastGetTime1', nowTime + "");
+            this.SetLeaveEnergy(this.energy);
+        }
+        if (this.energyLabel) {
+            this.energyLabel.getComponent(Label).string = this.energy + "/" + this.MaxEnergy;
+            this.Tili.setScale(
+                this.energy / this.MaxEnergy,
+                1,
+                1
+            )
+        }
+    }
+
+    //体力
+    GetLeaveEnergy() {
+        var key = 'Leave_EnergyNumber2';
+        var str = localStorage.getItem(key);
+        if (str) {
+            return parseInt(str);
+        }
+        return 10;
+    }
+    SetLeaveEnergy(i) {
+        var key = 'Leave_EnergyNumber2';
+        var value = i + "";
+        localStorage.setItem(key, value);
+    }
+    //体力获取时间
+    GetLeaveEnergyTime() {
+        var key = 'Leave_EnergyTimes1';
+        var str = localStorage.getItem(key);
+        if (str) {
+            return parseInt(str);
+        }
+        return 600;
+    }
+    SetLeaveEnergyTime(i) {
+        var key = 'Leave_EnergyTimes1';
+        var value = i + "";
+        localStorage.setItem(key, value);
+    }
+    CheckLoginDate(time) {
+        var lastTime = new Date(time);
+        var now = new Date();
+        if (now.getFullYear() !== lastTime.getFullYear() ||
+            now.getMonth() !== lastTime.getMonth() ||
+            now.getDate() !== lastTime.getDate()) {
+            // this.needReset = true;
+            return true;
+        }
+        // cc.log("不需要重置", lastTime.toDateString(), now.toDateString())
+        return false;
+    }
+
+
+    public checkIfTimeIsToday() {
+        const cachedTime = localStorage.getItem('cachedTime');
+        if (!cachedTime) return false;
+
+        const cachedDate = new Date(cachedTime);
+        const today = new Date();
+        console.log(cachedDate)
+        console.log(today)
+        return cachedDate.getFullYear() === today.getFullYear() &&
+            cachedDate.getMonth() === today.getMonth() &&
+            cachedDate.getDate() === today.getDate();
+    }
     // protected onDestroy(): void {
     //     // 触摸事件销毁
     //     this.node.off(Node.EventType.TOUCH_MOVE, this.onNodeTouchMove, this)
@@ -177,6 +339,14 @@ export class HomeBuildings extends Component {
     // 打开关卡选择场景
     public async OpenLevelMap() {
         AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("Buildings").active = false
+        this.node.parent.getChildByName("otherCtrl").active = false
+        this.node.parent.getChildByName("JinjiCtrl").active = false
+        this.node.parent.getChildByName("CardCrtl").active = false
+        this.node.parent.getChildByName("EquipmentCtrl").active = false
+        this.node.parent.getChildByName("ShopCtrl").active = false
+        this.node.parent.getChildByName("PveCtrl").active = false
+        this.node.parent.getChildByName("MapCrtl").active = true
         // const close = await util.message.load()
         // // director.preloadScene("Fight", () => {
         // //     close()
@@ -207,11 +377,14 @@ export class HomeBuildings extends Component {
     // 打开背包
     async OpenHero() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        const close = await util.message.load()
-        director.preloadScene("Hero", () => {
-            close()
-        })
-        director.loadScene("Hero")
+        this.node.parent.getChildByName("Buildings").active = false
+        this.node.parent.getChildByName("otherCtrl").active = false
+        this.node.parent.getChildByName("JinjiCtrl").active = false
+        this.node.parent.getChildByName("MapCrtl").active = false
+        this.node.parent.getChildByName("EquipmentCtrl").active = false
+        this.node.parent.getChildByName("ShopCtrl").active = false
+        this.node.parent.getChildByName("PveCtrl").active = false
+        this.node.parent.getChildByName("CardCrtl").active = true
     }
 
 
@@ -239,6 +412,11 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("JinjichangCtrl").active = false
         this.node.parent.getChildByName("qianghuaCtrl").active = false
         this.node.parent.getChildByName("otherCtrl").active = false
+        this.node.parent.getChildByName("CardCrtl").active = false
+        this.node.parent.getChildByName("MapCrtl").active = false
+        this.node.parent.getChildByName("EquipmentCtrl").active = false
+        this.node.parent.getChildByName("ShopCtrl").active = false
+        this.node.parent.getChildByName("PveCtrl").active = false
         this.node.parent.getChildByName("Buildings").active = true
     }
     //挑战
@@ -246,6 +424,11 @@ export class HomeBuildings extends Component {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.parent.getChildByName("Buildings").active = false
         this.node.parent.getChildByName("otherCtrl").active = false
+        this.node.parent.getChildByName("CardCrtl").active = false
+        this.node.parent.getChildByName("MapCrtl").active = false
+        this.node.parent.getChildByName("EquipmentCtrl").active = false
+        this.node.parent.getChildByName("ShopCtrl").active = false
+        this.node.parent.getChildByName("PveCtrl").active = false
         this.node.parent.getChildByName("JinjiCtrl").active = true
     }
 
@@ -260,9 +443,59 @@ export class HomeBuildings extends Component {
     public async Other() {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.parent.getChildByName("Buildings").active = false
+        this.node.parent.getChildByName("JinjiCtrl").active = false
+        this.node.parent.getChildByName("CardCrtl").active = false
+        this.node.parent.getChildByName("MapCrtl").active = false
+        this.node.parent.getChildByName("EquipmentCtrl").active = false
+        this.node.parent.getChildByName("ShopCtrl").active = false
+        this.node.parent.getChildByName("PveCtrl").active = false
         this.node.parent.getChildByName("otherCtrl").active = true
     }
 
+    //强化
+    public async OpenEquipment() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("Buildings").active = false
+        this.node.parent.getChildByName("JinjiCtrl").active = false
+        this.node.parent.getChildByName("CardCrtl").active = false
+        this.node.parent.getChildByName("MapCrtl").active = false
+        this.node.parent.getChildByName("otherCtrl").active = false
+        this.node.parent.getChildByName("ShopCtrl").active = false
+        this.node.parent.getChildByName("PveCtrl").active = false
+        this.node.parent.getChildByName("EquipmentCtrl").active = true
+    }
 
+    public async OpenShop() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("Buildings").active = false
+        this.node.parent.getChildByName("JinjiCtrl").active = false
+        this.node.parent.getChildByName("CardCrtl").active = false
+        this.node.parent.getChildByName("MapCrtl").active = false
+        this.node.parent.getChildByName("otherCtrl").active = false
+        this.node.parent.getChildByName("EquipmentCtrl").active = false
+        this.node.parent.getChildByName("PveCtrl").active = false
+        this.node.parent.getChildByName("ShopCtrl").active = true
+    }
+
+
+
+    public jianLi() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        // this.node.parent.getChildByName("SignInCtrl").active = true
+        // this.node.parent.getChildByName("SignInCtrl").scale = new Vec3(0, 0, 0)
+        // tween(this.node.parent.getChildByName("SignInCtrl"))
+        //     .to(1, { scale: new Vec3(1, 1, 1) }, { easing: 'elasticOut' })
+        //     .start();
+        this.node.parent.getChildByName("DailyView").active = true
+        this.node.parent.getChildByName("DailyView").scale = new Vec3(0, 0, 0)
+        tween(this.node.parent.getChildByName("DailyView"))
+            .to(1, { scale: new Vec3(1, 1, 1) }, { easing: 'elasticOut' })
+            .start();
+    }
+
+    openUserInfo() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("UserInfoCrtl").active = true
+    }
 }
 

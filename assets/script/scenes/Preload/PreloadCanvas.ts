@@ -7,10 +7,10 @@ const { ccclass, property } = _decorator;
 export class PreloadCanvas extends Component {
     // 预加载
     async start() {
-        director.preloadScene("Home")
+        // director.preloadScene("Home")
         // HolPreLoad
         const holPreLoad = this.node.getChildByName("HolPreLoad").getComponent(HolPreLoad)
-        director.preloadScene("Home")
+        // director.preloadScene("Home")
         holPreLoad.setProcess(20)
 
         await util.message.preloadConfirm()
@@ -27,7 +27,10 @@ export class PreloadCanvas extends Component {
         holPreLoad.setProcess(100)
 
         // 监听进度条完成函数
-        holPreLoad.listenComplete(() => director.loadScene("Home"))
+        holPreLoad.listenComplete(() => {
+            close()
+            director.loadScene("Home")
+        })
     }
 }
 

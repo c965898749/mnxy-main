@@ -14,6 +14,8 @@ export type CharacterStateCreate = {
     uuid?: number
     // 等级
     lv: number
+    // 等级
+    maxLv: number
     // 星级
     star: number
     // 是否上场
@@ -21,9 +23,11 @@ export type CharacterStateCreate = {
     // 拥有装备
     equipment: EquipmentStateCreate[]
     //d队伍第几个
-    goIntoNum:number
+    goIntoNum: number
 
-    stackCount:number
+    stackCount: number
+
+    isChecked: number
 }
 
 export class CharacterState extends BasicState<CharacterMetaState> {
@@ -38,6 +42,8 @@ export class CharacterState extends BasicState<CharacterMetaState> {
     name: string
     // 等级
     lv: number
+    // 等级
+    maxLv: number
     // 角色星级
     star: number
     // 所属create
@@ -82,15 +88,16 @@ export class CharacterState extends BasicState<CharacterMetaState> {
      * 构造器
      * component 是所属组件
      */
-    constructor(create: CharacterStateCreate , component: HolCharacter) {
+    constructor(create: CharacterStateCreate, component: HolCharacter) {
         const meta: CharacterMetaState = CharacterEnum[create.id]
         super(meta)
         this.lv = create.lv
+        this.maxLv = create.maxLv
         this.star = create.star
         this.name = meta.name
         this.component = component
         this.create = create
-        this.onStage=create.onStage
+        this.onStage = create.onStage
 
         this.maxEnergy = meta.Energy
         this.maxHp = create.lv * meta.HpGrowth * ((create.star - 1) * 0.15 + 1) * (create.lv / 80 + 0.8)
@@ -115,13 +122,13 @@ export class CharacterState extends BasicState<CharacterMetaState> {
         if (this.hp < 0) this.hp = 0
         if (this.energy < 0) this.energy = 0
     }
-    
+
     /** 
      * 添加装备函数
      * 在构造时调用会将装备所添加的属性加到该对象上
      */
     private addEquipment(equipment: EquipmentStateCreate) {
-        const equipmentState = new EquipmentState(equipment , this)
+        const equipmentState = new EquipmentState(equipment, this)
         this.equipment.push(equipmentState)
         equipmentState.AddPropertyToCharacter(equipmentState)
     }

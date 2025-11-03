@@ -68,6 +68,8 @@ export class HolCharacterAvatar extends Component {
                 this.StackCount.getComponent(Label).string = "+" + create.stackCount
             }
 
+        }else{
+             this.StackCount.getComponent(Label).string =null
         }
         if (create.star < 4) {
             this.Quality.getComponent(Sprite).spriteFrame =

@@ -44,14 +44,14 @@ export class Character extends CharacterMetaState {
 
     PassiveIntroduceOne: string = `
     
-    ‌离魂 Lv1
-    死亡时，给场给全体护法增加13点攻击
+    幽灵毒击 lv1
+    受到攻击时，令场上敌人中毒，每回合损失8点生命值。 
     `.replace(/ /ig, "")
 
     PassiveIntroduceTwo: string = `
     
-    ‌倩女幽魂 Lv1
-    场下，每回合令随机一名敌方中毒，每回合损失7点生命
+    剧毒痛击 lv1
+    攻击中毒单位时，额外造成60点伤害。
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `
@@ -61,7 +61,7 @@ export class Character extends CharacterMetaState {
 
     introduce: string = "说到女鬼,大家都不由得心头一颤。 但是提到聂小倩,大家的心情又变得温和起来。"
 
-    skillValue: string = "‌离魂  ‌倩女幽魂"
+    skillValue: string = "幽灵毒击  剧毒痛击"
 
     OnCreateState(self: CharacterState): void {
         if (self.star >= 2) {

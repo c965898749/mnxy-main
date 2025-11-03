@@ -30,6 +30,15 @@ export class otherCtrl extends Component {
         this.SetCtrl.active = true
     }
 
+    public openfrom() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("forumCtrl").active = true
+    }
+    public openMessage() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("MessageCrtl").active = true
+    }
+
 }
 
 

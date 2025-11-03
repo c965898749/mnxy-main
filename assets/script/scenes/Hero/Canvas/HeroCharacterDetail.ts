@@ -50,6 +50,7 @@ export class HeroCharacterDetail extends Component {
         const close = await util.message.load()
         const characterAnimationNode = this.node.getChildByName("CharacterAnimation")
         if (this.$lastaNimation) characterAnimationNode.removeChild(this.$lastaNimation)
+        console.log(create.id)
         const meta = CharacterEnum[create.id]
         const holAnimationPrefab = await util.bundle.load("prefab/HolAnimation", Prefab)
         const holAnimationNode = instantiate(holAnimationPrefab)

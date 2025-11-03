@@ -62,6 +62,11 @@ export class RecuitCardItem extends Component {
     @property(Node)
     Bottom: Node
 
+    @property(Node)
+    Faguang: Node
+
+    @property(Node)
+    Light: Node
 
     start() {
 
@@ -92,7 +97,7 @@ export class RecuitCardItem extends Component {
         const meta = CharacterEnum[heroInfo.id]
         this.AvatarNode.getComponent(Sprite).spriteFrame =
             await util.bundle.load(meta.AvatarPath, SpriteFrame)
-        if (heroInfo.star >3) {
+        if (heroInfo.star > 3) {
             this.Pingzhi.getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`image/ui/pingzhi_0${heroInfo.star}/spriteFrame`, SpriteFrame)
         } else {
@@ -111,12 +116,20 @@ export class RecuitCardItem extends Component {
         //     }
 
         // }
+        if (heroInfo.star > 4) {
+            this.Light.active = true
+        } else {
+            this.Light.active = false
+        }
+
         if (heroInfo.star < 4) {
+            this.Faguang.active = false;
             this.Quality.getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`image/ui/card1/spriteFrame`, SpriteFrame)
             this.Bottom.getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`image/ui/quality_01/spriteFrame`, SpriteFrame)
         } else {
+            this.Faguang.active = true;
             this.Quality.getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`image/ui/card2/spriteFrame`, SpriteFrame)
             this.Bottom.getComponent(Sprite).spriteFrame =
@@ -125,7 +138,7 @@ export class RecuitCardItem extends Component {
         }
         this.CampNode.getComponent(Sprite).spriteFrame =
             await util.bundle.load(`image/camp_icon/${heroInfo.camp}/spriteFrame`, SpriteFrame)
-        this.LvNode.getComponent(Label).string = 'Lv: ' + heroInfo.lv
+        // this.LvNode.getComponent(Label).string = 'Lv: ' + heroInfo.lv
         this.Name.getComponent(Label).string = heroInfo.name
         // 渲染星级
         this.Star.children.forEach(n => n.active = false)
@@ -140,7 +153,7 @@ export class RecuitCardItem extends Component {
         // this.suipianLab.string = "转化为英雄碎片：10"
         this.choukaAni.setCompleteListener(async function () {
             self.itembg.active = true
-            self.itembg.getChildByName("recruit_chip").active = true;
+            // self.itembg.getChildByName("recruit_chip").active = true;
             self.heroLight.node.active = true // self._award[1] == ITEM_TYPE.HERO ? true : false;
             self.scheduleOnce(() => {
                 if (cb) {

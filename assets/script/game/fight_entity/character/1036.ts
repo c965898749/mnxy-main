@@ -13,7 +13,7 @@ import { BuffState } from "../../fight/buff/BuffState";
 @RegisterCharacter({ id: "1036" })
 export class Character extends CharacterMetaState {
 
-    name: string = "蓝精灵"
+    name: string = "蓝鲨精"
 
     AnimationDir: string = "game/fight_entity/character/1036"
 
@@ -60,7 +60,7 @@ export class Character extends CharacterMetaState {
     `.replace(/ /ig, "")
 
 
-    introduce: string = "蓝鲨具有锯齿缘的牙齿，这使得它们在捕食时能够牢牢抓住猎物。"
+    introduce: string = "绿鲨精的结拜兄弟，过去是东海龙王的贴身保镖，某天顿悟人生，带着弟弟绿鲨精开始了浪迹天涯的生活。"
 
     skillValue: string = "乘风破浪  稳坐中军"
 

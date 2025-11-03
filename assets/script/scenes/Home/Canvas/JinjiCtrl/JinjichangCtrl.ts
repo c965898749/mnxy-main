@@ -1,4 +1,4 @@
-import { _decorator, Component, director, Label, Node } from 'cc';
+import { _decorator, Component, director, Label, Node, Sprite, SpriteFrame } from 'cc';
 import { getConfig, getToken } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
@@ -38,7 +38,7 @@ export class JinjichangCtrl extends Component {
                 }
                 return response.json(); // 解析 JSON 响应
             })
-            .then(data => {
+            .then(async data => {
                 //console.log(data); // 处理响应数据
                 if (data.success == '1') {
                     var map = data.data;
@@ -54,10 +54,11 @@ export class JinjichangCtrl extends Component {
                         this.Kk.children[i].children[3].on("click", () => { this.clickTiaozhanFun(parking[i].userId) })
                         this.Kk.children[i].children[4].getComponent(Label).string = parking[i].nickname
                         this.Kk.children[i].children[5].getComponent(Label).string = "胜 " + parking[i].winCount
-
+                        this.Kk.children[i].getChildByName("yxjm_df_txk").getChildByName("header").getComponent(Sprite).spriteFrame =
+                            await util.bundle.load(parking[i].gameImg, SpriteFrame)
                     }
                 } else {
-                    const close = util.message.confirm({ message: data.errorMsg||"服务器异常" })
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                 }
             })
             .catch(error => {
@@ -72,6 +73,7 @@ export class JinjichangCtrl extends Component {
 
     public clickTiaozhanFun(userId) {
         AudioMgr.inst.playOneShot("sound/other/click");
+        // director.addPersistRootNode(this.node);
         const config = getConfig()
         const token = getToken()
         const postData = {
@@ -100,7 +102,7 @@ export class JinjichangCtrl extends Component {
                     })
                     director.loadScene("Fight")
                 } else {
-                    const close = util.message.confirm({ message: data.errorMsg||"服务器异常" })
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                 }
             })
             .catch(error => {

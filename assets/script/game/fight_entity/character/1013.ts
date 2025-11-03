@@ -57,14 +57,14 @@ export class Character extends CharacterMetaState {
 
     SkillIntroduce: string = `
     
-    日月颠倒 Lv1
-    与玄冥在同一队伍时，增加自身453点生命上限，158点攻击，158点速度
+    句芒协同 Lv1
+    与句芒在同一队伍时增加自身197点生命上限，99点火焰伤害，197点速度
     `.replace(/ /ig, "")
 
 
     introduce: string = "烛龙，又名烛九阴，古代神话中的神秘生物，它开眼为昼、闭眼为夜，拥有掌控时间的能力。"
 
-    skillValue: string = "烛火燎原  致命衰竭  日月颠倒"
+    skillValue: string = "烛火燎原  致命衰竭  句芒协同"
 
     OnCreateState(self: CharacterState): void {
         if (self.star >= 2) {
