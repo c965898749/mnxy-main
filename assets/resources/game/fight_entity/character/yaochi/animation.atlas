@@ -1,0 +1,153 @@
+
+animation.png
+size: 1522,614
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+frame_0
+  rotate: false
+  xy: 2, 2
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_1
+  rotate: false
+  xy: 154, 2
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_2
+  rotate: false
+  xy: 306, 2
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_3
+  rotate: false
+  xy: 458, 2
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_4
+  rotate: false
+  xy: 610, 2
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_5
+  rotate: false
+  xy: 762, 2
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_6
+  rotate: false
+  xy: 914, 2
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_7
+  rotate: false
+  xy: 1066, 2
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_8
+  rotate: false
+  xy: 1218, 2
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_9
+  rotate: false
+  xy: 1370, 2
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_10
+  rotate: false
+  xy: 2, 206
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_11
+  rotate: false
+  xy: 154, 206
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_12
+  rotate: false
+  xy: 306, 206
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_13
+  rotate: false
+  xy: 458, 206
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_14
+  rotate: false
+  xy: 610, 206
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_15
+  rotate: false
+  xy: 762, 206
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_16
+  rotate: false
+  xy: 914, 206
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_17
+  rotate: false
+  xy: 1066, 206
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_18
+  rotate: false
+  xy: 1218, 206
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_19
+  rotate: false
+  xy: 1370, 206
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1
+frame_20
+  rotate: false
+  xy: 2, 410
+  size: 150, 202
+  orig: 150, 202
+  offset: 0, 0
+  index: -1

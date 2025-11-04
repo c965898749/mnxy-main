@@ -5,15 +5,15 @@ const { ccclass, property } = _decorator;
 
 @ccclass('HomeCanvas')
 export class HomeCanvas extends Component {
-
+    public audioSource
     protected async start() {
 
-        const close = await util.message.load({})
+        // const close = await util.message.load({})
 
         // 初始化音乐
         await this.initMusic()
 
-        close()
+        // close()
     }
 
     // 初始化播放音乐
@@ -22,10 +22,10 @@ export class HomeCanvas extends Component {
         // 音乐们
         const musics = await util.bundle.loadDir<AudioClip>("sound/home", AudioClip)
         const music = musics[Math.floor(musics.length * Math.random())]
-        const audioSource = this.node.getComponent(AudioSource)
-        audioSource.clip = music
-        audioSource.volume = config.volume * config.volumeDetail.home
-        audioSource.play()
+        this.audioSource = this.node.getComponent(AudioSource)
+        this.audioSource.clip = music
+        this.audioSource.volume = config.volume * config.volumeDetail.home
+        this.audioSource.play()
     }
 
     public onSliderMusic(event: Slider, customEventData) {

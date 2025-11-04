@@ -1,4 +1,4 @@
-import { _decorator, Component, director, Font, instantiate, Label, math, Node, NodeEventType, Event, sp, Prefab, Sprite, SpriteFrame, tween, Vec3 } from 'cc';
+import { _decorator, Component, director, Font, instantiate, Label, math, Node, NodeEventType, Event, sp, Prefab, Sprite, SpriteFrame, tween, Vec3, AudioClip, AudioSource } from 'cc';
 import { util } from '../../../util/util';
 import { HolCharacter } from '../../../prefab/HolCharacter';
 import { CharacterStateCreate } from '../../../game/fight/character/CharacterState';
@@ -52,11 +52,28 @@ export class FightMap extends Component {
 
     // 当前倍速
     private timeScale: number = 1
+    initialized = false;
+    async start() {
+        // 初始化音乐
+        const config = getConfig()
+        // 音乐们
+        const musics = await util.bundle.loadDir<AudioClip>("sound/fight/back", AudioClip)
+        const music = musics[Math.floor(musics.length * Math.random())]
+        const audioSource = this.node.getComponent(AudioSource)
+        audioSource.clip = music
+        audioSource.volume = config.volume * config.volumeDetail.home
+        audioSource.play()
+    }
+    onEnable() {
 
 
-    protected async start() {
+    }
+
+
+    async render(fightId) {
         // HolPreLoad 预加载进度条
-        const holPreLoad = this.node.parent.getChildByName("HolPreLoad").getComponent(HolPreLoad)
+        // const holPreLoad = this.node.parent.getChildByName("HolPreLoad").getComponent(HolPreLoad)
+        const holPreLoad = this.node.getChildByName("HolPreLoad").getComponent(HolPreLoad)
         holPreLoad.setTips([
             "提示\n不同阵营之间相互克制，巧用阵营可以出奇制胜",
         ])
@@ -69,10 +86,9 @@ export class FightMap extends Component {
         let process = 50
         const config = getConfig()
         const token = getToken()
-        const id = localStorage.getItem("fightId")
         const postData = {
             token: token,
-            id: id
+            id: fightId
         };
         const options = {
             method: 'POST',
@@ -143,7 +159,6 @@ export class FightMap extends Component {
         // 设置 100%
         holPreLoad.setProcess(100)
     }
-
     // 倍速
     setTimeScale(e: Event) {
         this.timeScale++
@@ -680,14 +695,15 @@ export class FightMap extends Component {
 
     // 战斗胜利
     private fightSuccess() {
-        this.node.parent.getChildByName("FightFailure").active = false
-        this.node.parent.getChildByName("FightSuccess").active = true
+        console.log(111)
+        this.node.getChildByName("FightFailure").active = false
+        this.node.getChildByName("FightSuccess").active = true
     }
 
     // 战斗失败
     private fightEnd() {
-        this.node.parent.getChildByName("FightFailure").active = true
-        this.node.parent.getChildByName("FightSuccess").active = false
+        this.node.getChildByName("FightFailure").active = true
+        this.node.getChildByName("FightSuccess").active = false
     }
 }
 

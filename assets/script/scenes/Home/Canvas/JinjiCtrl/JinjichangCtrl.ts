@@ -1,7 +1,9 @@
-import { _decorator, Component, director, Label, Node, Sprite, SpriteFrame } from 'cc';
+import { _decorator, Component, director, find, instantiate, Label, Node, Prefab, Sprite, SpriteFrame } from 'cc';
 import { getConfig, getToken } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
+import { FightMap } from '../../../Fight/Canvas/FightMap';
+import { HomeCanvas } from '../../HomeCanvas';
 const { ccclass, property } = _decorator;
 
 @ccclass('JinjichangCtrl')
@@ -95,12 +97,14 @@ export class JinjichangCtrl extends Component {
             .then(async data => {
                 //console.log(data); // 处理响应数据
                 if (data.success == '1') {
-                    localStorage.setItem("fightId", data.data.id)
-                    const close = await util.message.load()
-                    director.preloadScene("Fight", () => {
-                        close()
-                    })
-                    director.loadScene("Fight")
+                    const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
+                    const holAnimationNode = instantiate(holAnimationPrefab)
+                    this.node.parent.addChild(holAnimationNode)
+                    await holAnimationNode
+                        .getComponent(FightMap)
+                        .render(data.data.id)
+                    find('Canvas').getComponent(HomeCanvas).audioSource.pause()
+                    this.node.parent.getChildByName("FightMap").active = true
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                 }

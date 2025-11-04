@@ -1,0 +1,267 @@
+{
+  "skeleton": {
+    "hash": " ",
+    "spine": "3.8.75",
+    "x": 0,
+    "y": 0,
+    "width": 0,
+    "height": 0,
+    "images": "./",
+    "audio": ""
+  },
+  "bones": [
+    {
+      "name": "root"
+    }
+  ],
+  "slots": [
+    {
+      "name": "frame",
+      "bone": "root",
+      "attachment": "frame_0"
+    }
+  ],
+  "skins": [
+    {
+      "name": "default",
+      "attachments": {
+        "frame": {
+          "frame_0": {
+            "x": 0,
+            "y": 0,
+            "width": 71,
+            "height": 256
+          },
+          "frame_1": {
+            "x": 0,
+            "y": 0,
+            "width": 71,
+            "height": 256
+          },
+          "frame_2": {
+            "x": 0,
+            "y": 0,
+            "width": 71,
+            "height": 256
+          },
+          "frame_3": {
+            "x": 0,
+            "y": 0,
+            "width": 71,
+            "height": 256
+          },
+          "frame_4": {
+            "x": 0,
+            "y": 0,
+            "width": 71,
+            "height": 256
+          },
+          "frame_5": {
+            "x": 0,
+            "y": 0,
+            "width": 71,
+            "height": 256
+          },
+          "frame_6": {
+            "x": 0,
+            "y": 0,
+            "width": 71,
+            "height": 256
+          },
+          "frame_7": {
+            "x": 0,
+            "y": 0,
+            "width": 71,
+            "height": 256
+          },
+          "frame_8": {
+            "x": 0,
+            "y": 0,
+            "width": 200,
+            "height": 200
+          },
+          "frame_9": {
+            "x": 0,
+            "y": 0,
+            "width": 200,
+            "height": 200
+          },
+          "frame_10": {
+            "x": 0,
+            "y": 0,
+            "width": 200,
+            "height": 200
+          },
+          "frame_11": {
+            "x": 0,
+            "y": 0,
+            "width": 200,
+            "height": 200
+          },
+          "frame_12": {
+            "x": 0,
+            "y": 0,
+            "width": 200,
+            "height": 200
+          },
+          "frame_13": {
+            "x": 0,
+            "y": 0,
+            "width": 200,
+            "height": 200
+          },
+          "frame_14": {
+            "x": 0,
+            "y": 0,
+            "width": 71,
+            "height": 256
+          },
+          "frame_15": {
+            "x": 0,
+            "y": 0,
+            "width": 71,
+            "height": 256
+          },
+          "frame_16": {
+            "x": 0,
+            "y": 0,
+            "width": 71,
+            "height": 256
+          },
+          "frame_17": {
+            "x": 0,
+            "y": 0,
+            "width": 71,
+            "height": 256
+          },
+          "frame_18": {
+            "x": 0,
+            "y": 0,
+            "width": 71,
+            "height": 256
+          },
+          "frame_19": {
+            "x": 0,
+            "y": 0,
+            "width": 71,
+            "height": 256
+          },
+          "frame_20": {
+            "x": 0,
+            "y": 0,
+            "width": 71,
+            "height": 256
+          },
+          "frame_21": {
+            "x": 0,
+            "y": 0,
+            "width": 71,
+            "height": 256
+          }
+        }
+      }
+    }
+  ],
+  "animations": {
+    "animation": {
+      "slots": {
+        "frame": {
+          "attachment": [
+            {
+              "time": 0,
+              "name": "frame_0"
+            },
+            {
+              "time": 0.045454545454545456,
+              "name": "frame_1"
+            },
+            {
+              "time": 0.09090909090909091,
+              "name": "frame_2"
+            },
+            {
+              "time": 0.13636363636363635,
+              "name": "frame_3"
+            },
+            {
+              "time": 0.18181818181818182,
+              "name": "frame_4"
+            },
+            {
+              "time": 0.2272727272727273,
+              "name": "frame_5"
+            },
+            {
+              "time": 0.2727272727272727,
+              "name": "frame_6"
+            },
+            {
+              "time": 0.3181818181818182,
+              "name": "frame_7"
+            },
+            {
+              "time": 0.36363636363636365,
+              "name": "frame_8"
+            },
+            {
+              "time": 0.4090909090909091,
+              "name": "frame_9"
+            },
+            {
+              "time": 0.4545454545454546,
+              "name": "frame_10"
+            },
+            {
+              "time": 0.5,
+              "name": "frame_11"
+            },
+            {
+              "time": 0.5454545454545454,
+              "name": "frame_12"
+            },
+            {
+              "time": 0.5909090909090909,
+              "name": "frame_13"
+            },
+            {
+              "time": 0.6363636363636364,
+              "name": "frame_14"
+            },
+            {
+              "time": 0.6818181818181819,
+              "name": "frame_15"
+            },
+            {
+              "time": 0.7272727272727273,
+              "name": "frame_16"
+            },
+            {
+              "time": 0.7727272727272727,
+              "name": "frame_17"
+            },
+            {
+              "time": 0.8181818181818182,
+              "name": "frame_18"
+            },
+            {
+              "time": 0.8636363636363636,
+              "name": "frame_19"
+            },
+            {
+              "time": 0.9090909090909092,
+              "name": "frame_20"
+            },
+            {
+              "time": 0.9545454545454546,
+              "name": "frame_21"
+            },
+            {
+              "time": 1,
+              "name": "frame_0"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

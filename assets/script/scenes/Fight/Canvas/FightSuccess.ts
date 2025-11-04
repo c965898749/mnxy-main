@@ -1,8 +1,11 @@
-import { _decorator, Component, director, Node } from 'cc';
+import { _decorator, Component, director, find, Node } from 'cc';
+import { HomeCanvas } from '../../Home/HomeCanvas';
 const { ccclass, property } = _decorator;
 
 @ccclass('FightSuccess')
 export class FightSuccess extends Component {
+    @property(Node)
+    FightMap: Node
     start() {
 
     }
@@ -13,8 +16,13 @@ export class FightSuccess extends Component {
 
     // 跳过战斗
     async skipFight() {
-
-        director.loadScene("Home")
+        // this.node.active = false
+        // this.FightMap.active = false
+        // this.FightMap.destroy
+        find('Canvas').getComponent(HomeCanvas).audioSource.play()
+        this.FightMap.removeFromParent();
+        this.FightMap.destroy();
+        // director.loadScene("Home")
 
     }
 }

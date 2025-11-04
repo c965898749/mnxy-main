@@ -1,0 +1,139 @@
+
+fazhen.png
+size: 1612,294
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+frame_0
+  rotate: false
+  xy: 2, 2
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_1
+  rotate: false
+  xy: 163, 2
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_2
+  rotate: false
+  xy: 324, 2
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_3
+  rotate: false
+  xy: 485, 2
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_4
+  rotate: false
+  xy: 646, 2
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_5
+  rotate: false
+  xy: 807, 2
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_6
+  rotate: false
+  xy: 968, 2
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_7
+  rotate: false
+  xy: 1129, 2
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_8
+  rotate: false
+  xy: 1290, 2
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_9
+  rotate: false
+  xy: 1451, 2
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_10
+  rotate: false
+  xy: 2, 148
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_11
+  rotate: false
+  xy: 163, 148
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_12
+  rotate: false
+  xy: 324, 148
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_13
+  rotate: false
+  xy: 485, 148
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_14
+  rotate: false
+  xy: 646, 148
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_15
+  rotate: false
+  xy: 807, 148
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_16
+  rotate: false
+  xy: 968, 148
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_17
+  rotate: false
+  xy: 1129, 148
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1
+frame_18
+  rotate: false
+  xy: 1290, 148
+  size: 159, 144
+  orig: 159, 144
+  offset: 0, 0
+  index: -1

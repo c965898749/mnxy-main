@@ -1,4 +1,4 @@
-import { _decorator, AudioClip, AudioSource, Component, director, EventTouch, Label, math, Node, screen, Sprite, SpriteFrame, tween, UITransform, v3, Vec3 } from 'cc';
+import { _decorator, AudioClip, AudioSource, Component, director, EventTouch,  Label, math, Node, screen, Sprite, SpriteFrame, tween, UITransform, v3, Vec3 } from 'cc';
 import { util } from '../../../util/util';
 import { getConfig } from '../../../common/config/config';
 import { AudioMgr } from "../../../util/resource/AudioMgr";
@@ -45,6 +45,12 @@ export class HomeBuildings extends Component {
     timer = 0
     @property({ type: cc.Integer, tooltip: "固定尺寸" })
     energy = 0
+    // onLoad() {
+    //     let nodesToKeep = game.getPersistRootNodes() // 获取所有持久化节点
+    //     nodesToKeep.forEach(node => {
+    //         director.getScene().addChild(node); // 将节点重新添加到新场景中
+    //     });
+    // }
     protected async start() {
         const config = getConfig()
         this.node.getChildByName("Top").getChildByName("Gold").getComponent(Label).string =

@@ -1,0 +1,27 @@
+
+hecheng.png
+size: 394, 280
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+guang
+  rotate: false
+  xy: 247, 140
+  size: 145, 140
+  orig: 179, 179
+  offset: 17, 24
+  index: -1
+ring
+  rotate: false
+  xy: 2, 37
+  size: 243, 243
+  orig: 358, 358
+  offset: 58, 57
+  index: -1
+椭圆 1
+  rotate: false
+  xy: 247, 4
+  size: 134, 134
+  orig: 138, 138
+  offset: 2, 2
+  index: -1
