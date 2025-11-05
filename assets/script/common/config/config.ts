@@ -25,8 +25,8 @@ class VolumeDetail {
 class ServerUrl {
     // redis-server.exe redis.windows.conf
     // url = "http://192.168.0.104:8080/"
-    url = "http://127.0.0.1:8080/YIMEM_war/"
-    // url="http://czx.yimem.com:3000/"
+    // url = "http://127.0.0.1:8080/YIMEM_war/"
+    url="http://czx.yimem.com:3000/"
 }
 
 let globalId: number = 1

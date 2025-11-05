@@ -26,12 +26,76 @@ export class RecruitCardCtrl extends Component {
     update(deltaTime: number) {
         const config = getConfig()
         // console.log(config)
-        this.diamond1.getComponent(Label).string = "(已有0)"
+        this.diamond1.getComponent(Label).string = "(已有" + config.userData.soul + ")"
         this.diamond2.getComponent(Label).string = "(已有" + config.userData.diamond + ")"
         this.diamond3.getComponent(Label).string = "(已有" + config.userData.diamond + ")"
     }
 
+    onGStart3(recruitCardCtrl: recruitCardCtrl) {
+        this.BlockInputEvents.active = true
+        const config = getConfig()
+        const token = getToken()
+        console.log(config.userData.userId, 555)
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "/soulChou", options)
+            .then(response => {
+                if (!response.ok) {
+                    this.BlockInputEvents.active = false
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                console.log(data); // 处理响应数据
+                if (data.success == '1') {
+                    var map = data.data;
+                    let dto = map['dto'];
+                    let user = map['user'];
+                    this.onceCard.active = true;
+                    AudioMgr.inst.playOneShot("sound/other/click");
+                    if (this.onceCard.children.length > 0) {
+                        let comp = this.onceCard.getChildByName("RecuitCardItem").getComponent(RecuitCardItem);
+                        comp.init(dto.hero, recruitCardCtrl.cb);
+                        config.userData.characters = dto.characters
+                        config.userData.soul = user.soul
+                        localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    } else {
+                        const nodePool = util.resource.getNodePool(
+                            await util.bundle.load("/prefab/RecuitCardItem", Prefab)
+                        )
+                        const node = nodePool.get()
+                        const characterAvatar = node.getComponent(RecuitCardItem)
+                        this.onceCard.addChild(node)
+                        AudioMgr.inst.playOneShot("sound/other/getcard");
+                        characterAvatar.init(dto.hero, () => {
+                            this.buttonOk.node.active = true;
+                        });
+                        config.userData.characters = dto.characters
+                        config.userData.soul = user.soul
+                        localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    }
+                } else {
+                    this.BlockInputEvents.active = false
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                this.BlockInputEvents.active = false
+                const close = util.message.confirm({ message: error })
+            }
+            );
 
+
+
+    }
 
     onGStart(recruitCardCtrl: recruitCardCtrl) {
         this.BlockInputEvents.active = true
@@ -86,7 +150,7 @@ export class RecruitCardCtrl extends Component {
                     }
                 } else {
                     this.BlockInputEvents.active = false
-                    const close = util.message.confirm({ message: data.errorMsg||"服务器异常" })
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                 }
             })
             .catch(error => {
@@ -154,7 +218,7 @@ export class RecruitCardCtrl extends Component {
 
                 } else {
                     this.BlockInputEvents.active = false
-                    const close = util.message.confirm({ message: data.errorMsg||"服务器异常" })
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                 }
             })
             .catch(error => {

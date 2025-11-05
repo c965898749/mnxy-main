@@ -9,6 +9,7 @@ import { HolPreLoad } from '../../../prefab/HolPreLoad';
 import { getConfig, getToken } from '../../../common/config/config';
 import { CharacterEnum } from '../../../game/fight/character/CharacterEnum';
 import { AudioMgr } from '../../../util/resource/AudioMgr';
+import { FightSuccess } from './FightSuccess';
 const { ccclass, property } = _decorator;
 
 @ccclass('FightMap')
@@ -50,6 +51,9 @@ export class FightMap extends Component {
     //
     result: boolean
 
+    rewards = []
+
+    levelUp = 0
     // 当前倍速
     private timeScale: number = 1
     initialized = false;
@@ -70,7 +74,9 @@ export class FightMap extends Component {
     }
 
 
-    async render(fightId) {
+    async render(fightId, rewards, levelUp) {
+        this.rewards = rewards
+        this.levelUp = levelUp
         // HolPreLoad 预加载进度条
         // const holPreLoad = this.node.parent.getChildByName("HolPreLoad").getComponent(HolPreLoad)
         const holPreLoad = this.node.getChildByName("HolPreLoad").getComponent(HolPreLoad)
@@ -694,8 +700,10 @@ export class FightMap extends Component {
 
 
     // 战斗胜利
-    private fightSuccess() {
-        console.log(111)
+    private async fightSuccess() {
+        await this.node.getChildByName("FightSuccess")
+            .getComponent(FightSuccess)
+            .read(this.rewards, this.levelUp)
         this.node.getChildByName("FightFailure").active = false
         this.node.getChildByName("FightSuccess").active = true
     }

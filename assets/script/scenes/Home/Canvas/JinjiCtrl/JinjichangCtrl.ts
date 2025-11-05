@@ -102,7 +102,7 @@ export class JinjichangCtrl extends Component {
                     this.node.parent.addChild(holAnimationNode)
                     await holAnimationNode
                         .getComponent(FightMap)
-                        .render(data.data.id)
+                        .render(data.data.id,null,null)
                     find('Canvas').getComponent(HomeCanvas).audioSource.pause()
                     this.node.parent.getChildByName("FightMap").active = true
                 } else {

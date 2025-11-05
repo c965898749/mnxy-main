@@ -182,7 +182,8 @@ export class PveCtrl extends Component {
                                 var user = map['user'];
                                 const battle = map['battle'];
                                 const pveDetail = map['pveDetail'];
-
+                                const rewards=map["rewards"];
+                                const levelUp=map["levelUp"]
                                 const [chapter, tribulation, level] = pveDetail.id.split('-');
                                 var chapters = ["一", "二", "三", "四", "五", "六"]
                                 this.mapTitle.getComponent(Label).string = "第" + chapters[tribulation - 1] + "章·" + pveDetail.jieName
@@ -195,6 +196,7 @@ export class PveCtrl extends Component {
                                     1
                                 )
                                 config.userData.exp = user.exp
+                                config.userData.lv = user.lv
                                 config.userData.chapter = user.chapter
                                 this.Exp.getChildByName("ExpCount").getComponent(Label).string = "还需" + (1000 - config.userData.exp)
                                 this.ExpBar.setScale(
@@ -202,14 +204,14 @@ export class PveCtrl extends Component {
                                     1,
                                     1
                                 )
-                                this.chapter=user.chapter
+                                this.chapter = battle.chapter
                                 localStorage.setItem("UserConfigData", JSON.stringify(config))
                                 const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
                                 const holAnimationNode = instantiate(holAnimationPrefab)
                                 this.node.parent.addChild(holAnimationNode)
                                 await holAnimationNode
                                     .getComponent(FightMap)
-                                    .render(battle.id)
+                                    .render(battle.id,rewards,levelUp)
                                 find('Canvas').getComponent(HomeCanvas).audioSource.pause()
                                 this.node.parent.getChildByName("FightMap").active = true
 

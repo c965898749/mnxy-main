@@ -1,4 +1,4 @@
-import { _decorator, AudioClip, AudioSource, Component, director, EventTouch,  Label, math, Node, screen, Sprite, SpriteFrame, tween, UITransform, v3, Vec3 } from 'cc';
+import { _decorator, AudioClip, AudioSource, Component, director, EventTouch, Label, math, Node, screen, Sprite, SpriteFrame, tween, UITransform, v3, Vec3 } from 'cc';
 import { util } from '../../../util/util';
 import { getConfig } from '../../../common/config/config';
 import { AudioMgr } from "../../../util/resource/AudioMgr";
@@ -93,26 +93,8 @@ export class HomeBuildings extends Component {
         }
         this.node.parent.getChildByName("SignInCtrl").scale = new Vec3(0, 0, 0)
         tween(this.node.parent.getChildByName("SignInCtrl"))
-            // .to(0, { scale: new Vec3(0.5, 0.5, 0.5) }, { easing: 'quadOut' })
             .to(1, { scale: new Vec3(1, 1, 1) }, { easing: 'elasticOut' })
-            // .to(0.2, { scale: new Vec3(1, 1, 1) }, { easing: 'quadOut' })
-            // .to(0.5, { scale: new Vec3(1, 1, 1) }, { easing: 'elasticIn' })
             .start();
-        //     this.Star.children[i].active = true
-        // if (create.goIntoNum != 0) {
-        //     this.isBattle.active = true
-        // } else {
-        //     this.isBattle.active = false
-        // }
-        // this.node.getChildByName("Diamond").getChildByName("Value").getComponent(Label).string = 
-        // util.sundry.formateNumber(config.userData.diamond)
-        // this.node.getChildByName("Soul").getChildByName("Value").getComponent(Label).string = 
-        // util.sundry.formateNumber(config.userData.soul)
-        // // 触摸事件开始
-        // this.node.on(Node.EventType.TOUCH_MOVE, this.onNodeTouchMove, this)
-        // this.node.on(Node.EventType.TOUCH_END, this.onNodeTouchEnd, this)
-        // // 初始化宽度
-        // this.$FrameSize = screen.windowSize
         //战力计算
         this.node.getChildByName("mid").getChildByName("user_fight_count").getComponent(Label).string = this.power + ""
 
@@ -142,6 +124,10 @@ export class HomeBuildings extends Component {
         const config = getConfig()
         const create = config.userData.characters.filter(x => x.goIntoNum != 0)
         this.Item.children.forEach(n => n.children[0].getComponent(Sprite).spriteFrame = null)
+        this.node.getChildByName("Top").getChildByName("Lv").getComponent(Label).string = "Lv " +
+            util.sundry.formateNumber(config.userData.lv)
+        this.node.getChildByName("Top").getChildByName("Gold").getComponent(Label).string =
+            util.sundry.formateNumber(config.userData.gold)
         //初始化战力
         this.power = 0
         for (let i = 0; i < create.length; i++) {
@@ -151,7 +137,6 @@ export class HomeBuildings extends Component {
             this.power = this.power + parseInt(this.getZhanli(create[i]).toString())
         }
         this.node.getChildByName("mid").getChildByName("user_card_count").getComponent(Label).string = config.userData.characters.length + "/" + config.userData.useCardCount
-        // this.node.getChildByName("Top").getChildByName("Diamond").getChildByName("Label").getComponent(Label).string = config.userData.diamond + ""
         this.node.getChildByName("Top").getChildByName("head_img").getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
             await util.bundle.load(config.userData.gameImg, SpriteFrame)
         this.node.getChildByName("mid").getChildByName("user_fight_count").getComponent(Label).string = this.power + ""
