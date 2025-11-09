@@ -67,7 +67,6 @@ export class HolCharacterAvatar extends Component {
             } else {
                 this.StackCount.getComponent(Label).string = "+" + create.stackCount
             }
-
         }else{
              this.StackCount.getComponent(Label).string =null
         }
@@ -76,12 +75,14 @@ export class HolCharacterAvatar extends Component {
                 await util.bundle.load(`image/ui/card1/spriteFrame`, SpriteFrame)
             this.Bottom.getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`image/ui/quality_01/spriteFrame`, SpriteFrame)
-        } else {
+        } else if(create.star >=4) {
             this.Quality.getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`image/ui/card2/spriteFrame`, SpriteFrame)
             this.Bottom.getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`image/ui/quality_05/spriteFrame`, SpriteFrame)
-
+        }else{
+             this.Quality.getComponent(Sprite).spriteFrame =null
+            this.Bottom.getComponent(Sprite).spriteFrame =null
         }
         this.CampNode.getComponent(Sprite).spriteFrame =
             await util.bundle.load(`image/camp_icon/${meta.CharacterCamp}/spriteFrame`, SpriteFrame)

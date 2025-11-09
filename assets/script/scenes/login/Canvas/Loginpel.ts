@@ -14,8 +14,8 @@ export class Loginpel extends Component {
     Password: EditBox;
     // redis-server.exe redis.windows.conf
     // url = "http://192.168.0.104:8080/"
-    // url = "http://127.0.0.1:8080/YIMEM_war/"
-    url="http://czx.yimem.com:3000/"
+    url = "http://127.0.0.1:8080/YIMEM_war/"
+    // url="http://czx.yimem.com:3000/"
     start() {
         const token = getToken()
         const postData = {
@@ -36,6 +36,7 @@ export class Loginpel extends Component {
             .then(data => {
                 console.log(data); // 处理响应数据
                 if (data.success == '1') {
+                    localStorage.setItem("UserConfigData", null)
                     var userInfo = data.data;
                     var config = {
                         "version": "0.0.1",
@@ -54,9 +55,12 @@ export class Loginpel extends Component {
                             "equipments": [],
                             "gameImg": userInfo.gameImg,
                             "characters": userInfo.characterList,
+                            "winCount": userInfo.winCount,
+                            "chapter": userInfo.chapter
                         },
                     }
                     this.SetLeaveEnergy(userInfo.tiliCount)
+                    this.SetLeaveHuoliEnergy(userInfo.huoliCount)
                     // localStorage.setItem("token", userInfo.token)
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
                     director.preloadScene("Preload", () => {
@@ -82,12 +86,24 @@ export class Loginpel extends Component {
         }
         return 10;
     }
+    GetLeaveHuoliEnergy() {
+        var key = 'Leave_EnergyHuoliNumber2';
+        var str = localStorage.getItem(key);
+        if (str) {
+            return parseInt(str);
+        }
+        return 10;
+    }
     SetLeaveEnergy(i) {
         var key = 'Leave_EnergyNumber2';
         var value = i + "";
         localStorage.setItem(key, value);
     }
-
+    SetLeaveHuoliEnergy(i) {
+        var key = 'Leave_EnergyHuoliNumber2';
+        var value = i + "";
+        localStorage.setItem(key, value);
+    }
     update(deltaTime: number) {
 
     }
@@ -200,6 +216,7 @@ export class Loginpel extends Component {
                 .then(data => {
                     console.log(data); // 处理响应数据
                     if (data.success == '1') {
+                        localStorage.setItem("UserConfigData", null)
                         var userInfo = data.data;
                         var config = {
                             "version": "0.0.1",
@@ -217,9 +234,13 @@ export class Loginpel extends Component {
                                 "backpack": [],
                                 "equipments": [],
                                 "characters": userInfo.characterList,
+                                "gameImg": userInfo.gameImg,
+                                "winCount": userInfo.winCount,
+                                "chapter": userInfo.chapter
                             },
                         }
                         this.SetLeaveEnergy(userInfo.tiliCount)
+                        this.SetLeaveHuoliEnergy(userInfo.huoliCount)
                         localStorage.setItem("token", userInfo.token)
                         localStorage.setItem("UserConfigData", JSON.stringify(config))
                         director.preloadScene("Preload", () => {

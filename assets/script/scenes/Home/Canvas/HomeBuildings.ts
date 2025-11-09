@@ -38,13 +38,18 @@ export class HomeBuildings extends Component {
     @property(Node)
     Tili: Node
     @property(Node)
+    Huoli: Node
+    @property(Node)
     energyLabel: Node//体力显示
+    @property(Node)
+    energyHuoliLabel: Node//活力力显示
     @property({ type: cc.Integer, tooltip: "固定尺寸" })
     MaxEnergy: 720//最大体力值
     // EnergyReturnTime: 600//体力回复时间
     timer = 0
     @property({ type: cc.Integer, tooltip: "固定尺寸" })
     energy = 0
+    huoliEnergy = 0
     // onLoad() {
     //     let nodesToKeep = game.getPersistRootNodes() // 获取所有持久化节点
     //     nodesToKeep.forEach(node => {
@@ -59,7 +64,6 @@ export class HomeBuildings extends Component {
             util.sundry.formateNumber(config.userData.lv)
         // this.node.getChildByName("Top").getChildByName("Diamond").getChildByName("Label").getComponent(Label).string = config.userData.diamond + ""
         this.node.getChildByName("Top").getChildByName("Nickname").getComponent(Label).string = config.userData.nickname
-        this.node.getChildByName("Top").getChildByName("Huoli").getChildByName("HuoliCount").getComponent(Label).string = "360/720"
         this.node.getChildByName("Top").getChildByName("Exp").getChildByName("ExpCount").getComponent(Label).string = config.userData.exp + "/1000"
         this.expBar.setScale(
             config.userData.exp / 1000,
@@ -71,6 +75,7 @@ export class HomeBuildings extends Component {
             this.node.getChildByName("Top").getChildByName("head_img").getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
                 await util.bundle.load(config.userData.gameImg, SpriteFrame)
         }
+        this.node.getChildByName("mid").getChildByName("user_win_count").getComponent(Label).string = config.userData.winCount + ""
         //初始化战力
         this.power = 0
         // 渲染队伍gameImg
@@ -130,6 +135,11 @@ export class HomeBuildings extends Component {
             util.sundry.formateNumber(config.userData.gold)
         //初始化战力
         this.power = 0
+        console.log(config.userData.gameImg, 444)
+        if (config.userData.gameImg) {
+            this.node.getChildByName("Top").getChildByName("head_img").getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
+                await util.bundle.load(config.userData.gameImg, SpriteFrame)
+        }
         for (let i = 0; i < create.length; i++) {
             var goIntoNum = create[i].goIntoNum
             this.Item.children[goIntoNum - 1].children[0].getComponent(Sprite).spriteFrame =
@@ -137,15 +147,16 @@ export class HomeBuildings extends Component {
             this.power = this.power + parseInt(this.getZhanli(create[i]).toString())
         }
         this.node.getChildByName("mid").getChildByName("user_card_count").getComponent(Label).string = config.userData.characters.length + "/" + config.userData.useCardCount
-        this.node.getChildByName("Top").getChildByName("head_img").getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
-            await util.bundle.load(config.userData.gameImg, SpriteFrame)
+        // this.node.getChildByName("Top").getChildByName("head_img").getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
+        //     await util.bundle.load(config.userData.gameImg, SpriteFrame)
         this.node.getChildByName("mid").getChildByName("user_fight_count").getComponent(Label).string = this.power + ""
+        this.node.getChildByName("mid").getChildByName("user_win_count").getComponent(Label).string = config.userData.winCount + ""
         this.expBar.setScale(
-            config.userData.exp / 900,
+            config.userData.exp / 1000,
             1,
             1
         )
-        this.node.getChildByName("Top").getChildByName("Exp").getChildByName("ExpCount").getComponent(Label).string = config.userData.exp + "/900"
+        this.node.getChildByName("Top").getChildByName("Exp").getChildByName("ExpCount").getComponent(Label).string = config.userData.exp + "/1000"
     }
 
     async update(deltaTime: number) {
@@ -205,18 +216,24 @@ export class HomeBuildings extends Component {
     setTili() {
         var EnergyReturnTime = 600
         this.energy = this.GetLeaveEnergy();
+        this.huoliEnergy = this.GetLeaveHuoliEnergy();
         //cc.log(this.energy);
         var LeaveEnergy = this.GetLeaveEnergy();
+        var LeaveHuoliEnergy = this.GetLeaveHuoliEnergy();
         var lastTime = parseInt(localStorage.getItem('LastGetTime1'));
         if (!lastTime) {
             lastTime = 0;
         }
         let nowTime = new Date().getTime();
         var tiliCount = Math.round((nowTime - lastTime) / 1000 / EnergyReturnTime)
+        var hiliCount = Math.round((nowTime - lastTime) / 1000 / EnergyReturnTime)
         var EnergyTime = EnergyReturnTime - Math.round(((nowTime - lastTime) / 1000 % EnergyReturnTime))
         this.SetLeaveEnergyTime(EnergyTime);
         if (tiliCount < 0) {
             tiliCount = 0;
+        }
+        if (hiliCount < 0) {
+            hiliCount = 0;
         }
         if (this.energy > this.MaxEnergy) {
             let lastDate = this.GetLeaveEnergyTime();
@@ -224,21 +241,47 @@ export class HomeBuildings extends Component {
                 this.energy = this.MaxEnergy;
                 this.SetLeaveEnergy(this.MaxEnergy);
             }
-        }
-        else if ((tiliCount + LeaveEnergy) >= this.MaxEnergy) {
+        } else if ((tiliCount + LeaveEnergy) >= this.MaxEnergy) {
             this.energy = this.MaxEnergy;
             localStorage.setItem('LastGetTime1', nowTime + "");
             this.SetLeaveEnergy(this.energy);
-        }
-        else if (tiliCount > 0) {
+        } else if (tiliCount > 0) {
             this.energy = tiliCount + LeaveEnergy;
             localStorage.setItem('LastGetTime1', nowTime + "");
             this.SetLeaveEnergy(this.energy);
         }
+
+
+        if (this.huoliEnergy > this.MaxEnergy) {
+            let lastDate = this.GetLeaveHuoliEnergyTime();
+            if (this.CheckLoginHuoliDate(lastDate)) {
+                this.huoliEnergy = this.MaxEnergy;
+                this.SetLeaveHuoliEnergy(this.MaxEnergy);
+            }
+        } else if ((hiliCount + LeaveHuoliEnergy) >= this.MaxEnergy) {
+            this.huoliEnergy = this.MaxEnergy;
+            localStorage.setItem('LastGetHuoliTime1', nowTime + "");
+            this.SetLeaveHuoliEnergy(this.huoliEnergy);
+        } else if (hiliCount > 0) {
+            this.huoliEnergy = hiliCount + LeaveHuoliEnergy;
+            localStorage.setItem('LastGetHuoliTime1', nowTime + "");
+            this.SetLeaveHuoliEnergy(this.huoliEnergy);
+        }
+
+
+
         if (this.energyLabel) {
             this.energyLabel.getComponent(Label).string = this.energy + "/" + this.MaxEnergy;
             this.Tili.setScale(
                 this.energy / this.MaxEnergy,
+                1,
+                1
+            )
+        }
+        if (this.energyHuoliLabel) {
+            this.energyHuoliLabel.getComponent(Label).string = this.huoliEnergy + "/" + this.MaxEnergy;
+            this.Huoli.setScale(
+                this.huoliEnergy / this.MaxEnergy,
                 1,
                 1
             )
@@ -254,8 +297,21 @@ export class HomeBuildings extends Component {
         }
         return 10;
     }
+    GetLeaveHuoliEnergy() {
+        var key = 'Leave_EnergyHuoliNumber2';
+        var str = localStorage.getItem(key);
+        if (str) {
+            return parseInt(str);
+        }
+        return 10;
+    }
     SetLeaveEnergy(i) {
         var key = 'Leave_EnergyNumber2';
+        var value = i + "";
+        localStorage.setItem(key, value);
+    }
+    SetLeaveHuoliEnergy(i) {
+        var key = 'Leave_EnergyHuoliNumber2';
         var value = i + "";
         localStorage.setItem(key, value);
     }
@@ -268,12 +324,38 @@ export class HomeBuildings extends Component {
         }
         return 600;
     }
+    //体力获取时间
+    GetLeaveHuoliEnergyTime() {
+        var key = 'Leave_EnergyHuoliTimes1';
+        var str = localStorage.getItem(key);
+        if (str) {
+            return parseInt(str);
+        }
+        return 600;
+    }
     SetLeaveEnergyTime(i) {
         var key = 'Leave_EnergyTimes1';
         var value = i + "";
         localStorage.setItem(key, value);
     }
+    SetLeaveEnergyHuoliTime(i) {
+        var key = 'Leave_EnergyHuoliTimes1';
+        var value = i + "";
+        localStorage.setItem(key, value);
+    }
     CheckLoginDate(time) {
+        var lastTime = new Date(time);
+        var now = new Date();
+        if (now.getFullYear() !== lastTime.getFullYear() ||
+            now.getMonth() !== lastTime.getMonth() ||
+            now.getDate() !== lastTime.getDate()) {
+            // this.needReset = true;
+            return true;
+        }
+        // cc.log("不需要重置", lastTime.toDateString(), now.toDateString())
+        return false;
+    }
+    CheckLoginHuoliDate(time) {
         var lastTime = new Date(time);
         var now = new Date();
         if (now.getFullYear() !== lastTime.getFullYear() ||
@@ -337,6 +419,7 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("EquipmentCtrl").active = false
         this.node.parent.getChildByName("ShopCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
+        this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("MapCrtl").active = true
         // const close = await util.message.load()
         // // director.preloadScene("Fight", () => {
@@ -375,6 +458,7 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("EquipmentCtrl").active = false
         this.node.parent.getChildByName("ShopCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
+        this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("CardCrtl").active = true
     }
 
@@ -408,6 +492,7 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("EquipmentCtrl").active = false
         this.node.parent.getChildByName("ShopCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
+        this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("Buildings").active = true
     }
     //挑战
@@ -420,6 +505,7 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("EquipmentCtrl").active = false
         this.node.parent.getChildByName("ShopCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
+        this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("JinjiCtrl").active = true
     }
 
@@ -440,6 +526,7 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("EquipmentCtrl").active = false
         this.node.parent.getChildByName("ShopCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
+        this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("otherCtrl").active = true
     }
 
@@ -453,6 +540,7 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("otherCtrl").active = false
         this.node.parent.getChildByName("ShopCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
+        this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("EquipmentCtrl").active = true
     }
 
@@ -465,6 +553,7 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("otherCtrl").active = false
         this.node.parent.getChildByName("EquipmentCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
+        this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("ShopCtrl").active = true
     }
 

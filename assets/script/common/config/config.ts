@@ -25,8 +25,8 @@ class VolumeDetail {
 class ServerUrl {
     // redis-server.exe redis.windows.conf
     // url = "http://192.168.0.104:8080/"
-    // url = "http://127.0.0.1:8080/YIMEM_war/"
-    url="http://czx.yimem.com:3000/"
+    url = "http://127.0.0.1:8080/YIMEM_war/"
+    // url="http://czx.yimem.com:3000/"
 }
 
 let globalId: number = 1
@@ -56,6 +56,8 @@ class UserData extends Resource {
 
     public gameImg: string
 
+    public winCount:number=0
+
 
     // 已经收集到的英雄
     public hasCollectCharacterId: string[] = []
@@ -73,6 +75,7 @@ class UserData extends Resource {
         this.diamond = or.diamond || 100
         this.soul = or.soul || 1000
         this.gameImg = or.gameImg
+        this.winCount=or.winCount
         this.useCardCount = or.useCardCount || "0/0"
         this.hasCollectCharacterId = or.hasCollectCharacterId || []
             // 原有的物品

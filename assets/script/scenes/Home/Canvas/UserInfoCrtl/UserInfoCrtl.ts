@@ -25,18 +25,21 @@ export class UserInfoCrtl extends Component {
     @property(Node)
     Diamond: Node
     @property(Node)
-    expBar:Node
+    expBar: Node
 
     @property(Node)
     TiliTime: Node//体力回复剩余时间
     @property(Node)
     energyLabel: Node//体力显示
+    @property(Node)
+    energyHuoliLabel: Node//活力力显示
     @property({ type: cc.Integer, tooltip: "固定尺寸" })
     MaxEnergy: 720//最大体力值
     // EnergyReturnTime: 600//体力回复时间
     timer = 0
     @property({ type: cc.Integer, tooltip: "固定尺寸" })
     energy = 0
+    huoliEnergy = 0
     initialized: boolean = false
     start() {
         this.refresh()
@@ -67,14 +70,17 @@ export class UserInfoCrtl extends Component {
     setTili() {
         var EnergyReturnTime = 600
         this.energy = this.GetLeaveEnergy();
+        this.huoliEnergy = this.GetLeaveHuoliEnergy();
         //cc.log(this.energy);
         var LeaveEnergy = this.GetLeaveEnergy();
+        var LeaveHuoliEnergy = this.GetLeaveHuoliEnergy();
         var lastTime = parseInt(localStorage.getItem('LastGetTime1'));
         if (!lastTime) {
             lastTime = 0;
         }
         let nowTime = new Date().getTime();
         var tiliCount = Math.round((nowTime - lastTime) / 1000 / EnergyReturnTime)
+        var hiliCount = Math.round((nowTime - lastTime) / 1000 / EnergyReturnTime)
         var EnergyTime = EnergyReturnTime - Math.round(((nowTime - lastTime) / 1000 % EnergyReturnTime))
         this.SetLeaveEnergyTime(EnergyTime);
         this.TiliTime.active = true;
@@ -88,6 +94,9 @@ export class UserInfoCrtl extends Component {
         }
         if (tiliCount < 0) {
             tiliCount = 0;
+        }
+        if (hiliCount < 0) {
+            hiliCount = 0;
         }
         if (this.energy > this.MaxEnergy) {
             this.TiliTime.active = false;
@@ -109,10 +118,37 @@ export class UserInfoCrtl extends Component {
             localStorage.setItem('LastGetTime1', nowTime + "");
             this.SetLeaveEnergy(this.energy);
         }
+
+
+        if (this.huoliEnergy > this.MaxEnergy) {
+            let lastDate = this.GetLeaveHuoliEnergyTime();
+            if (this.CheckLoginHuoliDate(lastDate)) {
+                this.huoliEnergy = this.MaxEnergy;
+                this.SetLeaveHuoliEnergy(this.MaxEnergy);
+            }
+        } else if ((hiliCount + LeaveHuoliEnergy) >= this.MaxEnergy) {
+            this.huoliEnergy = this.MaxEnergy;
+            localStorage.setItem('LastGetHuoliTime1', nowTime + "");
+            this.SetLeaveHuoliEnergy(this.huoliEnergy);
+        } else if (hiliCount > 0) {
+            this.huoliEnergy = hiliCount + LeaveHuoliEnergy;
+            localStorage.setItem('LastGetHuoliTime1', nowTime + "");
+            this.SetLeaveHuoliEnergy(this.huoliEnergy);
+        }
+
+
         if (this.energyLabel) {
             this.energyLabel.getComponent(Label).string = this.energy + "/" + this.MaxEnergy;
             this.Tili.setScale(
                 this.energy / this.MaxEnergy,
+                1,
+                1
+            )
+        }
+        if (this.energyHuoliLabel) {
+            this.energyHuoliLabel.getComponent(Label).string = this.huoliEnergy + "/" + this.MaxEnergy;
+            this.Huoli.setScale(
+                this.huoliEnergy / this.MaxEnergy,
                 1,
                 1
             )
@@ -128,14 +164,37 @@ export class UserInfoCrtl extends Component {
         }
         return 10;
     }
+
+    GetLeaveHuoliEnergy() {
+        var key = 'Leave_EnergyHuoliNumber2';
+        var str = localStorage.getItem(key);
+        if (str) {
+            return parseInt(str);
+        }
+        return 10;
+    }
     SetLeaveEnergy(i) {
         var key = 'Leave_EnergyNumber2';
+        var value = i + "";
+        localStorage.setItem(key, value);
+    }
+
+    SetLeaveHuoliEnergy(i) {
+        var key = 'Leave_EnergyHuoliNumber2';
         var value = i + "";
         localStorage.setItem(key, value);
     }
     //体力获取时间
     GetLeaveEnergyTime() {
         var key = 'Leave_EnergyTimes1';
+        var str = localStorage.getItem(key);
+        if (str) {
+            return parseInt(str);
+        }
+        return 600;
+    }
+    GetLeaveHuoliEnergyTime() {
+        var key = 'Leave_EnergyHuoliTimes1';
         var str = localStorage.getItem(key);
         if (str) {
             return parseInt(str);
@@ -160,7 +219,18 @@ export class UserInfoCrtl extends Component {
         return false;
     }
 
-
+    CheckLoginHuoliDate(time) {
+        var lastTime = new Date(time);
+        var now = new Date();
+        if (now.getFullYear() !== lastTime.getFullYear() ||
+            now.getMonth() !== lastTime.getMonth() ||
+            now.getDate() !== lastTime.getDate()) {
+            // this.needReset = true;
+            return true;
+        }
+        // cc.log("不需要重置", lastTime.toDateString(), now.toDateString())
+        return false;
+    }
 
     async refresh() {
         const config = getConfig()

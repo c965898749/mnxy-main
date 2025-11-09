@@ -30,6 +30,13 @@ export class CardCrtl extends Component {
         this.node.parent.getChildByName("qianghuaCtrl").active = true
     }
 
+    //合成
+    public hechen() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("CardCrtl").active = false
+        this.node.parent.getChildByName("synthesisCtrl").active = true
+    }
+
 }
 
 

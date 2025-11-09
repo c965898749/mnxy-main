@@ -131,7 +131,7 @@ export class PveCtrl extends Component {
 
     async tanSuo() {
         let [chapter, tribulation, level] = this.chapter.split('-');
-        if (Number(level) >= 10) {
+        if (Number(level) > 10) {
             return await util.message.prompt({ message: "关卡已探索完" })
         }
 
@@ -182,19 +182,21 @@ export class PveCtrl extends Component {
                                 var user = map['user'];
                                 const battle = map['battle'];
                                 const pveDetail = map['pveDetail'];
-                                const rewards=map["rewards"];
-                                const levelUp=map["levelUp"]
-                                const [chapter, tribulation, level] = pveDetail.id.split('-');
-                                var chapters = ["一", "二", "三", "四", "五", "六"]
-                                this.mapTitle.getComponent(Label).string = "第" + chapters[tribulation - 1] + "章·" + pveDetail.jieName
-                                this.SpriteSplash.getComponent(Label).string = level + "/10" + "  " + pveDetail.guanName
-                                this.introduce.getComponent(Label).string = pveDetail.introduce
-                                this.progress.getChildByName("ExpCount").getComponent(Label).string = level + "0%"
-                                this.progressBar.setScale(
-                                    level / 10,
-                                    1,
-                                    1
-                                )
+                                const rewards = map["rewards"];
+                                const levelUp = map["levelUp"]
+                                if (battle.isWin == 0) {
+                                    const [chapter, tribulation, level] = pveDetail.id.split('-');
+                                    var chapters = ["一", "二", "三", "四", "五", "六"]
+                                    this.mapTitle.getComponent(Label).string = "第" + chapters[tribulation - 1] + "章·" + pveDetail.jieName
+                                    this.SpriteSplash.getComponent(Label).string = level + "/10" + "  " + pveDetail.guanName
+                                    this.introduce.getComponent(Label).string = pveDetail.introduce
+                                    this.progress.getChildByName("ExpCount").getComponent(Label).string = level + "0%"
+                                    this.progressBar.setScale(
+                                        level / 10,
+                                        1,
+                                        1
+                                    )
+                                }
                                 config.userData.exp = user.exp
                                 config.userData.lv = user.lv
                                 config.userData.chapter = user.chapter
@@ -211,7 +213,7 @@ export class PveCtrl extends Component {
                                 this.node.parent.addChild(holAnimationNode)
                                 await holAnimationNode
                                     .getComponent(FightMap)
-                                    .render(battle.id,rewards,levelUp)
+                                    .render(battle.id, rewards, levelUp)
                                 find('Canvas').getComponent(HomeCanvas).audioSource.pause()
                                 this.node.parent.getChildByName("FightMap").active = true
 

@@ -2,6 +2,7 @@ import { _decorator, Component, director, find, Label, Node } from 'cc';
 import { HomeCanvas } from '../../Home/HomeCanvas';
 import { levelUp } from '../../Home/Canvas/levelUp/levelUp';
 import { ItemCtrl } from '../../Home/Canvas/Tiem/ItemCtrl';
+import { AudioMgr } from '../../../util/resource/AudioMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('FightSuccess')
@@ -10,35 +11,50 @@ export class FightSuccess extends Component {
     FightMap: Node
     @property(Node)
     rewards: Node
+    initialized = false
     start() {
-
+        this.refresh()
     }
 
+    onEnable() {
+        if (!this.initialized) {
+            // 初始化代码
+            this.initialized = true;
+        } else {
+            this.refresh()
+        }
+
+    }
     update(deltaTime: number) {
 
+    }
+    refresh() {
+        AudioMgr.inst.playOneShot("sound/fight/end/pkWin");
     }
 
     levelUp = 0
 
     read(rewards, levelUp) {
         this.levelUp = levelUp
-        for (var i = 0; i < rewards.length; i++) {
-            if (rewards[i] == "10000") {
-                this.rewards.children[i].active = true
-                this.rewards.children[i].children[5].getComponent(Label).string = "10000"
-                this.rewards.children[i].children[3].active = true
-            } else if (rewards[i] == "3000") {
-                this.rewards.children[i].active = true
-                this.rewards.children[i].children[5].getComponent(Label).string = "3000"
-                this.rewards.children[i].children[0].active = true
-            }else if (rewards[i] == "天兵") {
-                this.rewards.children[i].active = true
-                this.rewards.children[i].children[5].getComponent(Label).string = "天兵"
-                this.rewards.children[i].children[1].active = true
-            }else if (rewards[i] == "20") {
-                this.rewards.children[i].active = true
-                this.rewards.children[i].children[5].getComponent(Label).string = "20"
-                this.rewards.children[i].children[2].active = true
+        if (rewards) {
+            for (var i = 0; i < rewards.length; i++) {
+                if (rewards[i] == "10000") {
+                    this.rewards.children[i].active = true
+                    this.rewards.children[i].children[5].getComponent(Label).string = "10000"
+                    this.rewards.children[i].children[3].active = true
+                } else if (rewards[i] == "3000") {
+                    this.rewards.children[i].active = true
+                    this.rewards.children[i].children[5].getComponent(Label).string = "3000"
+                    this.rewards.children[i].children[0].active = true
+                } else if (rewards[i] == "天兵") {
+                    this.rewards.children[i].active = true
+                    this.rewards.children[i].children[5].getComponent(Label).string = "天兵"
+                    this.rewards.children[i].children[1].active = true
+                } else if (rewards[i] == "20") {
+                    this.rewards.children[i].active = true
+                    this.rewards.children[i].children[5].getComponent(Label).string = "20"
+                    this.rewards.children[i].children[2].active = true
+                }
             }
         }
     }
