@@ -121,6 +121,11 @@ export class MapCrtl extends Component {
             .getComponent(PveCtrl)
             .render(mapId)
     }
+
+    openHotEvents() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("HotEventsCtrl").active=true
+    }
 }
 
 

@@ -10,6 +10,7 @@ const { ccclass, property } = _decorator;
 @ccclass('synthesisCtrl')
 export class synthesisCtrl extends Component {
     @property({ type: Node, tooltip: "招募单张抽卡" }) onceCard: Node = null;
+    @property({ type: Node, tooltip: "任务列表" }) ContentNode: Node = null;
     @property({ type: Button }) buttonOk: Button = null;
     @property(Node)
     hechen: Node
@@ -42,11 +43,49 @@ export class synthesisCtrl extends Component {
     Gold1: Node
     @property(Node)
     Gold2: Node
+    @property(Node)
+    t1: Node
+    @property(Node)
+    t2: Node
+    @property(Node)
+    t3: Node
+    @property(Node)
+    t4: Node
+    @property(Node)
+    t5: Node
+    @property(Node)
+    t6: Node
+    tuPuhenchenList = []
 
     henc = false;
     public cahracterQueue: CharacterStateCreate[] = []
     start() {
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "/tuPuhenchenList", options)
+            .then(response => {
 
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    this.tuPuhenchenList = data.data
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
     }
 
     update(deltaTime: number) {
@@ -122,7 +161,7 @@ export class synthesisCtrl extends Component {
                     // AudioMgr.inst.playOneShot("sound/other/click");
                     if (this.onceCard.children.length > 0) {
                         let comp = this.onceCard.getChildByName("RecuitCardItem").getComponent(RecuitCardItem);
-                        comp.init(dto.hero,() => {
+                        comp.init(dto.hero, () => {
                             this.buttonOk.node.active = true;
                         });
                         config.userData.characters = dto.characters
@@ -153,13 +192,14 @@ export class synthesisCtrl extends Component {
             }
             );
     }
-    hechenBtn2() {
+    async hechenBtn2() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        let hut = this.hechen.getComponent(sp.Skeleton)
-        hut.node.active = true
-        AudioMgr.inst.playOneShot("sound/other/getcard");
-        hut.setAnimation(0, "animation", false)
-        hut.setCompleteListener(() => hut.node.active = false)
+         return await util.message.prompt({ message: "暂未开放敬请期待" })
+        // let hut = this.hechen.getComponent(sp.Skeleton)
+        // hut.node.active = true
+        // AudioMgr.inst.playOneShot("sound/other/getcard");
+        // hut.setAnimation(0, "animation", false)
+        // hut.setCompleteListener(() => hut.node.active = false)
     }
 
     isOk() {
@@ -181,9 +221,54 @@ export class synthesisCtrl extends Component {
             this.chouKa.getComponent(Sprite).spriteFrame = await util.bundle.load('image/synthesis/synthesis2/spriteFrame', SpriteFrame)
             this.noTupuhecheng.active = false;
             this.tupuhecheng.active = true
+            const nodePool = util.resource.getNodePool(
+                await util.bundle.load("prefab/HolCharacterAvatar", Prefab)
+            )
+            const childrens = [...this.ContentNode.children]
+            for (let i = 0; i < childrens.length; i++) {
+                const node = childrens[i];
+                node.off("click")
+                node.getComponent(Button).transition = 0
+                nodePool.put(node)
+            }
+            for (let i = 0; i < this.tuPuhenchenList.length; i++) {
+                let character = this.tuPuhenchenList[i]
+                const node = nodePool.get()
+                node.getChildByName("Avatar").getComponent(Sprite).spriteFrame = await util.bundle.load(`game/texture/frames/hero/Header/${character.id}/spriteFrame`, SpriteFrame)
+                node.getComponent(Button).transition = 3
+                node.getComponent(Button).zoomScale = 0.9
+                this.ContentNode.addChild(node)
+                // 绑定事件
+                node.on("click", () => this.tupuhenchen(i))
+                continue
+            }
         }
         this.henc = !this.henc
     }
+
+    async tupuhenchen(i) {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        let tuCharacter=this.tuPuhenchenList[i].materials
+        this.t1.getChildByName("Avatar").getComponent(Sprite).spriteFrame =
+            await util.bundle.load(`game/texture/frames/hero/Header/${tuCharacter[0].id}/spriteFrame`, SpriteFrame)
+
+        this.t2.getChildByName("Avatar").getComponent(Sprite).spriteFrame =
+            await util.bundle.load('game/texture/frames/hero/Header/' + tuCharacter[1].id + '/spriteFrame', SpriteFrame)
+
+        this.t3.getChildByName("Avatar").getComponent(Sprite).spriteFrame =
+            await util.bundle.load('game/texture/frames/hero/Header/' + tuCharacter[2].id + '/spriteFrame', SpriteFrame)
+
+        this.t4.getChildByName("Avatar").getComponent(Sprite).spriteFrame =
+            await util.bundle.load('game/texture/frames/hero/Header/' + tuCharacter[3].id + '/spriteFrame', SpriteFrame)
+
+        this.t5.getChildByName("Avatar").getComponent(Sprite).spriteFrame =
+            await util.bundle.load('game/texture/frames/hero/Header/' + tuCharacter[4].id + '/spriteFrame', SpriteFrame)
+
+        this.t6.getChildByName("Avatar").getComponent(Sprite).spriteFrame =
+            await util.bundle.load('game/texture/frames/hero/Header/' + this.tuPuhenchenList[i].id + '/spriteFrame', SpriteFrame)
+            this.Gold2.getComponent(Label).string="本次合成需要"+this.tuPuhenchenList[i].extraCost+"银两"
+    }
+
     goback() {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.active = false;

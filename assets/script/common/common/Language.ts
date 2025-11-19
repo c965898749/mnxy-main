@@ -14,9 +14,9 @@
  @ccclass
  class Language {
      getStr(key: number | string, ...args): string {
-         let msg = i18n.t(key, ...args);
-         if (!msg) msg = key + '';
-         return msg;
+        //  let msg = i18n.t(key, ...args);
+        //  if (!msg) msg = key + '';
+         return key+"";
      }
  
      /**倒计时 时:分:秒 */

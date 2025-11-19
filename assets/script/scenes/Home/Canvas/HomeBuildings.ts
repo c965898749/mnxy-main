@@ -3,6 +3,7 @@ import { util } from '../../../util/util';
 import { getConfig } from '../../../common/config/config';
 import { AudioMgr } from "../../../util/resource/AudioMgr";
 import { CharacterState, CharacterStateCreate } from '../../../game/fight/character/CharacterState';
+import { LCoin } from '../../../common/common/Language';
 const { ccclass, property } = _decorator;
 
 @ccclass('HomeBuildings')
@@ -58,8 +59,7 @@ export class HomeBuildings extends Component {
     // }
     protected async start() {
         const config = getConfig()
-        this.node.getChildByName("Top").getChildByName("Gold").getComponent(Label).string =
-            util.sundry.formateNumber(config.userData.gold)
+        this.node.getChildByName("Top").getChildByName("Gold").getComponent(Label).string =LCoin(config.userData.gold)
         this.node.getChildByName("Top").getChildByName("Lv").getComponent(Label).string = "Lv " +
             util.sundry.formateNumber(config.userData.lv)
         // this.node.getChildByName("Top").getChildByName("Diamond").getChildByName("Label").getComponent(Label).string = config.userData.diamond + ""
@@ -132,10 +132,10 @@ export class HomeBuildings extends Component {
         this.node.getChildByName("Top").getChildByName("Lv").getComponent(Label).string = "Lv " +
             util.sundry.formateNumber(config.userData.lv)
         this.node.getChildByName("Top").getChildByName("Gold").getComponent(Label).string =
-            util.sundry.formateNumber(config.userData.gold)
+           LCoin(config.userData.gold)
         //初始化战力
         this.power = 0
-        console.log(config.userData.gameImg, 444)
+        // console.log(config.userData.gameImg, 444)
         if (config.userData.gameImg) {
             this.node.getChildByName("Top").getChildByName("head_img").getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
                 await util.bundle.load(config.userData.gameImg, SpriteFrame)

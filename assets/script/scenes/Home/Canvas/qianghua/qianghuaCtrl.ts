@@ -7,6 +7,7 @@ import { SelectCardCtrl2 } from './SelectCardCtrl2';
 import { CharacterStateCreate } from 'db://assets/script/game/fight/character/CharacterState';
 import { CharacterEnum } from 'db://assets/script/game/fight/character/CharacterEnum';
 import { questionCrtl } from '../questionCrtl/questionCrtl';
+import { LCoin } from 'db://assets/script/common/common/Language';
 const { ccclass, property } = _decorator;
 
 @ccclass('qianghuaCtrl')
@@ -46,7 +47,7 @@ export class qianghuaCtrl extends Component {
     }
     refresh() {
         const config = getConfig()
-        this.gold.getComponent(Label).string = config.userData.gold
+        this.gold.getComponent(Label).string =LCoin(config.userData.gold)
     }
 
 
@@ -151,9 +152,22 @@ export class qianghuaCtrl extends Component {
             })
             .then(async data => {
                 if (data.success == '1') {
-                    var data = data.data
-                    this.LevelUpResult = data;
-                    this.result.getComponent(Label).string = "升级后等级: " + data.finalLevel + "级, 当前等级剩余经验: " + data.remainingExp + ", 升级消耗总银两: " + data.totalSilverSpent
+                    var data= data.data
+                    if (data) {
+                        this.LevelUpResult =data;
+                        this.result.getComponent(Label).string = "升级后等级: " + data.finalLevel + "级, 当前等级剩余经验: " + data.remainingExp + ", 升级消耗总银两: " + data.totalSilverSpent
+                    } else {
+                        this.LevelUpResult = {
+                            finalLevel: 0,       // 最终等级
+                            remainingExp: 0,     // 当前等级的剩余经验
+                            totalSilverSpent: 0, // 升级消耗的总银两
+                            id:  this.LevelUpResult.id, // 升级消耗的总银两
+                            str: null, // 升级消耗的总银两
+                            userId: null
+                        }
+                        this.result.getComponent(Label).string = null
+                    }
+
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                 }
@@ -573,6 +587,9 @@ export class qianghuaCtrl extends Component {
     }
 
     async qianghua() {
+        if (!this.LevelUpResult) {
+            return await util.message.prompt({ message: "请重置后重新选择" })
+        }
         if (!this.LevelUpResult.id) {
             return await util.message.prompt({ message: "请选择强化主卡" })
         }

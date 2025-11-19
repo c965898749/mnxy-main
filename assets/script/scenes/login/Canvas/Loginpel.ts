@@ -56,7 +56,8 @@ export class Loginpel extends Component {
                             "gameImg": userInfo.gameImg,
                             "characters": userInfo.characterList,
                             "winCount": userInfo.winCount,
-                            "chapter": userInfo.chapter
+                            "chapter": userInfo.chapter,
+                             "stopLevel":userInfo.stopLevel
                         },
                     }
                     this.SetLeaveEnergy(userInfo.tiliCount)
@@ -236,7 +237,8 @@ export class Loginpel extends Component {
                                 "characters": userInfo.characterList,
                                 "gameImg": userInfo.gameImg,
                                 "winCount": userInfo.winCount,
-                                "chapter": userInfo.chapter
+                                "chapter": userInfo.chapter,
+                                "stopLevel":userInfo.stopLevel
                             },
                         }
                         this.SetLeaveEnergy(userInfo.tiliCount)

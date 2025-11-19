@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Node, tween, v3, sp, director, Prefab, instantiate, find } from 'cc';
+import { _decorator, Component, Label, Node, tween, v3, sp, director, Prefab, instantiate, find, Sprite, SpriteFrame } from 'cc';
 import { L } from 'db://assets/script/common/common/Language';
 import { getConfig, getToken } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
@@ -33,6 +33,10 @@ export class PveCtrl extends Component {
     introduce: Node
     @property(Node)
     progressBar: Node
+    @property(Node)
+    page1: Node
+    @property(Node)
+    page2: Node
     chapter: string
     start() {
         this.refresh()
@@ -70,7 +74,15 @@ export class PveCtrl extends Component {
                 //console.log(data); // 处理响应数据
                 if (data.success == '1') {
                     var data = data.data
+
                     const [chapter, tribulation, level] = data.id.split('-');
+                    if (chapter == "1") {
+                        this.page1.getComponent(Sprite).spriteFrame =
+                            await util.bundle.load("image/PveCtrl/PvE_1_" + tribulation + "/spriteFrame", SpriteFrame)
+                    } else {
+                        this.page1.getComponent(Sprite).spriteFrame =
+                            await util.bundle.load("image/PveCtrl/PvE_" + chapter + "/spriteFrame", SpriteFrame)
+                    }
                     var chapters = ["一", "二", "三", "四", "五", "六"]
                     this.mapTitle.getComponent(Label).string = "第" + chapters[tribulation - 1] + "章·" + data.jieName
                     this.SpriteSplash.getComponent(Label).string = level + "/10" + "  " + data.guanName
