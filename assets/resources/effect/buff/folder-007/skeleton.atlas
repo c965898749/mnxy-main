@@ -1,0 +1,675 @@
+
+skeleton.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Huoyan0007
+  rotate: false
+  xy: 2, 2
+  size: 327, 113
+  orig: 342, 148
+  offset: 2, 22
+  index: -1
+Huoyan0014
+  rotate: false
+  xy: 640, 275
+  size: 303, 118
+  orig: 342, 148
+  offset: 1, 10
+  index: -1
+Huoyan0015
+  rotate: false
+  xy: 331, 3
+  size: 307, 124
+  orig: 342, 148
+  offset: 1, 6
+  index: -1
+Huoyan20001
+  rotate: false
+  xy: 209, 476
+  size: 63, 25
+  orig: 390, 130
+  offset: 7, 49
+  index: -1
+Huoyan20002
+  rotate: true
+  xy: 986, 952
+  size: 70, 33
+  orig: 390, 130
+  offset: 7, 49
+  index: -1
+Huoyan20004
+  rotate: false
+  xy: 613, 845
+  size: 163, 54
+  orig: 390, 130
+  offset: 2, 37
+  index: -1
+Huoyan20005
+  rotate: false
+  xy: 274, 476
+  size: 237, 57
+  orig: 390, 130
+  offset: 3, 35
+  index: -1
+Huoyan20006
+  rotate: false
+  xy: 778, 841
+  size: 241, 70
+  orig: 390, 130
+  offset: 3, 28
+  index: -1
+Huoyan20007
+  rotate: true
+  xy: 946, 456
+  size: 297, 71
+  orig: 390, 130
+  offset: 19, 27
+  index: -1
+Huoyan20008
+  rotate: false
+  xy: 640, 395
+  size: 304, 85
+  orig: 390, 130
+  offset: 19, 21
+  index: -1
+Huoyan20012
+  rotate: true
+  xy: 211, 124
+  size: 350, 112
+  orig: 390, 130
+  offset: 26, 3
+  index: -1
+Huoyan20013
+  rotate: true
+  xy: 499, 557
+  size: 342, 112
+  orig: 390, 130
+  offset: 40, 3
+  index: -1
+Huoyan20014
+  rotate: false
+  xy: 640, 913
+  size: 344, 109
+  orig: 390, 130
+  offset: 40, 5
+  index: -1
+Huoyan20015
+  rotate: true
+  xy: 529, 139
+  size: 337, 109
+  orig: 390, 130
+  offset: 48, 5
+  index: -1
+Huoyan20016
+  rotate: false
+  xy: 298, 901
+  size: 340, 121
+  orig: 390, 130
+  offset: 48, 4
+  index: -1
+Huoyan20022
+  rotate: true
+  xy: 802, 4
+  size: 269, 122
+  orig: 390, 130
+  offset: 85, 7
+  index: -1
+Huoyan20026
+  rotate: true
+  xy: 946, 195
+  size: 259, 70
+  orig: 390, 130
+  offset: 97, 30
+  index: -1
+Huoyan20027
+  rotate: false
+  xy: 588, 482
+  size: 188, 73
+  orig: 390, 130
+  offset: 168, 29
+  index: -1
+Huoyan20028
+  rotate: false
+  xy: 778, 486
+  size: 148, 71
+  orig: 390, 130
+  offset: 174, 29
+  index: -1
+Huoyan20029
+  rotate: true
+  xy: 946, 755
+  size: 84, 72
+  orig: 390, 130
+  offset: 239, 29
+  index: -1
+Huoyan20030
+  rotate: true
+  xy: 513, 478
+  size: 77, 73
+  orig: 390, 130
+  offset: 245, 28
+  index: -1
+Huoyan20031
+  rotate: false
+  xy: 165, 473
+  size: 17, 9
+  orig: 390, 130
+  offset: 307, 92
+  index: -1
+xian0001
+  rotate: false
+  xy: 165, 484
+  size: 42, 538
+  orig: 75, 630
+  offset: 8, 62
+  index: -1
+xian0002
+  rotate: false
+  xy: 54, 473
+  size: 65, 549
+  orig: 75, 630
+  offset: 1, 44
+  index: -1
+xian0003
+  rotate: false
+  xy: 2, 469
+  size: 50, 553
+  orig: 75, 630
+  offset: 14, 25
+  index: -1
+xian0004
+  rotate: false
+  xy: 250, 535
+  size: 46, 487
+  orig: 75, 630
+  offset: 16, 109
+  index: -1
+xian0005
+  rotate: false
+  xy: 209, 503
+  size: 39, 519
+  orig: 75, 630
+  offset: 22, 95
+  index: -1
+xian0006
+  rotate: false
+  xy: 121, 479
+  size: 42, 543
+  orig: 75, 630
+  offset: 16, 71
+  index: -1
+ychen0002
+  rotate: true
+  xy: 926, 36
+  size: 157, 86
+  orig: 474, 228
+  offset: 12, 81
+  index: -1
+ychen0026
+  rotate: true
+  xy: 298, 556
+  size: 343, 199
+  orig: 474, 228
+  offset: 112, 13
+  index: -1
+ychen0027
+  rotate: true
+  xy: 325, 129
+  size: 345, 202
+  orig: 474, 228
+  offset: 113, 11
+  index: -1
+ychen0028
+  rotate: true
+  xy: 2, 117
+  size: 350, 207
+  orig: 474, 228
+  offset: 113, 7
+  index: -1
+ychen0031
+  rotate: true
+  xy: 640, 4
+  size: 269, 160
+  orig: 474, 228
+  offset: 113, 43
+  index: -1
+ychen0032
+  rotate: true
+  xy: 613, 568
+  size: 275, 162
+  orig: 474, 228
+  offset: 112, 42
+  index: -1
+ychen0034
+  rotate: true
+  xy: 777, 559
+  size: 280, 167
+  orig: 474, 228
+  offset: 113, 41
+  index: -1
+
+skeleton2.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Huoyan0001
+  rotate: false
+  xy: 2, 505
+  size: 328, 122
+  orig: 342, 148
+  offset: 1, 20
+  index: -1
+Huoyan0003
+  rotate: false
+  xy: 333, 676
+  size: 329, 115
+  orig: 342, 148
+  offset: 1, 13
+  index: -1
+Huoyan0004
+  rotate: false
+  xy: 2, 386
+  size: 328, 117
+  orig: 342, 148
+  offset: 1, 14
+  index: -1
+Huoyan0006
+  rotate: false
+  xy: 2, 270
+  size: 326, 114
+  orig: 342, 148
+  offset: 1, 21
+  index: -1
+Huoyan0008
+  rotate: true
+  xy: 601, 23
+  size: 325, 110
+  orig: 342, 148
+  offset: 2, 24
+  index: -1
+Huoyan0016
+  rotate: false
+  xy: 713, 2
+  size: 309, 129
+  orig: 342, 148
+  offset: 1, 6
+  index: -1
+Huoyan0018
+  rotate: false
+  xy: 675, 774
+  size: 329, 117
+  orig: 342, 148
+  offset: 1, 18
+  index: -1
+Huoyan20010
+  rotate: false
+  xy: 664, 668
+  size: 329, 104
+  orig: 390, 130
+  offset: 25, 8
+  index: -1
+Huoyan20011
+  rotate: false
+  xy: 340, 916
+  size: 334, 104
+  orig: 390, 130
+  offset: 26, 8
+  index: -1
+Huoyan20017
+  rotate: false
+  xy: 340, 793
+  size: 333, 121
+  orig: 390, 130
+  offset: 55, 4
+  index: -1
+Huoyan20018
+  rotate: false
+  xy: 676, 893
+  size: 333, 127
+  orig: 390, 130
+  offset: 55, 3
+  index: -1
+Huoyan20019
+  rotate: false
+  xy: 332, 350
+  size: 327, 127
+  orig: 390, 130
+  offset: 62, 3
+  index: -1
+Huoyan20023
+  rotate: true
+  xy: 2, 2
+  size: 266, 122
+  orig: 390, 130
+  offset: 88, 7
+  index: -1
+Huoyan20025
+  rotate: true
+  xy: 287, 6
+  size: 262, 124
+  orig: 390, 130
+  offset: 92, 6
+  index: -1
+ychen0012
+  rotate: false
+  xy: 713, 133
+  size: 309, 165
+  orig: 474, 228
+  offset: 63, 40
+  index: -1
+ychen0013
+  rotate: false
+  xy: 713, 300
+  size: 309, 169
+  orig: 474, 228
+  offset: 67, 37
+  index: -1
+ychen0016
+  rotate: true
+  xy: 413, 23
+  size: 325, 186
+  orig: 474, 228
+  offset: 80, 22
+  index: -1
+ychen0017
+  rotate: false
+  xy: 2, 629
+  size: 329, 192
+  orig: 474, 228
+  offset: 85, 18
+  index: -1
+ychen0018
+  rotate: false
+  xy: 663, 471
+  size: 327, 195
+  orig: 474, 228
+  offset: 90, 16
+  index: -1
+ychen0024
+  rotate: false
+  xy: 333, 479
+  size: 328, 195
+  orig: 474, 228
+  offset: 113, 13
+  index: -1
+ychen0025
+  rotate: false
+  xy: 2, 823
+  size: 336, 197
+  orig: 474, 228
+  offset: 113, 13
+  index: -1
+ychen0030
+  rotate: true
+  xy: 126, 5
+  size: 263, 159
+  orig: 474, 228
+  offset: 114, 45
+  index: -1
+
+skeleton3.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Huoyan0002
+  rotate: false
+  xy: 2, 683
+  size: 322, 128
+  orig: 342, 148
+  offset: 1, 13
+  index: -1
+Huoyan0005
+  rotate: false
+  xy: 328, 895
+  size: 324, 116
+  orig: 342, 148
+  offset: 1, 14
+  index: -1
+Huoyan0009
+  rotate: false
+  xy: 654, 907
+  size: 323, 104
+  orig: 342, 148
+  offset: 2, 30
+  index: -1
+Huoyan0010
+  rotate: false
+  xy: 326, 593
+  size: 322, 106
+  orig: 342, 148
+  offset: 2, 21
+  index: -1
+Huoyan0012
+  rotate: true
+  xy: 909, 101
+  size: 311, 112
+  orig: 342, 148
+  offset: 1, 14
+  index: -1
+Huoyan0017
+  rotate: false
+  xy: 652, 590
+  size: 322, 114
+  orig: 342, 148
+  offset: 1, 21
+  index: -1
+Huoyan20003
+  rotate: true
+  xy: 979, 855
+  size: 156, 43
+  orig: 390, 130
+  offset: 2, 40
+  index: -1
+Huoyan20020
+  rotate: false
+  xy: 587, 290
+  size: 320, 121
+  orig: 390, 130
+  offset: 70, 7
+  index: -1
+Huoyan20024
+  rotate: false
+  xy: 324, 287
+  size: 261, 124
+  orig: 390, 130
+  offset: 93, 6
+  index: -1
+ychen0003
+  rotate: false
+  xy: 691, 185
+  size: 216, 103
+  orig: 474, 228
+  offset: 25, 71
+  index: -1
+ychen0004
+  rotate: true
+  xy: 566, 13
+  size: 272, 123
+  orig: 474, 228
+  offset: 39, 59
+  index: -1
+ychen0005
+  rotate: true
+  xy: 437, 12
+  size: 273, 127
+  orig: 474, 228
+  offset: 45, 55
+  index: -1
+ychen0006
+  rotate: true
+  xy: 305, 9
+  size: 275, 130
+  orig: 474, 228
+  offset: 51, 52
+  index: -1
+ychen0007
+  rotate: true
+  xy: 2, 5
+  size: 279, 135
+  orig: 474, 228
+  offset: 56, 50
+  index: -1
+ychen0014
+  rotate: false
+  xy: 648, 414
+  size: 315, 174
+  orig: 474, 228
+  offset: 71, 32
+  index: -1
+ychen0015
+  rotate: false
+  xy: 325, 413
+  size: 321, 178
+  orig: 474, 228
+  offset: 75, 27
+  index: -1
+ychen0019
+  rotate: false
+  xy: 2, 813
+  size: 324, 198
+  orig: 474, 228
+  offset: 96, 14
+  index: -1
+ychen0020
+  rotate: false
+  xy: 654, 706
+  size: 322, 199
+  orig: 474, 228
+  offset: 101, 13
+  index: -1
+ychen0021
+  rotate: false
+  xy: 2, 286
+  size: 320, 197
+  orig: 474, 228
+  offset: 104, 13
+  index: -1
+ychen0022
+  rotate: false
+  xy: 2, 485
+  size: 321, 196
+  orig: 474, 228
+  offset: 108, 12
+  index: -1
+ychen0023
+  rotate: false
+  xy: 328, 701
+  size: 322, 192
+  orig: 474, 228
+  offset: 112, 13
+  index: -1
+ychen0033
+  rotate: true
+  xy: 139, 7
+  size: 277, 164
+  orig: 474, 228
+  offset: 113, 41
+  index: -1
+zi2
+  rotate: true
+  xy: 691, 134
+  size: 49, 131
+  orig: 49, 131
+  offset: 0, 0
+  index: -1
+zi3
+  rotate: true
+  xy: 691, 2
+  size: 97, 179
+  orig: 97, 179
+  offset: 0, 0
+  index: -1
+zi4
+  rotate: true
+  xy: 872, 13
+  size: 86, 133
+  orig: 86, 133
+  offset: 0, 0
+  index: -1
+zi5
+  rotate: false
+  xy: 965, 471
+  size: 51, 117
+  orig: 51, 117
+  offset: 0, 0
+  index: -1
+
+skeleton4.png
+size: 1024,512
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Huoyan0011
+  rotate: false
+  xy: 624, 201
+  size: 318, 111
+  orig: 342, 148
+  offset: 2, 17
+  index: -1
+Huoyan0013
+  rotate: false
+  xy: 312, 195
+  size: 309, 109
+  orig: 342, 148
+  offset: 1, 15
+  index: -1
+Huoyan20009
+  rotate: false
+  xy: 623, 113
+  size: 319, 86
+  orig: 390, 130
+  offset: 25, 21
+  index: -1
+Huoyan20021
+  rotate: false
+  xy: 2, 16
+  size: 317, 121
+  orig: 390, 130
+  offset: 73, 7
+  index: -1
+ychen0008
+  rotate: false
+  xy: 624, 314
+  size: 312, 144
+  orig: 474, 228
+  offset: 32, 47
+  index: -1
+ychen0009
+  rotate: false
+  xy: 312, 306
+  size: 310, 152
+  orig: 474, 228
+  offset: 42, 45
+  index: -1
+ychen0010
+  rotate: false
+  xy: 2, 139
+  size: 307, 157
+  orig: 474, 228
+  offset: 53, 44
+  index: -1
+ychen0011
+  rotate: false
+  xy: 2, 298
+  size: 308, 160
+  orig: 474, 228
+  offset: 58, 43
+  index: -1
+ychen0029
+  rotate: false
+  xy: 321, 36
+  size: 256, 157
+  orig: 474, 228
+  offset: 115, 47
+  index: -1
+zi1
+  rotate: true
+  xy: 579, 2
+  size: 109, 194
+  orig: 109, 194
+  offset: 0, 0
+  index: -1

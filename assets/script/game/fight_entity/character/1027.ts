@@ -46,7 +46,7 @@ export class Character extends CharacterMetaState {
     PassiveIntroduceOne: string = `
     
     熔岩爆发 Lv1
-    攻击后对场下敌方造成62点火焰伤害
+    攻击后对全体敌方造成62点火焰伤害
     `.replace(/ /ig, "")
 
     PassiveIntroduceTwo: string = `

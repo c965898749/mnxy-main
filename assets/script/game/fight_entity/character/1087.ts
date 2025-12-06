@@ -47,7 +47,7 @@ export class Character extends CharacterMetaState {
     PassiveIntroduceOne: string = `
     
     灵力飞弹 Lv1
-    每当新单位入场时，增加自身200点生命上限，50点攻击， 50点速度。
+    每当新单位入场时，对场上敌人造成50点飞弹伤害。
     `.replace(/ /ig, "")
 
     

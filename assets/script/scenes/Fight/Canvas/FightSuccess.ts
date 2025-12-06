@@ -1,8 +1,10 @@
-import { _decorator, Component, director, find, Label, Node } from 'cc';
+import { _decorator, Component, director, find, Label, Node, Sprite, SpriteFrame } from 'cc';
 import { HomeCanvas } from '../../Home/HomeCanvas';
 import { levelUp } from '../../Home/Canvas/levelUp/levelUp';
 import { ItemCtrl } from '../../Home/Canvas/Tiem/ItemCtrl';
 import { AudioMgr } from '../../../util/resource/AudioMgr';
+import { CharacterEnum } from '../../../game/fight/character/CharacterEnum';
+import { util } from '../../../util/util';
 const { ccclass, property } = _decorator;
 
 @ccclass('FightSuccess')
@@ -34,26 +36,32 @@ export class FightSuccess extends Component {
 
     levelUp = 0
 
-    read(rewards, levelUp) {
+    async read(rewards, levelUp) {
         this.levelUp = levelUp
         if (rewards) {
             for (var i = 0; i < rewards.length; i++) {
                 if (rewards[i] == "10000") {
                     this.rewards.children[i].active = true
-                    this.rewards.children[i].children[5].getComponent(Label).string = "10000"
-                    this.rewards.children[i].children[3].active = true
+                    this.rewards.children[i].getChildByName("Label").getComponent(Label).string = "10000"
+                    this.rewards.children[i].getChildByName("19999").active = true
                 } else if (rewards[i] == "3000") {
                     this.rewards.children[i].active = true
-                    this.rewards.children[i].children[5].getComponent(Label).string = "3000"
-                    this.rewards.children[i].children[0].active = true
+                    this.rewards.children[i].getChildByName("Label").getComponent(Label).string = "3000"
+                    this.rewards.children[i].getChildByName("3000").active = true
                 } else if (rewards[i] == "天兵") {
                     this.rewards.children[i].active = true
-                    this.rewards.children[i].children[5].getComponent(Label).string = "天兵"
-                    this.rewards.children[i].children[1].active = true
+                    this.rewards.children[i].getChildByName("Label").getComponent(Label).string = "天兵"
+                    this.rewards.children[i].getChildByName("tian").active = true
                 } else if (rewards[i] == "20") {
                     this.rewards.children[i].active = true
-                    this.rewards.children[i].children[5].getComponent(Label).string = "20"
-                    this.rewards.children[i].children[2].active = true
+                    this.rewards.children[i].getChildByName("Label").getComponent(Label).string = "20"
+                    this.rewards.children[i].getChildByName("20").active = true
+                } else {
+                    this.rewards.children[i].active = true
+                    const meta = CharacterEnum[rewards[i]]
+                    this.rewards.children[i].getChildByName("hero").getComponent(Sprite).spriteFrame =
+                        await util.bundle.load('game/texture/frames/hero/' + rewards[i] + '/spriteFrame', SpriteFrame)
+                    this.rewards.children[i].getChildByName("Label").getComponent(Label).string = meta.name
                 }
             }
         }

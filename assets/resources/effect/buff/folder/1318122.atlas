@@ -1,0 +1,181 @@
+
+1318122.png
+size: 512,512
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+baodian_yanwu_01
+  rotate: false
+  xy: 2, 58
+  size: 175, 58
+  orig: 175, 58
+  offset: 0, 0
+  index: -1
+baodian_yanwu_02
+  rotate: true
+  xy: 132, 201
+  size: 175, 58
+  orig: 175, 58
+  offset: 0, 0
+  index: -1
+baodian_yanwu_03
+  rotate: true
+  xy: 192, 205
+  size: 175, 58
+  orig: 175, 58
+  offset: 0, 0
+  index: -1
+baodian_yanwu_04
+  rotate: true
+  xy: 252, 205
+  size: 175, 58
+  orig: 175, 58
+  offset: 0, 0
+  index: -1
+ci_a1
+  rotate: false
+  xy: 268, 390
+  size: 128, 120
+  orig: 128, 120
+  offset: 0, 0
+  index: -1
+ci_a2
+  rotate: true
+  xy: 312, 260
+  size: 128, 120
+  orig: 128, 120
+  offset: 0, 0
+  index: -1
+ci_a3
+  rotate: false
+  xy: 312, 138
+  size: 128, 120
+  orig: 128, 120
+  offset: 0, 0
+  index: -1
+guanban1
+  rotate: false
+  xy: 375, 20
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+guangquan
+  rotate: false
+  xy: 132, 135
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+guangquan_a1
+  rotate: false
+  xy: 2, 248
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+hdici
+  rotate: true
+  xy: 427, 17
+  size: 49, 72
+  orig: 49, 72
+  offset: 0, 0
+  index: -1
+hit_a001
+  rotate: false
+  xy: 2, 378
+  size: 134, 132
+  orig: 134, 132
+  offset: 0, 0
+  index: -1
+hit_a002
+  rotate: false
+  xy: 138, 382
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+jnsmoke_01
+  rotate: false
+  xy: 398, 401
+  size: 64, 109
+  orig: 64, 109
+  offset: 0, 0
+  index: -1
+jnsmoke_02
+  rotate: false
+  xy: 434, 290
+  size: 64, 109
+  orig: 64, 109
+  offset: 0, 0
+  index: -1
+jnsmoke_03
+  rotate: false
+  xy: 442, 179
+  size: 64, 109
+  orig: 64, 109
+  offset: 0, 0
+  index: -1
+jnsmoke_04
+  rotate: true
+  xy: 198, 139
+  size: 64, 109
+  orig: 64, 109
+  offset: 0, 0
+  index: -1
+jnsmoke_05
+  rotate: true
+  xy: 198, 73
+  size: 64, 109
+  orig: 64, 109
+  offset: 0, 0
+  index: -1
+jnsmoke_06
+  rotate: true
+  xy: 309, 72
+  size: 64, 109
+  orig: 64, 109
+  offset: 0, 0
+  index: -1
+jnsmoke_07
+  rotate: false
+  xy: 442, 68
+  size: 64, 109
+  orig: 64, 109
+  offset: 0, 0
+  index: -1
+jnsmoke_08
+  rotate: true
+  xy: 179, 2
+  size: 64, 109
+  orig: 64, 109
+  offset: 0, 0
+  index: -1
+knolan_crack_m
+  rotate: false
+  xy: 2, 118
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+soul_single_a
+  rotate: true
+  xy: 290, 10
+  size: 60, 83
+  orig: 60, 83
+  offset: 0, 0
+  index: -1
+soul_single_a1
+  rotate: false
+  xy: 2, 31
+  size: 113, 25
+  orig: 113, 25
+  offset: 0, 0
+  index: -1
+suishi_s
+  rotate: false
+  xy: 464, 469
+  size: 40, 41
+  orig: 40, 41
+  offset: 0, 0
+  index: -1

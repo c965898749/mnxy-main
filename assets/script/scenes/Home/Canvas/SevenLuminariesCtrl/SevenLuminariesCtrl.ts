@@ -14,13 +14,13 @@ export class SevenLuminariesCtrl extends Component {
     @property(Node)
     mapTitle: Node
     luminaryMap = [
-        '太阳星君',  // 0: 星期日（太阳）
         '太阴星君',  // 1: 星期一（太阴/月亮）
         '荧惑星君',          // 2: 星期二
         '水星真君',          // 3: 星期三
         '木星真君',          // 4: 星期四
         '金星真君',          // 5: 星期五
-        '土星真君'           // 6: 星期六
+        '土星真君',           // 6: 星期六
+        '太阳星君',  // 0: 星期日（太阳）
     ];
     level = ["下仙", "中仙", "大仙"]
     initialized = false;
@@ -133,6 +133,7 @@ export class SevenLuminariesCtrl extends Component {
         this.SetLeaveEnergy(LeaveEnergy - 2)
         const postData = {
             token: token,
+            userId: config.userData.userId,
             str: detail.detailCode
         };
         const options = {

@@ -64,6 +64,7 @@ export class ShopCtrl extends Component {
                         const node = childrens[i];
                         node.getChildByName("arms").children.forEach(x => {
                             x.getChildByName("sell").getChildByName("Background").off("click")
+                            x.getChildByName("sell").getChildByName("Background").getComponent(Button).interactable = true
                         })
                         nodePool.put(node)
                     }

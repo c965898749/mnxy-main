@@ -53,7 +53,7 @@ export class Character extends CharacterMetaState {
     PassiveIntroduceTwo: string = `
     
     妖力聚集 Lv1
-    每次攻击后增加自身后方单位的攻击42点，最多叠加5层[
+    每次攻击后增加自身后方单位的攻击42点，最多叠加5层
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `

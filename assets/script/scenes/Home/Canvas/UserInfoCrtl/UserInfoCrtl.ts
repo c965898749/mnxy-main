@@ -259,7 +259,7 @@ export class UserInfoCrtl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/changeName", options)
+        fetch(config.ServerUrl.url + "/aaaa", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');

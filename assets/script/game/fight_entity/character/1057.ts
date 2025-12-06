@@ -46,7 +46,7 @@ export class Character extends CharacterMetaState {
 
     PassiveIntroduceOne: string = `
     
-    新月反击 Lv9
+    新月反击 Lv1
     场上，每当受到飞弹伤害时对场上敌方造成155点物理伤害
     `.replace(/ /ig, "")
 

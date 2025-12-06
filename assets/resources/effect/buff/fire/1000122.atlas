@@ -1,0 +1,118 @@
+
+1000122.png
+size: 2048,256
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+TX/TX_guang2_0021
+  rotate: false
+  xy: 1790, 159
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+TX/TX_gx1_0021
+  rotate: false
+  xy: 1790, 191
+  size: 92, 41
+  orig: 92, 41
+  offset: 0, 0
+  index: -1
+TX/TX_gx2_0021
+  rotate: false
+  xy: 2, 2
+  size: 90, 44
+  orig: 90, 44
+  offset: 0, 0
+  index: -1
+TX/TX_phl_0001
+  rotate: false
+  xy: 2, 48
+  size: 155, 184
+  orig: 155, 184
+  offset: 0, 0
+  index: -1
+TX/TX_phl_0002
+  rotate: false
+  xy: 159, 48
+  size: 155, 184
+  orig: 155, 184
+  offset: 0, 0
+  index: -1
+TX/TX_phl_0003
+  rotate: false
+  xy: 316, 48
+  size: 155, 184
+  orig: 155, 184
+  offset: 0, 0
+  index: -1
+TX/TX_phl_0004
+  rotate: false
+  xy: 473, 48
+  size: 155, 184
+  orig: 155, 184
+  offset: 0, 0
+  index: -1
+TX/TX_phl_0005
+  rotate: false
+  xy: 630, 48
+  size: 155, 184
+  orig: 155, 184
+  offset: 0, 0
+  index: -1
+TX/TX_phl_0006
+  rotate: false
+  xy: 787, 48
+  size: 155, 184
+  orig: 155, 184
+  offset: 0, 0
+  index: -1
+TX/TX_phl_0007
+  rotate: false
+  xy: 944, 48
+  size: 155, 184
+  orig: 155, 184
+  offset: 0, 0
+  index: -1
+TX/TX_phl_0008
+  rotate: false
+  xy: 1101, 48
+  size: 155, 184
+  orig: 155, 184
+  offset: 0, 0
+  index: -1
+TX/TX_phl_0009
+  rotate: false
+  xy: 1258, 48
+  size: 155, 184
+  orig: 155, 184
+  offset: 0, 0
+  index: -1
+TX/TX_sj1_0000
+  rotate: false
+  xy: 1415, 78
+  size: 123, 154
+  orig: 123, 154
+  offset: 0, 0
+  index: -1
+TX/TX_sj1_0001
+  rotate: false
+  xy: 1540, 78
+  size: 123, 154
+  orig: 123, 154
+  offset: 0, 0
+  index: -1
+TX/TX_sj1_0002
+  rotate: false
+  xy: 1665, 78
+  size: 123, 154
+  orig: 123, 154
+  offset: 0, 0
+  index: -1
+TX/TX_yan
+  rotate: false
+  xy: 94, 5
+  size: 41, 41
+  orig: 41, 41
+  offset: 0, 0
+  index: -1

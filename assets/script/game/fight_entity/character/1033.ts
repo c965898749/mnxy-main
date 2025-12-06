@@ -52,13 +52,13 @@ export class Character extends CharacterMetaState {
 
     PassiveIntroduceTwo: string = `
     
-    赤炎臂膀 Lv8
+    赤炎臂膀 Lv1
     受到普通攻击时，提高自身火焰伤害106点，最多可叠加99层
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `
     
-    众妖皆狂 Lv8
+    众妖皆狂 Lv1
     与牛魔王在同一队伍时，增加自身705点生命上限，88点攻击，176点速度
     `.replace(/ /ig, "")
 
