@@ -1,0 +1,118 @@
+
+animation.png
+size: 1712,504
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+frame_0
+  rotate: false
+  xy: 2, 2
+  size: 169, 249
+  orig: 169, 249
+  offset: 0, 0
+  index: -1
+frame_1
+  rotate: false
+  xy: 173, 2
+  size: 169, 249
+  orig: 169, 249
+  offset: 0, 0
+  index: -1
+frame_2
+  rotate: false
+  xy: 344, 2
+  size: 169, 249
+  orig: 169, 249
+  offset: 0, 0
+  index: -1
+frame_3
+  rotate: false
+  xy: 515, 2
+  size: 169, 249
+  orig: 169, 249
+  offset: 0, 0
+  index: -1
+frame_4
+  rotate: false
+  xy: 686, 2
+  size: 169, 249
+  orig: 169, 249
+  offset: 0, 0
+  index: -1
+frame_5
+  rotate: false
+  xy: 857, 2
+  size: 169, 249
+  orig: 169, 249
+  offset: 0, 0
+  index: -1
+frame_6
+  rotate: false
+  xy: 1028, 2
+  size: 169, 249
+  orig: 169, 249
+  offset: 0, 0
+  index: -1
+frame_7
+  rotate: false
+  xy: 1199, 2
+  size: 169, 249
+  orig: 169, 249
+  offset: 0, 0
+  index: -1
+frame_8
+  rotate: false
+  xy: 1370, 2
+  size: 169, 249
+  orig: 169, 249
+  offset: 0, 0
+  index: -1
+frame_9
+  rotate: false
+  xy: 1541, 2
+  size: 169, 249
+  orig: 169, 249
+  offset: 0, 0
+  index: -1
+frame_10
+  rotate: false
+  xy: 2, 253
+  size: 169, 249
+  orig: 169, 249
+  offset: 0, 0
+  index: -1
+frame_11
+  rotate: false
+  xy: 173, 253
+  size: 169, 249
+  orig: 169, 249
+  offset: 0, 0
+  index: -1
+frame_12
+  rotate: false
+  xy: 344, 253
+  size: 169, 249
+  orig: 169, 249
+  offset: 0, 0
+  index: -1
+frame_13
+  rotate: false
+  xy: 515, 253
+  size: 169, 249
+  orig: 169, 249
+  offset: 0, 0
+  index: -1
+frame_14
+  rotate: false
+  xy: 686, 253
+  size: 169, 249
+  orig: 169, 249
+  offset: 0, 0
+  index: -1
+frame_15
+  rotate: false
+  xy: 857, 253
+  size: 169, 249
+  orig: 169, 249
+  offset: 0, 0
+  index: -1

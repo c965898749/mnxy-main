@@ -7,7 +7,7 @@ const { ccclass, property } = _decorator;
 export class RankingCrtl extends Component {
     @property({ type: Node, tooltip: "任务列表" }) ContentNode: Node = null;
     @property(Node)
-    myRangking:Node
+    myRangking: Node
     start() {
 
     }
@@ -21,7 +21,7 @@ export class RankingCrtl extends Component {
         this.node.parent.getChildByName("RankingCrtl").active = false
     }
 
-    async render(userlist,myRangking) {
+    async render(userlist, myRangking) {
         console.log(userlist)
         this.node.active = true
         const nodePool = util.resource.getNodePool(
@@ -32,9 +32,10 @@ export class RankingCrtl extends Component {
             const node = childrens[i];
             nodePool.put(node)
         }
-        this.myRangking.getComponent(Label).string=myRangking
+        this.myRangking.getComponent(Label).string = myRangking
         for (let i = 0; i < userlist.length; i++) {
             let item = nodePool.get()
+            item.getChildByName("tiaozhan").active = false
             item.getChildByName("textbox_bg").children[0].getComponent(Label).string = "lv " + userlist[i].lv
             // 绑定事件
             item.getChildByName("name").getComponent(Label).string = userlist[i].nickname

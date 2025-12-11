@@ -27,6 +27,8 @@ export class FightMap extends Component {
     name0
     @property(Node)
     name1
+    @property(Node)
+    skillName
     // 当前回合数
     currentRound: number = 1
 
@@ -192,7 +194,7 @@ export class FightMap extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "playBattle2", options)
+        fetch(config.ServerUrl.url + "playBattle", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -202,14 +204,18 @@ export class FightMap extends Component {
             .then(async data => {
                 //console.log(data); // 处理响应数据
                 if (data.success == '1') {
-                    console.log(data, 4444)
                     var map = data.data;
                     this.fightProcess = map['battleLogs'];
                     const campA = map['campA'];
                     const campB = map['campB'];
-                    // this.name0.getComponent(Label).string = campA.filter(x=>x.id!=null)[0].name
-                    // this.name1.getComponent(Label).string = campB.filter(x=>x.onField)[0].name
-                    // this.result = map['result'];
+                    this.name0.getComponent(Label).string = map['name0'];
+                    this.name1.getComponent(Label).string = map['name1'];
+                    var isWin = map['isWin'];
+                    if (isWin == 1) {
+                        this.result = false
+                    } else {
+                        this.result = true
+                    }
                     this.L1 = campA
                     this.R1 = campB
                     for (var i = 0; i < campA.length; i++) {
@@ -322,7 +328,11 @@ export class FightMap extends Component {
             1
         )
         this.Hp.children[1].getChildByName("user_li_count").getComponent(Label).string = character_1.maxHp + "/" + character_1.maxHp
+        await new Promise(res => setTimeout(res, 500 / this.timeScale))
         for (var i = 0; i < this.fightProcess.length; i++) {
+            if (this.isOverFight) {
+                break;
+            }
             let fightProcess = this.fightProcess[i]
             let eventType = fightProcess.eventType
             let fieldUnitsStatus = fightProcess.fieldUnitsStatus
@@ -366,7 +376,6 @@ export class FightMap extends Component {
                 let charactersB = characters.B
                 let character_0 = this.L1.filter(x => x.goIntoNum - 1 == charactersA.position)[0];
                 let character_1 = this.R1.filter(x => x.goIntoNum - 1 == charactersB.position)[0];
-                this.Character.children[0].setPosition(-180, 0, 0)
                 const meta2 = CharacterEnum[character_0.id]
                 this.Character.children[0].getComponent(Sprite).spriteFrame = await util.bundle.load(meta2.AvatarPath, SpriteFrame)
                 this.Character.children[0].setScale(
@@ -381,7 +390,6 @@ export class FightMap extends Component {
                     1
                 )
                 this.Hp.children[0].getChildByName("user_li_count").getComponent(Label).string = charactersA.HP[0] + "/" + charactersA.HP[1]
-                this.Character.children[1].setPosition(180, 0, 0)
 
                 const meta = CharacterEnum[character_1.id]
                 this.Character.children[1].getComponent(Sprite).spriteFrame = await util.bundle.load(meta.AvatarPath, SpriteFrame)
@@ -394,41 +402,52 @@ export class FightMap extends Component {
                 this.Hp.children[1].getChildByName("user_li_count").getComponent(Label).string = charactersB.HP[0] + "/" + charactersB.HP[1]
             } else if (eventType == "POISON") {
                 // AudioMgr.inst.playOneShot("sound/fight/skill/POISON");
-                // let extraDesc = fightProcess.extraDesc
-                // let eventData = this.parseEventString(extraDesc)
-                // let characters = this.parseCharacterString(fieldUnitsStatus)
-                // let charactersA = characters.A
-                // let charactersB = characters.B
-                // for (var i = 0; i < 5; i++) {
-                //     let eventSelectSkeleton1 = this.tiem.children[0].children[i].getChildByName("buff").getChildByName("POISON").getComponent(sp.Skeleton)
-                //     let eventSelectSkeleton2 = this.tiem.children[1].children[i].getChildByName("buff").getChildByName("POISON").getComponent(sp.Skeleton)
-                //     if (eventData.units.some(item => (item.position == i + 1) && item.side == 'A')) {
-                //         //伤害计算
-                //     } else {
-                //         eventSelectSkeleton1.node.active = false
-                //         if (i == charactersA.position) {
-                //             let selectSkeleton = this.Character.children[0].getChildByName("POISON").getComponent(sp.Skeleton)
-                //             selectSkeleton.active = false
-                //         }
-                //     }
-
-                //     if (eventData.units.some(item => (item.position == i + 1) && item.side == 'B')) {
-                //         //伤害计算
-                //     } else {
-                //         eventSelectSkeleton2.node.active = false
-                //         if (i == charactersB.position) {
-                //             let selectSkeleton = this.Character.children[1].getChildByName("POISON").getComponent(sp.Skeleton)
-                //             selectSkeleton.active = false
-                //         }
-                //     }
-                // }
-            } else if (eventType == "NORMAL_ATTACK") {
-                let sourceCamp = fightProcess.sourceCamp
-                let sourcePosition = fightProcess.sourcePosition - 1
-                let targetPosition = fightProcess.targetPosition - 1
+                let extraDesc = fightProcess.extraDesc
+                let eventData = this.parseEventString(extraDesc)
                 let characters = this.parseCharacterString(fieldUnitsStatus)
                 let charactersA = characters.A
                 let charactersB = characters.B
+                for (var j = 0; j < 5; j++) {
+                    let eventSelectSkeleton1 = this.tiem.children[0].children[j].getChildByName("buff").getChildByName("POISON")
+                    let eventSelectSkeleton2 = this.tiem.children[1].children[j].getChildByName("buff").getChildByName("POISON")
+                    let charA = eventData.units.filter(item => (item.position == j + 1) && item.side == 'A')
+                    if (charA && charA.length > 0) {
+                        //伤害计算
+                        this.tiem.children[0].children[j].getChildByName("my_hp").getChildByName("Bar").setScale(
+                            charA[0].hp.after / charA[0].hp.before,
+                            1,
+                            1
+                        )
+                        this.tiem.children[0].children[j].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = charA[0].hp.after + "/" + charA[0].hp.before
+                    } else {
+                        eventSelectSkeleton1.active = false
+                        if (j == charactersA.position) {
+                            let selectSkeleton = this.Character.children[0].getChildByName("POISON")
+                            selectSkeleton.active = false
+                        }
+                    }
+                    let charB = eventData.units.filter(item => (item.position == j + 1) && item.side == 'B')
+                    if (charB && charB.length > 0) {
+                        //伤害计算
+                        this.tiem.children[0].children[j].getChildByName("my_hp").getChildByName("Bar").setScale(
+                            charB[0].hp.after / charB[0].hp.before,
+                            1,
+                            1
+                        )
+                        this.tiem.children[1].children[j].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = charB[0].hp.after + "/" + charB[0].hp.before
+                    } else {
+                        eventSelectSkeleton2.active = false
+                        if (j == charactersB.position) {
+                            let selectSkeleton = this.Character.children[1].getChildByName("POISON")
+                            selectSkeleton.active = false
+                        }
+                    }
+                }
+            } else if (eventType == "NORMAL_ATTACK") {
+                let sourceCamp = fightProcess.sourceCamp
+                let targetPosition = fightProcess.targetPosition - 1
+                let targetHpBefore = fightProcess.targetHpBefore
+                let targetHpAfter = fightProcess.targetHpAfter
                 let attack = fightProcess.value
                 var direction = 1
                 var directionFace = 0
@@ -453,38 +472,20 @@ export class FightMap extends Component {
                 hut.setAnimation(0, "animation", false)
                 //伤害结算
                 this.showNumber(-falg, this.Character.children[directionFace], -attack, new math.Color(255, 176, 126, 255), 40)
-
-                // A更新场上生命值
-                this.Hp.children[0].getChildByName("Bar").setScale(
-                    charactersA.HP[0] / charactersA.HP[1],
+                this.Hp.children[directionFace].getChildByName("Bar").setScale(
+                    targetHpAfter / targetHpBefore,
                     1,
                     1
                 )
-                this.Hp.children[0].getChildByName("user_li_count").getComponent(Label).string = charactersA.HP[0] + "/" + charactersA.HP[1]
+                this.Hp.children[directionFace].getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
 
                 // 更新场下生命值
-                this.tiem.children[0].children[sourcePosition].getChildByName("my_hp").getChildByName("Bar").setScale(
-                    charactersA.HP[0] / charactersA.HP[1],
+                this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("Bar").setScale(
+                    targetHpAfter / targetHpBefore,
                     1,
                     1
                 )
-                this.tiem.children[0].children[sourcePosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = charactersA.HP[0] + "/" + charactersA.HP[1]
-                // B更新场上生命值
-
-                this.Hp.children[1].getChildByName("Bar").setScale(
-                    charactersB.HP[0] / charactersB.HP[1],
-                    1,
-                    1
-                )
-                this.Hp.children[1].getChildByName("user_li_count").getComponent(Label).string = charactersB.HP[0] + "/" + charactersB.HP[1]
-
-                // 更新场下生命值
-                this.tiem.children[1].children[targetPosition].getChildByName("my_hp").getChildByName("Bar").setScale(
-                    charactersB.HP[0] / charactersB.HP[1],
-                    1,
-                    1
-                )
-                this.tiem.children[0].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = charactersB.HP[0] + "/" + charactersB.HP[1]
+                this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
                 hut.setCompleteListener(() => hut.node.active = false)
 
                 //回到初始位置
@@ -496,7 +497,7 @@ export class FightMap extends Component {
                         moveTimeScale: 1
                     }
                 )
-
+                // await new Promise(res => setTimeout(res, 200 / this.timeScale))
             } else if (eventType == "UNIT_DEATH") {
                 let extraDesc = fightProcess.extraDesc
                 let eventData = this.parseEventString(extraDesc)
@@ -511,13 +512,16 @@ export class FightMap extends Component {
                 let charactersA = characters.A
                 if (charactersA.HP[0] <= 0) {
                     this.Character.children[0].getComponent(Sprite).spriteFrame = null
+                    this.tiem.children[0].children[charactersA.position].getChildByName("dead").active = true
                 }
                 let charactersB = characters.B
                 if (charactersB.HP[0] <= 0) {
                     this.Character.children[1].getComponent(Sprite).spriteFrame = null
+                    this.tiem.children[1].children[charactersB.position].getChildByName("dead").active = true
                 }
+                // await new Promise(res => setTimeout(res, 200 / this.timeScale))
             } else if (eventType == "BATTLE_END") {
-
+                break;
             } else {
                 let characters = this.parseCharacterString(fieldUnitsStatus)
                 let charactersA = characters.A
@@ -526,25 +530,21 @@ export class FightMap extends Component {
                 let aoe = fightProcess.aoe
                 let sourcePosition = fightProcess.sourcePosition - 1
                 let targetCamp = fightProcess.targetCamp
-                let damageType = fightProcess.damageType
-                let targetHpBefore = fightProcess.effectType
+                let effectType = fightProcess.effectType
+                let targetHpBefore = fightProcess.targetHpBefore
                 let targetPosition = fightProcess.targetPosition - 1
-                let targetHpAfter = fightProcess.targetUnit
+                let targetHpAfter = fightProcess.targetHpAfter
                 let extraDesc = fightProcess.extraDesc
                 let value = fightProcess.value
                 let targetMaxHp = charactersB.HP[1]
                 let targetAfterHp = charactersB.HP[0]
-                // let targetUnit = fightProcess.targetUnit
-                var isGoON = false;
-                var targetIsGoON = false;
-                var direction = 0
-                var targetDirection = 1
+                let isGoON = false;
+                let targetIsGoON = false;
+                let direction = 0
+                let targetDirection = 1
                 var falg = -1
                 if (sourceCamp == "B") {
-                    targetMaxHp = charactersA.HP[1]
-                    targetAfterHp = charactersA.HP[0]
                     direction = 1
-                    targetDirection = 0
                     falg = 1
                     if (charactersB.position == sourcePosition) {
                         isGoON = true;
@@ -554,40 +554,349 @@ export class FightMap extends Component {
                         isGoON = true;
                     }
                 }
+
                 if (targetCamp == "A") {
+                    targetMaxHp = charactersA.HP[1]
+                    targetAfterHp = charactersA.HP[0]
+                    targetDirection = 0
                     if (charactersA.position == targetPosition) {
                         targetIsGoON = true;
                     }
                 } else {
+                    targetMaxHp = charactersB.HP[1]
+                    targetAfterHp = charactersB.HP[0]
+                    targetDirection = 1
                     if (charactersB.position == targetPosition) {
                         targetIsGoON = true;
                     }
                 }
                 //判断技能是否场上释放还是场下释放
                 if (isGoON) {
-                    await this.showString(falg, this.Character.children[direction], new math.Color(236, 163, 61, 255), eventType)
+                    // await this.showString(falg, this.Character.children[direction], new math.Color(236, 163, 61, 255), eventType)
+                    this.skillName.children[direction].active = true
+                    this.skillName.children[direction].getChildByName("Label").getComponent(Label).string = eventType
                     await new Promise(res => setTimeout(res, 500 / this.timeScale))
-                    if (damageType == "FIRE" || damageType == "POISON") {
-                        if (this.Character.children[targetDirection].getComponent(Sprite).spriteFrame) {
-                            AudioMgr.inst.playOneShot("sound/fight/skill/" + damageType);
-                            //判断技能是否是aoe
+                    if (effectType == "MAX_HP_DOWN" || effectType == "FIRE_DAMAGE" || effectType == "POISON" || effectType == 'MISSILE_DAMAGE' || effectType == 'STUN' || effectType == 'HEAL' || effectType == 'HP_UP') {
+                        // if (this.Character.children[targetDirection].getComponent(Sprite).spriteFrame) {
+
+                        // }
+                        AudioMgr.inst.playOneShot("sound/fight/skill/" + effectType);
+                        //判断技能是否是aoe
+                        if (aoe == '1') {
+                            let eventData = this.parseEventString(extraDesc)
+                            let skeletons: sp.Skeleton[] = []
+                            for (const event of eventData.units) {
+                                if ((event.position == charactersA.position + 1) && event.side == 'A') {
+                                    let selectSkeleton = this.Character.children[0].getChildByName(effectType).getComponent(sp.Skeleton)
+                                    skeletons.push(selectSkeleton)
+                                }
+                                if ((event.position == charactersB.position + 1) && event.side == 'B') {
+                                    let selectSkeleton = this.Character.children[1].getChildByName(effectType).getComponent(sp.Skeleton)
+                                    skeletons.push(selectSkeleton)
+                                }
+                                var dir = 0
+                                if (event.side == "B") {
+                                    dir = 1
+                                }
+                                let eventSelectSkeleton = this.tiem.children[dir].children[event.position - 1].getChildByName("buff").getChildByName(effectType).getComponent(sp.Skeleton)
+                                skeletons.push(eventSelectSkeleton)
+                            }
+                            skeletons.forEach(skeleton => {
+                                skeleton.node.active = true
+                                skeleton.setAnimation(0, "animation", false);
+                                if (effectType != "POISON") {
+                                    skeleton.setCompleteListener(() => skeleton.node.active = false)
+                                }
+                            });
+                            for (const event of eventData.units) {
+                                if ((event.position == charactersA.position + 1) && event.side == 'A') {
+                                    //                 //伤害结算
+                                    //伤害掉血动画
+                                    if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                        this.showNumber(-1, this.Character.children[0], +value, new math.Color(82, 201, 25, 255), 40)
+                                    } else {
+                                        this.showNumber(-1, this.Character.children[0], -value, new math.Color(255, 176, 126, 255), 40)
+                                    }
+                                    //                 // 更新场上生命值
+                                    this.Hp.children[0].getChildByName("Bar").setScale(
+                                        event.hp.after / event.hp.before,
+                                        1,
+                                        1
+                                    )
+                                    this.Hp.children[0].getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
+                                }
+                                if ((event.position == charactersB.position + 1) && event.side == 'B') {
+                                    //伤害掉血动画
+                                    //                 //伤害结算
+                                    if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                        this.showNumber(1, this.Character.children[1], +value, new math.Color(82, 201, 25, 255), 40)
+                                    } else {
+                                        this.showNumber(1, this.Character.children[1], -value, new math.Color(255, 176, 126, 255), 40)
+                                    }
+                                    //                 // 更新场上生命值
+                                    this.Hp.children[1].getChildByName("Bar").setScale(
+                                        event.hp.after / event.hp.before,
+                                        1,
+                                        1
+                                    )
+                                    this.Hp.children[1].getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
+                                }
+                                var dir = 0
+                                if (event.side == "B") {
+                                    dir = 1
+                                }
+                                //伤害动画
+                                if (effectType == 'MAX_HP_DOWN') {
+                                    let result = "生命上限 -" + value;
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), result)
+
+                                } else if (effectType == 'HP_UP') {
+                                    let index = extraDesc.indexOf("，"); // 找到第一个空格的位置
+                                    let result = extraDesc.substring(index + 1); // 截取第一个空格后面的所有字符
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(0, 255, 0), result)
+
+                                } else if (effectType == 'HEAL') {
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(0, 255, 0), "+" + value)
+
+                                } else {
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), "-" + value)
+                                }
+                                // 更新场下生命值
+                                this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("Bar").setScale(
+                                    event.hp.after / event.hp.before,
+                                    1,
+                                    1
+                                )
+                                this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
+                            }
+                        } else {
+                            if (targetIsGoON) {
+                                let selectSkeleton = this.Character.children[targetDirection].getChildByName(effectType).getComponent(sp.Skeleton)
+                                selectSkeleton.node.active = true
+                                if (effectType == "POISON") {
+                                    selectSkeleton.setAnimation(0, "animation", true)
+                                } else {
+                                    selectSkeleton.setAnimation(0, "animation", false)
+                                }
+                                await new Promise(res => setTimeout(res, 500 / this.timeScale))
+                                //伤害掉血动画
+
+                                if (effectType == 'SILENCE_IMMUNE') {
+
+                                } else if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                    this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], +value, new math.Color(82, 201, 25, 255), 40)
+                                } else {
+                                    this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
+                                }
+
+                                //                 // 更新场上生命值
+                                this.Hp.children[targetDirection].getChildByName("Bar").setScale(
+                                    targetAfterHp / targetMaxHp,
+                                    1,
+                                    1
+                                )
+                                this.Hp.children[targetDirection].getChildByName("user_li_count").getComponent(Label).string = targetAfterHp + "/" + targetMaxHp
+                                if (effectType != "POISON") {
+                                    selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                }
+                            }
+                            let eventSelectSkeleton = this.tiem.children[targetDirection].children[targetPosition].getChildByName("buff").getChildByName(effectType).getComponent(sp.Skeleton)
+                            eventSelectSkeleton.node.active = true
+                            if (effectType == "POISON") {
+                                eventSelectSkeleton.setAnimation(0, "animation", true)
+                            } else {
+                                eventSelectSkeleton.setAnimation(0, "animation", false)
+                            }
+                            //伤害动画
+                            if (effectType == 'MAX_HP_DOWN') {
+                                let result = "生命上限 -" + value;
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), result)
+                            } else if (effectType == 'HP_UP') {
+                                let index = extraDesc.indexOf("，"); // 找到第一个空格的位置
+                                let result = extraDesc.substring(index + 1); // 截取第一个空格后面的所有字符
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
+                            } else if (effectType == 'HEAL') {
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), "+" + value)
+                            } else {
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "-" + value)
+                            }
+                            // 更新场下生命值
+                            this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("Bar").setScale(
+                                targetHpAfter / targetHpBefore,
+                                1,
+                                1
+                            )
+                            this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
+                            if (effectType != "POISON") {
+                                eventSelectSkeleton.setCompleteListener(() => eventSelectSkeleton.node.active = false)
+                            }
+                        }
+                    } else {
+                        //判断技能是否是aoe
+                        if (aoe == '1') {
+                            let eventData = this.parseEventString(extraDesc)
+                            for (const event of eventData.units) {
+                                if ((event.position == charactersA.position + 1) && event.side == 'A') {
+                                    //                 //伤害结算
+                                    //伤害掉血动画
+                                    if (effectType == 'SILENCE_IMMUNE') {
+
+                                    } else if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                        this.showNumber(-1, this.Character.children[0], +value, new math.Color(82, 201, 25, 255), 40)
+                                    } else {
+                                        this.showNumber(-1, this.Character.children[0], -value, new math.Color(255, 176, 126, 255), 40)
+                                    }
+
+                                    //                 // 更新场上生命值
+                                    this.Hp.children[0].getChildByName("Bar").setScale(
+                                        event.hp.after / event.hp.before,
+                                        1,
+                                        1
+                                    )
+                                    this.Hp.children[0].getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
+                                }
+                                if ((event.position == charactersB.position + 1) && event.side == 'B') {
+                                    //伤害掉血动画
+                                    //                 //伤害结算
+                                    if (effectType == 'SILENCE_IMMUNE') {
+
+                                    } else if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                        this.showNumber(1, this.Character.children[1], +value, new math.Color(82, 201, 25, 255), 40)
+                                    } else {
+                                        this.showNumber(1, this.Character.children[1], -value, new math.Color(255, 176, 126, 255), 40)
+                                    }
+                                    //                 // 更新场上生命值
+                                    this.Hp.children[1].getChildByName("Bar").setScale(
+                                        event.hp.after / event.hp.before,
+                                        1,
+                                        1
+                                    )
+                                    this.Hp.children[1].getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
+                                }
+                                var dir = 0
+                                if (event.side == "B") {
+                                    dir = 1
+                                }
+                                //伤害动画
+                                if (effectType == 'MAX_HP_DOWN') {
+                                    let result = "生命上限 -" + value;
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), result)
+                                } else if (effectType == 'HP_UP') {
+                                    let index = extraDesc.indexOf("，"); // 找到第一个空格的位置
+                                    let result = extraDesc.substring(index + 1); // 截取第一个空格后面的所有字符
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(0, 255, 0), result)
+                                } else if (effectType == 'HEAL') {
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(0, 255, 0), "+" + value)
+
+                                } else {
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), "-" + value)
+                                }
+                                // 更新场下生命值
+                                this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("Bar").setScale(
+                                    event.hp.after / event.hp.before,
+                                    1,
+                                    1
+                                )
+                                this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
+                            }
+                        } else {
+                            if (targetIsGoON) {
+
+                                //伤害掉血动画
+                                if (eventType == "定海神针") {
+                                    AudioMgr.inst.playOneShot("sound/fight/skill/DHSZ3");
+                                    let selectSkeleton = this.Character.children[targetDirection].getChildByName("DHSZ").getComponent(sp.Skeleton)
+                                    selectSkeleton.node.active = true
+                                    selectSkeleton.setAnimation(0, "animation", false)
+                                    selectSkeleton.setCompleteListener(() => {
+                                        selectSkeleton.node.active = false
+                                        AudioMgr.inst.playOneShot("sound/fight/skill/DHSZ");
+                                        let selectSkeleton2 = this.Character.children[targetDirection].getChildByName("DHSZ2").getComponent(sp.Skeleton)
+                                        selectSkeleton2.node.active = true
+                                        this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
+                                        selectSkeleton2.setAnimation(0, "animation", false)
+                                        selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
+                                    })
+                                    await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                                } else if (eventType == "大地净化") {
+                                    AudioMgr.inst.playOneShot("sound/fight/skill/HOU_JH");
+                                    let selectSkeleton = this.Character.children[targetDirection].getChildByName("HOU_JH").getComponent(sp.Skeleton)
+                                    selectSkeleton.node.active = true
+                                    selectSkeleton.setAnimation(0, "animation", false)
+                                    selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                    await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                                } else if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                    this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], +value, new math.Color(82, 201, 25, 255), 40)
+                                } else {
+                                    this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
+                                }
+
+
+                                //                 // 更新场上生命值
+                                this.Hp.children[targetDirection].getChildByName("Bar").setScale(
+                                    targetAfterHp / targetMaxHp,
+                                    1,
+                                    1
+                                )
+                                this.Hp.children[targetDirection].getChildByName("user_li_count").getComponent(Label).string = targetAfterHp + "/" + targetMaxHp
+                            }
+
+                            //伤害动画
+                            if (eventType == "大地净化") {
+                                let result = "驱散"
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
+                            } else if (effectType == 'MAX_HP_DOWN') {
+                                let result = "生命上限 -" + value;
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), result)
+                            } else if (effectType == 'HP_UP') {
+                                let index = extraDesc.indexOf("，"); // 找到第一个空格的位置
+                                let result = extraDesc.substring(index + 1); // 截取第一个空格后面的所有字符
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
+                            } else if (effectType == 'HEAL') {
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), "+" + value)
+                            } else {
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "-" + value)
+                            }
+                            // 更新场下生命值
+                            this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("Bar").setScale(
+                                targetHpAfter / targetHpBefore,
+                                1,
+                                1
+                            )
+                            this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
+                        }
+
+                    }
+
+                } else {
+                    //技能区分全体和单体技能
+
+                    let selectSkeleton = this.tiem.children[direction].children[sourcePosition].getChildByName("select").getComponent(sp.Skeleton)
+                    selectSkeleton.node.active = true
+                    selectSkeleton.setAnimation(0, "animation", false)
+                    tween(this.tiem.children[direction].children[sourcePosition])
+                        .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
+                        .call(async () => {
+                            AudioMgr.inst.playOneShot("sound/fight/skill/" + effectType);
+                            await this.showString(1, this.tiem.children[direction].children[sourcePosition], new math.Color(236, 163, 61, 255), eventType)
+                            await new Promise(res => setTimeout(res, 300 / this.timeScale))
                             if (aoe == '1') {
                                 let eventData = this.parseEventString(extraDesc)
                                 let skeletons: sp.Skeleton[] = []
                                 for (const event of eventData.units) {
                                     if ((event.position == charactersA.position + 1) && event.side == 'A') {
-                                        let selectSkeleton = this.Character.children[0].getChildByName(damageType).getComponent(sp.Skeleton)
+                                        let selectSkeleton = this.Character.children[0].getChildByName(effectType).getComponent(sp.Skeleton)
                                         skeletons.push(selectSkeleton)
                                     }
                                     if ((event.position == charactersB.position + 1) && event.side == 'B') {
-                                        let selectSkeleton = this.Character.children[1].getChildByName(damageType).getComponent(sp.Skeleton)
+                                        let selectSkeleton = this.Character.children[1].getChildByName(effectType).getComponent(sp.Skeleton)
                                         skeletons.push(selectSkeleton)
                                     }
                                     var dir = 0
                                     if (event.side == "B") {
                                         dir = 1
                                     }
-                                    let eventSelectSkeleton = this.tiem.children[dir].children[event.position - 1].getChildByName("buff").getChildByName(damageType).getComponent(sp.Skeleton)
+                                    let eventSelectSkeleton = this.tiem.children[dir].children[event.position - 1].getChildByName("buff").getChildByName(effectType).getComponent(sp.Skeleton)
                                     skeletons.push(eventSelectSkeleton)
                                 }
                                 skeletons.forEach(skeleton => {
@@ -597,7 +906,13 @@ export class FightMap extends Component {
                                 for (const event of eventData.units) {
                                     if ((event.position == charactersA.position + 1) && event.side == 'A') {
                                         //                 //伤害结算
-                                        this.showNumber(-1, this.Character.children[0], -value, new math.Color(255, 176, 126, 255), 40)
+                                        //伤害掉血动画
+                                        if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                            this.showNumber(-1, this.Character.children[0], +value, new math.Color(82, 201, 25, 255), 40)
+                                        } else {
+                                            this.showNumber(-1, this.Character.children[0], -value, new math.Color(255, 176, 126, 255), 40)
+                                        }
+
 
                                         //                 // 更新场上生命值
                                         this.Hp.children[0].getChildByName("Bar").setScale(
@@ -608,10 +923,15 @@ export class FightMap extends Component {
                                         this.Hp.children[0].getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
                                     }
                                     if ((event.position == charactersB.position + 1) && event.side == 'B') {
-                                        await new Promise(res => setTimeout(res, 500 / this.timeScale))
                                         //伤害掉血动画
                                         //                 //伤害结算
-                                        this.showNumber(-1, this.Character.children[1], -value, new math.Color(255, 176, 126, 255), 40)
+                                        // this.showNumber(1, this.Character.children[1], -value, new math.Color(255, 176, 126, 255), 40)
+                                        if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                            this.showNumber(1, this.Character.children[1], +value, new math.Color(82, 201, 25, 255), 40)
+                                        } else {
+                                            this.showNumber(1, this.Character.children[1], -value, new math.Color(255, 176, 126, 255), 40)
+                                        }
+
 
                                         //                 // 更新场上生命值
                                         this.Hp.children[1].getChildByName("Bar").setScale(
@@ -626,7 +946,20 @@ export class FightMap extends Component {
                                         dir = 1
                                     }
                                     //伤害动画
-                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), -value + "")
+                                    if (effectType == 'MAX_HP_DOWN') {
+                                        let result = "生命上限 -" + value;
+                                        await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), result)
+                                    } else if (effectType == 'HP_UP') {
+                                        let index = extraDesc.indexOf("，"); // 找到第一个空格的位置
+                                        let result = extraDesc.substring(index + 1); // 截取第一个空格后面的所有字符
+                                        await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(0, 255, 0), result)
+
+                                    } else if (effectType == 'HEAL') {
+                                        await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(0, 255, 0), "+" + value)
+
+                                    } else {
+                                        await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), "-" + value)
+                                    }
                                     // 更新场下生命值
                                     this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("Bar").setScale(
                                         event.hp.after / event.hp.before,
@@ -635,19 +968,27 @@ export class FightMap extends Component {
                                     )
                                     this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
                                 }
+                                skeletons.forEach(skeleton => {
+                                    skeleton.setCompleteListener(() => skeleton.node.active = false)
+                                });
                             } else {
                                 if (targetIsGoON) {
-                                    let selectSkeleton = this.Character.children[targetDirection].getChildByName(damageType).getComponent(sp.Skeleton)
+                                    let selectSkeleton = this.Character.children[targetDirection].getChildByName(effectType).getComponent(sp.Skeleton)
                                     selectSkeleton.node.active = true
-                                    if (damageType == "POISON") {
+                                    if (effectType == "POISON") {
                                         selectSkeleton.setAnimation(0, "animation", true)
                                     } else {
                                         selectSkeleton.setAnimation(0, "animation", false)
                                     }
                                     await new Promise(res => setTimeout(res, 500 / this.timeScale))
                                     //伤害掉血动画
-                                    //                 //伤害结算
-                                    this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
+                                    if (effectType == 'ATTACK_UP') {
+                                        //暂无展示
+                                    } else if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                        this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], +value, new math.Color(82, 201, 25, 255), 40)
+                                    } else {
+                                        this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
+                                    }
 
                                     //                 // 更新场上生命值
                                     this.Hp.children[targetDirection].getChildByName("Bar").setScale(
@@ -656,20 +997,36 @@ export class FightMap extends Component {
                                         1
                                     )
                                     this.Hp.children[targetDirection].getChildByName("user_li_count").getComponent(Label).string = targetAfterHp + "/" + targetMaxHp
-                                    if (damageType != "POISON") {
+                                    if (effectType != "POISON") {
                                         selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
                                     }
                                 }
-                                let eventSelectSkeleton = this.tiem.children[targetDirection].children[targetPosition].getChildByName("buff").getChildByName(damageType).getComponent(sp.Skeleton)
+                                let eventSelectSkeleton = this.tiem.children[targetDirection].children[targetPosition].getChildByName("buff").getChildByName(effectType).getComponent(sp.Skeleton)
                                 eventSelectSkeleton.node.active = true
-                                if (damageType == "POISON") {
+                                if (effectType == "POISON") {
                                     eventSelectSkeleton.setAnimation(0, "animation", true)
                                 } else {
                                     eventSelectSkeleton.setAnimation(0, "animation", false)
                                 }
                                 //伤害动画
-                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), -value + "")
-                                // this.showNumber(1, this.tiem.children[targetDirection].children[targetPosition], -value, new math.Color(255, 176, 126, 255), 20)
+
+                                if (effectType == 'ATTACK_UP') {
+                                    let result = "攻击提升 +" + value;
+                                    console.log(targetCamp, 9999)
+                                    console.log(targetDirection, 888888)
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
+                                } else if (effectType == 'MAX_HP_DOWN') {
+                                    let result = "生命上限 -" + value;
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), result)
+                                } else if (effectType == 'HP_UP') {
+                                    let index = extraDesc.indexOf("，"); // 找到第一个空格的位置
+                                    let result = extraDesc.substring(index + 1); // 截取第一个空格后面的所有字符
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
+                                } else if (effectType == 'HEAL') {
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), "+" + value)
+                                } else {
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "-" + value)
+                                }
                                 // 更新场下生命值
                                 this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("Bar").setScale(
                                     targetHpAfter / targetHpBefore,
@@ -677,435 +1034,20 @@ export class FightMap extends Component {
                                     1
                                 )
                                 this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
-                                if (damageType != "POISON") {
+                                if (effectType != "POISON") {
                                     eventSelectSkeleton.setCompleteListener(() => eventSelectSkeleton.node.active = false)
                                 }
                             }
-                        }
-                    } else {
-                        //判断技能是否是aoe
-                        if (aoe == '1') {
-                            let eventData = this.parseEventString(extraDesc)
-                            for (const event of eventData.units) {
-                                var dir = 0
-                                if (event.side == "B") {
-                                    dir = 1
-                                }
-                                //伤害动画
-                                await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), -value + "")
-                                // this.showNumber(1, this.tiem.children[dir].children[event.position - 1], -value, new math.Color(255, 176, 126, 255), 20)
-                                // 更新场下生命值
-                                this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("Bar").setScale(
-                                    event.hp.after / event.hp.before,
-                                    1,
-                                    1
-                                )
-                            }
-                        }
-                        await new Promise(res => setTimeout(res, 500 / this.timeScale))
-                        //伤害掉血动画
-                        //                 //伤害结算
-                        this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
-
-                        //                 // 更新场上生命值
-                        this.Hp.children[targetDirection].getChildByName("Bar").setScale(
-                            targetAfterHp / targetMaxHp,
-                            1,
-                            1
-                        )
-                        this.Hp.children[targetDirection].getChildByName("user_li_count").getComponent(Label).string = targetAfterHp + "/" + targetMaxHp
-                    }
-
-                } else {
-                    //技能区分全体和单体技能
-
-                    // let selectSkeleton = this.tiem.children[direction].children[sourcePosition].getChildByName("select").getComponent(sp.Skeleton)
-                    // selectSkeleton.node.active = true
-                    // selectSkeleton.setAnimation(0, "animation", false)
-                    // tween(this.tiem.children[direction].children[sourcePosition])
-                    //     .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
-                    //     .call(async () => {
-                    //         AudioMgr.inst.playOneShot("sound/fight/skill/lotteryCard");
-                    //         if (damageType == "FIRE" || damageType == "POISON") {
-
-                    //             await this.showString(1, this.tiem.children[direction].children[sourcePosition], new math.Color(236, 163, 61, 255), eventType)
-                    //             await new Promise(res => setTimeout(res, 300 / this.timeScale))
-                    //             AudioMgr.inst.playOneShot("sound/fight/skill/" + damageType);
-                    //             let selectSkeleton = null;
-                    //             if (targetIsGoON) {
-                    //                 selectSkeleton = this.Character.children[targetDirection].getChildByName(damageType).getComponent(sp.Skeleton)
-                    //                 selectSkeleton.node.active = true
-                    //                 if (damageType == "POISON") {
-                    //                     selectSkeleton.setAnimation(0, "animation", true)
-                    //                 } else {
-                    //                     selectSkeleton.setAnimation(0, "animation", false)
-                    //                 }
-                    //             }
-                    //             //判断技能是否是aoe
-                    //             if (aoe == '1') {
-                    //                 let eventData = this.parseEventString(extraDesc)
-                    //                 for (const event of eventData.units) {
-                    //                     var dir = 0
-                    //                     if (event.side == "B") {
-                    //                         dir = 1
-                    //                     }
-                    //                     let eventSelectSkeleton = this.tiem.children[dir].children[event.position - 1].getChildByName("buff").getChildByName(damageType).getComponent(sp.Skeleton)
-                    //                     eventSelectSkeleton.node.active = true
-                    //                     if (damageType == "POISON") {
-                    //                         eventSelectSkeleton.setAnimation(0, "animation", true)
-                    //                     } else {
-                    //                         eventSelectSkeleton.setAnimation(0, "animation", false)
-                    //                     }
-                    //                     //伤害动画
-                    //                     this.showNumber(1, this.tiem.children[dir].children[event.position - 1], -value, new math.Color(255, 176, 126, 255), 20)
-                    //                     // 更新场下生命值
-                    //                     this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("Bar").setScale(
-                    //                         event.hp.after / event.hp.before,
-                    //                         1,
-                    //                         1
-                    //                     )
-                    //                     this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
-                    //                     if (damageType != "POISON") {
-                    //                         eventSelectSkeleton.setCompleteListener(() => eventSelectSkeleton.node.active = false)
-                    //                     }
-                    //                 }
-                    //             } else {
-                    //                 let eventSelectSkeleton = this.tiem.children[targetDirection].children[targetPosition].getChildByName("buff").getChildByName(damageType).getComponent(sp.Skeleton)
-                    //                 eventSelectSkeleton.node.active = true
-                    //                 if (damageType == "POISON") {
-                    //                     eventSelectSkeleton.setAnimation(0, "animation", true)
-                    //                 } else {
-                    //                     eventSelectSkeleton.setAnimation(0, "animation", false)
-                    //                 }
-                    //                 //伤害动画
-                    //                 this.showNumber(1, this.tiem.children[targetDirection].children[targetPosition], -value, new math.Color(255, 176, 126, 255), 20)
-                    //                 // 更新场下生命值
-                    //                 this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("Bar").setScale(
-                    //                     targetHpAfter / targetHpBefore,
-                    //                     1,
-                    //                     1
-                    //                 )
-                    //                 this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
-                    //                 if (damageType != "POISON") {
-                    //                     eventSelectSkeleton.setCompleteListener(() => eventSelectSkeleton.node.active = false)
-                    //                 }
-                    //             }
-                    //             if (targetIsGoON) {
-                    //                 await new Promise(res => setTimeout(res, 500 / this.timeScale))
-                    //                 //伤害掉血动画
-                    //                 //                 //伤害结算
-                    //                 this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
-
-                    //                 //                 // 更新场上生命值
-                    //                 this.Hp.children[targetDirection].getChildByName("Bar").setScale(
-                    //                     targetAfterHp / targetMaxHp,
-                    //                     1,
-                    //                     1
-                    //                 )
-                    //                 this.Hp.children[targetDirection].getChildByName("user_li_count").getComponent(Label).string = targetAfterHp + "/" + targetMaxHp
-                    //                 if (damageType != "POISON") {
-                    //                     selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
-                    //                 }
-                    //             }
-                    //             // let selectSkeleton2 = this.Character.children[direction].getChildByName("xuming").getComponent(sp.Skeleton)
-                    //             // selectSkeleton2.node.active = true
-                    //             // selectSkeleton2.setAnimation(0, "animation", false)
-
-
-                    //             // await this.showString(1, this.tiem.children[direction].children[sourcePosition - 1], "-" + Math.ceil(eventType))
-                    //             // this.tiem.children[fight.direction].children[fight.goIntoNum - 1].getChildByName("my_hp").getChildByName("Bar").setScale(
-                    //             //     fight.hp / fight.maxHp,
-                    //             //     1,
-                    //             //     1
-                    //             // )
-                    //             // this.tiem.children[fight.direction].children[fight.goIntoNum - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = fight.hp + "/" + fight.maxHp,
-                    //             // await new Promise(res => setTimeout(res, 500 / this.timeScale))
-
-                    //             // //给场上人加血   
-                    //             // this.showNumber(falg, this.Character.children[fight.direction], +fight.str, new math.Color(82, 201, 25, 255), 40)
-                    //             // this.Hp.children[0].getChildByName("Bar").setScale(
-                    //             //     fight.hpFace / fight.maxHpFace,
-                    //             //     1,
-                    //             //     1
-                    //             // )
-                    //             // this.Hp.children[fight.direction].getChildByName("user_li_count").getComponent(Label).string = fight.hpFace + "/" + fight.maxHpFace
-                    //             // selectSkeleton2.setCompleteListener(() => selectSkeleton2.node.active = false)
-                    //         } else {
-                    //             //判断技能是否是aoe
-                    //             if (aoe == '1') {
-                    //                 let eventData = this.parseEventString(extraDesc)
-                    //                 for (const event of eventData.units) {
-                    //                     var dir = 0
-                    //                     if (event.side == "B") {
-                    //                         dir = 1
-                    //                     }
-                    //                     //伤害动画
-                    //                     this.showNumber(1, this.tiem.children[dir].children[event.position - 1], -value, new math.Color(255, 176, 126, 255), 20)
-                    //                     // 更新场下生命值
-                    //                     this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("Bar").setScale(
-                    //                         event.hp.after / event.hp.before,
-                    //                         1,
-                    //                         1
-                    //                     )
-                    //                 }
-                    //             }
-                    //             if (targetIsGoON) {
-                    //                 await new Promise(res => setTimeout(res, 500 / this.timeScale))
-                    //                 //伤害掉血动画
-                    //                 //                 //伤害结算
-                    //                 this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
-
-                    //                 //                 // 更新场上生命值
-                    //                 this.Hp.children[targetDirection].getChildByName("Bar").setScale(
-                    //                     targetAfterHp / targetMaxHp,
-                    //                     1,
-                    //                     1
-                    //                 )
-                    //                 this.Hp.children[targetDirection].getChildByName("user_li_count").getComponent(Label).string = targetAfterHp + "/" + targetMaxHp
-                    //             }
-
-                    //         }
-                    //     })
-                    //     .by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
-                    //     .start();
-                    // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
-                    // await new Promise(res => setTimeout(res, 1000 / this.timeScale))
+                        })
+                        .by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
+                        .start();
+                    selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
                 }
-
+                this.skillName.children[direction].active = false
+                await new Promise(res => setTimeout(res, 1000 / this.timeScale))
             }
 
         }
-
-        //     //初始化登场角色
-        //     let fightterList = this.fightProcess[i]["fightterList"];
-        //     let character_0 = this.fightProcess[i]["leftCharter"];
-        //     let character_1 = this.fightProcess[i]["rightCharter"];
-        //     //0左
-
-        //     this.tiem.children[0].children.forEach(element => {
-        //         element.getChildByName("buff").getChildByName("goOn").getComponent(sp.Skeleton).node.active = false
-        //     });
-
-        //     let goOnSkeleton = this.tiem.children[0].children[character_0.goIntoNum - 1].getChildByName("buff").getChildByName("goOn").getComponent(sp.Skeleton)
-        //     goOnSkeleton.node.active = true
-        //     goOnSkeleton.setAnimation(0, "animation", true)
-        //     this.Character.children[0].setPosition(-180, 0, 0)
-        //     const meta2 = CharacterEnum[character_0.id]
-        //     this.Character.children[0].getComponent(Sprite).spriteFrame = await util.bundle.load(meta2.AvatarPath, SpriteFrame)
-        //     this.Character.children[0].setScale(
-        //         Math.abs(this.Character.children[0].scale.x) * -1,
-        //         this.Character.children[0].scale.y,
-        //         this.Character.children[0].scale.z,
-        //     )
-        //     // 更新生命值
-        //     this.Hp.children[0].getChildByName("Bar").setScale(
-        //         character_0.hp / character_0.maxHp,
-        //         1,
-        //         1
-        //     )
-        //     this.Hp.children[0].getChildByName("user_li_count").getComponent(Label).string = character_0.hp + "/" + character_0.maxHp
-
-
-        //     //1右
-        //     this.tiem.children[1].children.forEach(element => {
-        //         element.getChildByName("buff").getChildByName("goOn").getComponent(sp.Skeleton).node.active = false
-        //     });
-
-        //     goOnSkeleton = this.tiem.children[1].children[character_1.goIntoNum - 1].getChildByName("buff").getChildByName("goOn").getComponent(sp.Skeleton)
-        //     goOnSkeleton.node.active = true
-        //     goOnSkeleton.setAnimation(0, "animation", true)
-        //     this.Character.children[1].setPosition(180, 0, 0)
-
-        //     const meta = CharacterEnum[character_1.id]
-        //     this.Character.children[1].getComponent(Sprite).spriteFrame = await util.bundle.load(meta.AvatarPath, SpriteFrame)
-        //     // 更新生命值
-        //     this.Hp.children[1].getChildByName("Bar").setScale(
-        //         character_1.hp / character_1.maxHp,
-        //         1,
-        //         1
-        //     )
-        //     this.Hp.children[1].getChildByName("user_li_count").getComponent(Label).string = character_1.hp + "/" + character_1.maxHp
-
-
-
-        //     //开始过程
-        //     for (var n = 0; n < fightterList.length; n++) {
-
-        //         if (this.isOverFight) {
-        //             break;
-        //         }
-
-        //         var fight = fightterList[n]
-        //         if (fight.goON == 1) {
-        //             var falg = fight.direction
-        //             if (falg == 0) {
-        //                 falg = -1
-        //             }
-        //             //不是技能就是普通攻击
-        //             if (fight.isSkill == 0) {
-        //                 //攻击动作
-        //                 await util.sundry.moveNodeToPosition(
-        //                     this.Character.children[fight.direction],
-        //                     {
-        //                         targetPosition: { x: -80 * falg, y: 0 },
-        //                         moveCurve: true,
-        //                         moveTimeScale: 1
-        //                     }
-        //                 )
-        //                 AudioMgr.inst.playOneShot("sound/fight/attack/attack");
-        //                 let hut = this.Character.children[fight.directionFace].getChildByName("hut").getComponent(sp.Skeleton)
-        //                 hut.node.active = true
-        //                 hut.setAnimation(0, "animation", false)
-        //                 //伤害结算
-        //                 this.showNumber(-falg, this.Character.children[fight.directionFace], -fight.attack, new math.Color(255, 176, 126, 255), 40)
-
-        //                 // 更新场上生命值
-        //                 this.Hp.children[fight.directionFace].getChildByName("Bar").setScale(
-        //                     fight.hpFace / fight.maxHpFace,
-        //                     1,
-        //                     1
-        //                 )
-        //                 this.Hp.children[fight.directionFace].getChildByName("user_li_count").getComponent(Label).string = fight.hpFace + "/" + fight.maxHpFace
-
-        //                 // 更新场下生命值
-        //                 this.tiem.children[fight.directionFace].children[fight.goIntoNumFace - 1].getChildByName("my_hp").getChildByName("Bar").setScale(
-        //                     fight.hpFace / fight.maxHpFace,
-        //                     1,
-        //                     1
-        //                 )
-        //                 this.tiem.children[fight.directionFace].children[fight.goIntoNumFace - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = fight.hpFace + "/" + fight.maxHpFace
-        //                 hut.setCompleteListener(() => hut.node.active = false)
-
-        //                 //死亡结算
-        //                 if (fight.hp <= 0) {
-        //                     this.Character.children[fight.direction].getComponent(Sprite).spriteFrame = null
-        //                     this.tiem.children[fight.direction].children[fight.goIntoNum - 1].getChildByName("dead").active = true
-        //                 }
-        //                 if (fight.hpFace <= 0) {
-        //                     this.Character.children[fight.directionFace].getComponent(Sprite).spriteFrame = null
-        //                     this.tiem.children[fight.directionFace].children[fight.goIntoNumFace - 1].getChildByName("dead").active = true
-        //                 }
-
-
-        //                 //回到初始位置
-        //                 await util.sundry.moveNodeToPosition(
-        //                     this.Character.children[fight.direction],
-        //                     {
-        //                         targetPosition: { x: 180 * falg, y: 0 },
-        //                         moveCurve: true,
-        //                         moveTimeScale: 1
-        //                     }
-        //                 )
-
-        //             } else {
-
-        //                 if ("仙塔庇护" == fight.buff) {
-        //                     let selectSkeleton = this.tiem.children[fight.direction].children[fight.goIntoNum - 1].getChildByName("select").getComponent(sp.Skeleton)
-        //                     selectSkeleton.node.active = true
-        //                     selectSkeleton.setAnimation(0, "animation", false)
-        //                     tween(this.tiem.children[fight.direction].children[fight.goIntoNum - 1])
-        //                         .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
-        //                         .call(async () => {
-        //                             AudioMgr.inst.playOneShot("sound/fight/skill/lotteryCard");
-        //                             let selectSkeleton2 = this.Character.children[fight.direction].getChildByName("xuming").getComponent(sp.Skeleton)
-        //                             selectSkeleton2.node.active = true
-        //                             selectSkeleton2.setAnimation(0, "animation", false)
-        //                             //给自己减血
-        //                             await this.showString(1, this.tiem.children[fight.direction].children[fight.goIntoNum - 1], "续命")
-        //                             await new Promise(res => setTimeout(res, 300 / this.timeScale))
-        //                             await this.showString(1, this.tiem.children[fight.direction].children[fight.goIntoNum - 1], "-" + Math.ceil(fight.str))
-        //                             this.tiem.children[fight.direction].children[fight.goIntoNum - 1].getChildByName("my_hp").getChildByName("Bar").setScale(
-        //                                 fight.hp / fight.maxHp,
-        //                                 1,
-        //                                 1
-        //                             )
-        //                             this.tiem.children[fight.direction].children[fight.goIntoNum - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = fight.hp + "/" + fight.maxHp,
-        //                                 await new Promise(res => setTimeout(res, 500 / this.timeScale))
-
-        //                             //给场上人加血   
-        //                             this.showNumber(falg, this.Character.children[fight.direction], +fight.str, new math.Color(82, 201, 25, 255), 40)
-        //                             this.Hp.children[0].getChildByName("Bar").setScale(
-        //                                 fight.hpFace / fight.maxHpFace,
-        //                                 1,
-        //                                 1
-        //                             )
-        //                             this.Hp.children[fight.direction].getChildByName("user_li_count").getComponent(Label).string = fight.hpFace + "/" + fight.maxHpFace
-
-        //                             //死亡结算
-        //                             if (fight.hp <= 0) {
-        //                                 this.tiem.children[fight.direction].children[fight.goIntoNum - 1].getChildByName("dead").active = true
-        //                             }
-        //                             selectSkeleton2.setCompleteListener(() => selectSkeleton2.node.active = false)
-        //                         })
-        //                         .by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
-        //                         .start();
-        //                     selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
-        //                     await new Promise(res => setTimeout(res, 1000 / this.timeScale))
-        //                 }
-
-        //             }
-
-
-        //         } else {
-
-        //             //场下英雄释放技能
-        //             if ("续命" == fight.buff) {
-        //                 // //加血
-        //                 var falg = fight.direction
-        //                 if (falg == 0) {
-        //                     falg = -1
-        //                 }
-        //                 let selectSkeleton = this.tiem.children[fight.direction].children[fight.goIntoNum - 1].getChildByName("select").getComponent(sp.Skeleton)
-        //                 selectSkeleton.node.active = true
-        //                 selectSkeleton.setAnimation(0, "animation", false)
-        //                 tween(this.tiem.children[fight.direction].children[fight.goIntoNum - 1])
-        //                     .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
-        //                     .call(async () => {
-        //                         AudioMgr.inst.playOneShot("sound/fight/skill/lotteryCard");
-        //                         let selectSkeleton2 = this.Character.children[fight.direction].getChildByName("xuming").getComponent(sp.Skeleton)
-        //                         selectSkeleton2.node.active = true
-        //                         selectSkeleton2.setAnimation(0, "animation", false)
-        //                         //给自己减血
-        //                         await this.showString(1, this.tiem.children[fight.direction].children[fight.goIntoNum - 1], "续命")
-        //                         await new Promise(res => setTimeout(res, 300 / this.timeScale))
-        //                         await this.showString(1, this.tiem.children[fight.direction].children[fight.goIntoNum - 1], "-" + Math.ceil(fight.str))
-        //                         this.tiem.children[fight.direction].children[fight.goIntoNum - 1].getChildByName("my_hp").getChildByName("Bar").setScale(
-        //                             fight.hp / fight.maxHp,
-        //                             1,
-        //                             1
-        //                         )
-        //                         this.tiem.children[fight.direction].children[fight.goIntoNum - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = fight.hp + "/" + fight.maxHp,
-        //                             await new Promise(res => setTimeout(res, 500 / this.timeScale))
-
-        //                         //给场上人加血   
-        //                         this.showNumber(falg, this.Character.children[fight.direction], +fight.str, new math.Color(82, 201, 25, 255), 40)
-        //                         this.Hp.children[0].getChildByName("Bar").setScale(
-        //                             fight.hpFace / fight.maxHpFace,
-        //                             1,
-        //                             1
-        //                         )
-        //                         this.Hp.children[fight.direction].getChildByName("user_li_count").getComponent(Label).string = fight.hpFace + "/" + fight.maxHpFace
-
-        //                         //死亡结算
-        //                         if (fight.hp <= 0) {
-        //                             this.tiem.children[fight.direction].children[fight.goIntoNum - 1].getChildByName("dead").active = true
-        //                         }
-        //                         selectSkeleton2.setCompleteListener(() => selectSkeleton2.node.active = false)
-        //                     })
-        //                     .by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
-        //                     .start();
-        //                 selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
-        //                 await new Promise(res => setTimeout(res, 1000 / this.timeScale))
-        //             }
-        //         }
-
-
-        //         await new Promise(res => setTimeout(res, 1000 / this.timeScale))
-
-        //     }
-        //     this.currentRound++
-        // }
-
         return this.result
     }
     /** 

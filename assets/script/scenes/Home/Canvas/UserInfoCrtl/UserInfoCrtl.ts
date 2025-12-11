@@ -27,6 +27,8 @@ export class UserInfoCrtl extends Component {
     Diamond: Node
     @property(Node)
     expBar: Node
+    @property(Node)
+    UserId:Node
 
     @property(Node)
     TiliTime: Node//体力回复剩余时间
@@ -286,6 +288,7 @@ export class UserInfoCrtl extends Component {
     }
     async refresh() {
         const config = getConfig()
+        this.UserId.getComponent(Label).string=config.userData.userId+""
         this.Gold.getComponent(Label).string =
             LCoin(config.userData.gold)
         this.Lv.getComponent(Label).string = "Lv 等级：" +

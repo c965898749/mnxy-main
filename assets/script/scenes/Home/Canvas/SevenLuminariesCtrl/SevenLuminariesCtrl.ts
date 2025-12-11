@@ -18,8 +18,8 @@ export class SevenLuminariesCtrl extends Component {
         '荧惑星君',          // 2: 星期二
         '水星真君',          // 3: 星期三
         '木星真君',          // 4: 星期四
-        '金星真君',          // 5: 星期五
         '土星真君',           // 6: 星期六
+        '金星真君',          // 5: 星期五
         '太阳星君',  // 0: 星期日（太阳）
     ];
     level = ["下仙", "中仙", "大仙"]
@@ -38,7 +38,10 @@ export class SevenLuminariesCtrl extends Component {
     }
     async refresh() {
         const today = new Date();
-        const dayNumber = today.getDay();
+        let dayNumber = today.getDay();
+        if (dayNumber == 0) {
+            dayNumber = 7
+        }
         this.title.children.forEach(x => x.active = false)
         this.title.children[dayNumber - 1].active = true
         this.mapTitle.getComponent(Label).string = this.luminaryMap[dayNumber - 1]

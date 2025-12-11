@@ -61,13 +61,19 @@ export class MessageCrtl extends Component {
                     const node = childrens[i];
                     node.getChildByName("regitPlaye").off("click")
                     node.getChildByName("getRewards").off("click")
+                    node.getChildByName("fEsmZCGbB").off("click")
+                    node.getChildByName("fEsnbpxoT").off("click")
                     nodePool.put(node)
                 }
+              
                 for (let i = 0; i < messageDetails.length; i++) {
                     let messageDetail = messageDetails[i]
                     let item = nodePool.get()
+                  
                     if (this.type == 1) {
                         item.getChildByName("regitPlaye").active = true
+                        item.getChildByName("fEsmZCGbB").active = false
+                        item.getChildByName("fEsnbpxoT").active = false
                         item.getChildByName("getRewards").active = false
                         item.getChildByName("regitPlaye").on("click", () => { this.clickFun(messageDetail.id) })
                         item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
@@ -79,17 +85,37 @@ export class MessageCrtl extends Component {
                             content = `<color=#E36F1A>${messageDetail.timeStr} <color=#EEE365>我 </color>探索了关卡<color=#EEE365>${messageDetail.toUserName}</color>，激烈战斗后最终<color=#00BCD4>${messageDetail.isWin == 0 ? '获胜' : '落败'}</color>。</color>`
                         } else if (messageDetail.type == "1") {
                             if (config.userData.userId != messageDetail.userId) {
-                                content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>竞技场</color>遭到<color=#EEE365>${messageDetail.toUserName}</color>偷袭，毫无防备最终<color=#00BCD4>${messageDetail.isWin == 0 ? '获胜' : '落败'}</color>。</color>`
+                                content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>竞技场</color>遭到<color=#EEE365>${messageDetail.userName}</color>偷袭，毫无防备最终<color=#00BCD4>${messageDetail.isWin == 1 ? '获胜' : '落败'}</color>。</color>`
 
                             } else {
                                 content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>竞技场</color>攻击了<color=#EEE365>${messageDetail.toUserName}</color>，激烈战斗后最终<color=#00BCD4>${messageDetail.isWin == 0 ? '获胜' : '落败'}</color>。</color>`
                             }
+                        }else if (messageDetail.type == "3") {
+                            if (config.userData.userId != messageDetail.userId) {
+                                content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>好友挑战</color>遭到<color=#EEE365>${messageDetail.userName}</color>偷袭，毫无防备最终<color=#00BCD4>${messageDetail.isWin == 1 ? '获胜' : '落败'}</color>。</color>`
+
+                            } else {
+                                content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>好友挑战</color>攻击了<color=#EEE365>${messageDetail.toUserName}</color>，激烈战斗后最终<color=#00BCD4>${messageDetail.isWin == 0 ? '获胜' : '落败'}</color>。</color>`
+                            }
                         }
                         item.getChildByName("RichText").getComponent(RichText).string = content
                     } else if (this.type == 2) {
+                        item.getChildByName("regitPlaye").active = false
+                        item.getChildByName("getRewards").active = false
+                        item.getChildByName("fEsmZCGbB").active = true
+                        item.getChildByName("fEsnbpxoT").active = true
+                        item.getChildByName("fEsmZCGbB").on("click", () => { this.fEsmZCGbB(messageDetail.id) })
+                        item.getChildByName("fEsnbpxoT").on("click", () => { this.fEsnbpxoT(messageDetail.id) })
+                        item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
+                            await util.bundle.load(messageDetail.gameImg, SpriteFrame)
 
+                        let content = null;
+                        content = `<color=#E36F1A>主人，我们收到<color=#EEE365>${messageDetail.nickname}</color>好友申请！</color>`
+                        item.getChildByName("RichText").getComponent(RichText).string = content
                     } else if (this.type == 3) {
                         item.getChildByName("regitPlaye").active = false
+                        item.getChildByName("fEsmZCGbB").active = false
+                        item.getChildByName("fEsnbpxoT").active = false
                         item.getChildByName("getRewards").active = true
                         item.getChildByName("getRewards").on("click", () => { this.clickRewards(messageDetail.giftCode) })
                         item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
@@ -121,6 +147,86 @@ export class MessageCrtl extends Component {
             .render(id, null, null)
         find('Canvas').getComponent(HomeCanvas).audioSource.pause()
         this.node.parent.getChildByName("FightMap").active = true
+    }
+    fEsmZCGbB(id) {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            id: id,
+            str: "1"
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "/invitationHandle", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    // let userInfo = data.data;
+                    // config.userData.gold = userInfo.gold
+                    // config.userData.diamond = userInfo.diamond
+                    // config.userData.soul = userInfo.soul
+                    // config.userData.characters = userInfo.characterList
+                    // localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+                this.refresh()
+            })
+            .catch(error => {
+                //console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+    }
+    fEsnbpxoT(id) {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            id: id,
+            str: "2"
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "/invitationHandle", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    // let userInfo = data.data;
+                    // config.userData.gold = userInfo.gold
+                    // config.userData.diamond = userInfo.diamond
+                    // config.userData.soul = userInfo.soul
+                    // config.userData.characters = userInfo.characterList
+                    // localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+                this.refresh()
+            })
+            .catch(error => {
+                //console.error('There was a problem with the fetch operation:', error);
+            }
+            );
     }
 
     clickRewards(giftCode) {

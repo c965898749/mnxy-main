@@ -1,0 +1,111 @@
+
+animation.png
+size: 3812,1082
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+frame_0
+  rotate: false
+  xy: 2, 2
+  size: 379, 538
+  orig: 379, 538
+  offset: 0, 0
+  index: -1
+frame_1
+  rotate: false
+  xy: 383, 2
+  size: 379, 538
+  orig: 379, 538
+  offset: 0, 0
+  index: -1
+frame_2
+  rotate: false
+  xy: 764, 2
+  size: 379, 538
+  orig: 379, 538
+  offset: 0, 0
+  index: -1
+frame_3
+  rotate: false
+  xy: 1145, 2
+  size: 379, 538
+  orig: 379, 538
+  offset: 0, 0
+  index: -1
+frame_4
+  rotate: false
+  xy: 1526, 2
+  size: 379, 538
+  orig: 379, 538
+  offset: 0, 0
+  index: -1
+frame_5
+  rotate: false
+  xy: 1907, 2
+  size: 379, 538
+  orig: 379, 538
+  offset: 0, 0
+  index: -1
+frame_6
+  rotate: false
+  xy: 2288, 2
+  size: 379, 538
+  orig: 379, 538
+  offset: 0, 0
+  index: -1
+frame_7
+  rotate: false
+  xy: 2669, 2
+  size: 379, 538
+  orig: 379, 538
+  offset: 0, 0
+  index: -1
+frame_8
+  rotate: false
+  xy: 3050, 2
+  size: 379, 538
+  orig: 379, 538
+  offset: 0, 0
+  index: -1
+frame_9
+  rotate: false
+  xy: 3431, 2
+  size: 379, 538
+  orig: 379, 538
+  offset: 0, 0
+  index: -1
+frame_10
+  rotate: false
+  xy: 2, 542
+  size: 379, 538
+  orig: 379, 538
+  offset: 0, 0
+  index: -1
+frame_11
+  rotate: false
+  xy: 383, 542
+  size: 379, 538
+  orig: 379, 538
+  offset: 0, 0
+  index: -1
+frame_12
+  rotate: false
+  xy: 764, 542
+  size: 379, 538
+  orig: 379, 538
+  offset: 0, 0
+  index: -1
+frame_13
+  rotate: false
+  xy: 1145, 542
+  size: 379, 538
+  orig: 379, 538
+  offset: 0, 0
+  index: -1
+frame_14
+  rotate: false
+  xy: 1526, 542
+  size: 379, 538
+  orig: 379, 538
+  offset: 0, 0
+  index: -1

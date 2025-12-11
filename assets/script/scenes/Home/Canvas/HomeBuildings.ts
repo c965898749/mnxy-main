@@ -59,7 +59,7 @@ export class HomeBuildings extends Component {
     // }
     protected async start() {
         const config = getConfig()
-        this.node.getChildByName("Top").getChildByName("Gold").getComponent(Label).string =LCoin(config.userData.gold)
+        this.node.getChildByName("Top").getChildByName("Gold").getComponent(Label).string = LCoin(config.userData.gold)
         this.node.getChildByName("Top").getChildByName("Lv").getComponent(Label).string = "Lv " +
             util.sundry.formateNumber(config.userData.lv)
         // this.node.getChildByName("Top").getChildByName("Diamond").getChildByName("Label").getComponent(Label).string = config.userData.diamond + ""
@@ -132,7 +132,7 @@ export class HomeBuildings extends Component {
         this.node.getChildByName("Top").getChildByName("Lv").getComponent(Label).string = "Lv " +
             util.sundry.formateNumber(config.userData.lv)
         this.node.getChildByName("Top").getChildByName("Gold").getComponent(Label).string =
-           LCoin(config.userData.gold)
+            LCoin(config.userData.gold)
         //初始化战力
         this.power = 0
         // console.log(config.userData.gameImg, 444)
@@ -420,12 +420,8 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("ShopCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
         this.node.parent.getChildByName("synthesisCtrl").active = false
+        this.node.parent.getChildByName("MyFriendsCrtl").active = false
         this.node.parent.getChildByName("MapCrtl").active = true
-        // const close = await util.message.load()
-        // // director.preloadScene("Fight", () => {
-        // //     close()
-        // // })
-        // director.loadScene("Fight")
     }
 
     // 打开商店场景
@@ -459,6 +455,8 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("ShopCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
         this.node.parent.getChildByName("synthesisCtrl").active = false
+        this.node.parent.getChildByName("MyFriendsCrtl").active = false
+        this.node.parent.getChildByName("MessageCrtl").active = false
         this.node.parent.getChildByName("CardCrtl").active = true
     }
 
@@ -493,6 +491,8 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("ShopCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
         this.node.parent.getChildByName("synthesisCtrl").active = false
+        this.node.parent.getChildByName("MyFriendsCrtl").active = false
+        this.node.parent.getChildByName("MessageCrtl").active = false
         this.node.parent.getChildByName("Buildings").active = true
     }
     //挑战
@@ -506,6 +506,7 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("ShopCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
         this.node.parent.getChildByName("synthesisCtrl").active = false
+        this.node.parent.getChildByName("MessageCrtl").active = false
         this.node.parent.getChildByName("JinjiCtrl").active = true
     }
 
@@ -527,6 +528,8 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("ShopCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
         this.node.parent.getChildByName("synthesisCtrl").active = false
+        this.node.parent.getChildByName("MyFriendsCrtl").active = false
+        this.node.parent.getChildByName("MessageCrtl").active = false
         this.node.parent.getChildByName("otherCtrl").active = true
     }
 
@@ -541,6 +544,8 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("ShopCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
         this.node.parent.getChildByName("synthesisCtrl").active = false
+        this.node.parent.getChildByName("MyFriendsCrtl").active = false
+        this.node.parent.getChildByName("MessageCrtl").active = false
         this.node.parent.getChildByName("EquipmentCtrl").active = true
     }
 
@@ -554,6 +559,8 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("EquipmentCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
         this.node.parent.getChildByName("synthesisCtrl").active = false
+        this.node.parent.getChildByName("MyFriendsCrtl").active = false
+        this.node.parent.getChildByName("MessageCrtl").active = false
         this.node.parent.getChildByName("ShopCtrl").active = true
     }
 

@@ -19,6 +19,13 @@ export class JinjiCtrl extends Component {
         this.node.parent.getChildByName("JinjiCtrl").active = false
         this.node.parent.getChildByName("JinjichangCtrl").active = true
     }
+    //挑战
+    public async MyFriendsCrtl() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("Buildings").active = false
+        this.node.parent.getChildByName("JinjiCtrl").active = false
+        this.node.parent.getChildByName("MyFriendsCrtl").active = true
+    }
 }
 
 
