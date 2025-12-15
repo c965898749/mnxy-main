@@ -12,6 +12,8 @@ export class RecruitCardCtrl extends Component {
     @property({ type: Node, tooltip: "招募10张抽卡位移位置" }) tenCardPos: Node = null;
     @property({ type: Button }) buttonOk: Button = null;
     @property(Node)
+    rateNode: Node
+    @property(Node)
     diamond1: Node
     @property(Node)
     diamond2: Node
@@ -26,6 +28,7 @@ export class RecruitCardCtrl extends Component {
     update(deltaTime: number) {
         const config = getConfig()
         // console.log(config)
+        this.rateNode.getComponent(Label).string = config.userData.rate+"倍"
         this.diamond1.getComponent(Label).string = "(已有" + config.userData.soul + ")"
         this.diamond2.getComponent(Label).string = "(已有" + config.userData.diamond + ")"
         this.diamond3.getComponent(Label).string = "(已有" + config.userData.diamond + ")"
@@ -213,6 +216,7 @@ export class RecruitCardCtrl extends Component {
                         }
                         config.userData.characters = dto.characters
                         config.userData.diamond = user.diamond
+                        config.userData.rate = user.rate
                         localStorage.setItem("UserConfigData", JSON.stringify(config))
                     }
 

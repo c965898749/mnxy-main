@@ -10,17 +10,17 @@ import { CharacterState } from "../../fight/character/CharacterState";
 import { BuffState } from "../../fight/buff/BuffState";
 
 
-@RegisterCharacter({ id: "1098" })
+@RegisterCharacter({ id: "1099" })
 export class Character extends CharacterMetaState {
 
-    name: string = "广成子"
+    name: string = "玉鼎真人"
 
-    AnimationDir: string = "game/fight_entity/character/1098"
+    AnimationDir: string = "game/fight_entity/character/1099"
 
 
-    AvatarPath: string = "game/texture/frames/hero/1098/spriteFrame"
+    AvatarPath: string = "game/texture/frames/hero/1099/spriteFrame"
 
-    HeaderPath: string = "game/texture/frames/hero/Header/1098/spriteFrame"
+    HeaderPath: string = "game/texture/frames/hero/Header/1099/spriteFrame"
 
     AnimationType: "DrangonBones" | "Spine" = "Spine"
 
@@ -46,8 +46,8 @@ export class Character extends CharacterMetaState {
 
     PassiveIntroduceOne: string = `
     
-    续命 Lv1
-    每回合转移160生命给场上我方，只能治疗仙界
+    穿云剑法 Lv1
+    普通攻击后，对场上敌方身后一个单位造成100点真实伤害
     `.replace(/ /ig, "")
 
 
@@ -58,13 +58,13 @@ export class Character extends CharacterMetaState {
 
     SkillIntroduce: string = `
     
-    赤精子协同 Lv1
-    与赤精子在同一队伍时，增加自身200点生命上限，53点攻击，53点速度。
+    太乙协同 Lv1
+    与太乙在同一队伍时，增加自身200点生命上限，53点攻击，53点速度。
     `.replace(/ /ig, "")
 
-    introduce: string = "十二金仙之一。"
+    introduce: string = "是阐教元始天尊座下的“十二金仙”之一，排名第十，道场位于玉泉山金霞洞。"
 
-    skillValue: string = `续命  赤精子协同`
+    skillValue: string = `穿云剑法  太乙协同`
 
 
     OnCreateState(self: CharacterState): void {

@@ -21,7 +21,7 @@ export class qianghuaCtrl extends Component {
     @property(Node)
     result
     initialized = false;
-    public _ids = new Set();
+    public myMap = new Map<string, number>(); // 键为字符串，值为数字
     public _zhuId: string = null;
     public cahracterQueue: CharacterStateCreate[] = []
     public cahracterQueue2: CharacterStateCreate[] = []
@@ -31,7 +31,7 @@ export class qianghuaCtrl extends Component {
         totalSilverSpent: 0, // 升级消耗的总银两
         id: null, // 升级消耗的总银两
         str: null, // 升级消耗的总银两
-        userId: null
+        userId: null,
     }
     start() {
         this.refresh()
@@ -47,7 +47,74 @@ export class qianghuaCtrl extends Component {
     }
     refresh() {
         const config = getConfig()
-        this.gold.getComponent(Label).string =LCoin(config.userData.gold)
+        this.gold.getComponent(Label).string = LCoin(config.userData.gold)
+    }
+
+
+    async initData(map: Map<string, number>) {
+        console.log(map, 55555)
+        this.myMap = map
+        if (this.myMap.size > 0) {
+            let total = 0;
+            this.myMap.forEach((value) => {
+                total += value;
+            });
+            this.congCard.getChildByName("main_bg").getComponent(Sprite).spriteFrame =
+                await util.bundle.load(`image/qianghua/congCard/spriteFrame`, SpriteFrame)
+            this.congCard.getChildByName("num").getComponent(Label).string = total + ""
+
+        } else {
+            this.congCard.getChildByName("main_bg").getComponent(Sprite).spriteFrame =
+                await util.bundle.load(`image/qianghua/congCard2/spriteFrame`, SpriteFrame)
+            this.congCard.getChildByName("num").getComponent(Label).string = null
+
+        }
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+            id: this._zhuId,
+            myMap: Array.from(this.myMap), // 转二维数组：[["a",1], ["b",2]]
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "/cardLevelUp", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    var data = data.data
+                    if (data) {
+                        this.LevelUpResult = data;
+                        this.result.getComponent(Label).string = "升级后等级: " + data.finalLevel + "级, 当前等级剩余经验: " + data.remainingExp + ", 升级消耗总银两: " + data.totalSilverSpent
+                    } else {
+                        this.LevelUpResult = {
+                            finalLevel: 0,       // 最终等级
+                            remainingExp: 0,     // 当前等级的剩余经验
+                            totalSilverSpent: 0, // 升级消耗的总银两
+                            id: this.LevelUpResult.id, // 升级消耗的总银两
+                            str: null, // 升级消耗的总银两
+                            userId: null
+                        }
+                        this.result.getComponent(Label).string = null
+                    }
+
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                //console.error('There was a problem with the fetch operation:', error);
+            }
+            );
     }
 
 
@@ -60,9 +127,9 @@ export class qianghuaCtrl extends Component {
         const config = getConfig()
         this.cahracterQueue = []
         this.cahracterQueue = config.userData.characters
-        if (this._ids.size > 0) {
-            this.cahracterQueue = this.cahracterQueue.filter(x => !this._ids.has(x.id))
-        }
+        this.myMap.forEach((value, key) => {
+            this.cahracterQueue = this.cahracterQueue.filter(x => key != x.id)
+        })
         await this.render(this.cahracterQueue)
     }
 
@@ -75,16 +142,6 @@ export class qianghuaCtrl extends Component {
         const config = getConfig()
         this.cahracterQueue2 = []
         this.cahracterQueue2 = config.userData.characters
-        this.cahracterQueue2 = this.cahracterQueue2.map(cahracter => {
-            if (this._ids.has(cahracter.id)) {
-                ////console.log(this._ids)
-                // 复制原对象并修改status，避免直接修改原对象
-                cahracter.isChecked = 1
-            } else {
-                cahracter.isChecked = 0
-            }
-            return cahracter
-        });
         if (this._zhuId) {
             this.cahracterQueue2 = this.cahracterQueue2.filter(x => this._zhuId != x.id)
         }
@@ -104,78 +161,7 @@ export class qianghuaCtrl extends Component {
     async render2(characterQueue: CharacterStateCreate[]) {
         await this.node.parent.getChildByName("SelectCardCtrl2")
             .getComponent(SelectCardCtrl2)
-            .render(characterQueue, (c) => { this.congka(c) })
-    }
-
-    async congka(toggle: ToggleComponent) {
-
-        var id = toggle.node.parent.getChildByName("id").getComponent(Label).string
-        ////console.log(id, 33)
-        var cong = toggle.node.parent.getChildByName("cong")
-        if (toggle.isChecked) {
-            this._ids.add(id)
-            cong.active = true
-        } else {
-            this._ids = new Set([...this._ids].filter(num => num != id));
-            cong.active = false
-        }
-        if (this._ids.size > 0) {
-            this.congCard.getChildByName("main_bg").getComponent(Sprite).spriteFrame =
-                await util.bundle.load(`image/qianghua/congCard/spriteFrame`, SpriteFrame)
-            this.congCard.getChildByName("num").getComponent(Label).string = this._ids.size + ""
-
-        } else {
-            this.congCard.getChildByName("main_bg").getComponent(Sprite).spriteFrame =
-                await util.bundle.load(`image/qianghua/congCard2/spriteFrame`, SpriteFrame)
-            this.congCard.getChildByName("num").getComponent(Label).string = null
-
-        }
-        const config = getConfig()
-        const token = getToken()
-        const postData = {
-            token: token,
-            userId: config.userData.userId,
-            id: this._zhuId,
-            str: Array.from(this._ids).join(',')
-        };
-        const options = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(postData),
-        };
-        fetch(config.ServerUrl.url + "/cardLevelUp", options)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json(); // 解析 JSON 响应
-            })
-            .then(async data => {
-                if (data.success == '1') {
-                    var data= data.data
-                    if (data) {
-                        this.LevelUpResult =data;
-                        this.result.getComponent(Label).string = "升级后等级: " + data.finalLevel + "级, 当前等级剩余经验: " + data.remainingExp + ", 升级消耗总银两: " + data.totalSilverSpent
-                    } else {
-                        this.LevelUpResult = {
-                            finalLevel: 0,       // 最终等级
-                            remainingExp: 0,     // 当前等级的剩余经验
-                            totalSilverSpent: 0, // 升级消耗的总银两
-                            id:  this.LevelUpResult.id, // 升级消耗的总银两
-                            str: null, // 升级消耗的总银两
-                            userId: null
-                        }
-                        this.result.getComponent(Label).string = null
-                    }
-
-                } else {
-                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
-                }
-            })
-            .catch(error => {
-                //console.error('There was a problem with the fetch operation:', error);
-            }
-            );
+            .render(characterQueue, this, this.myMap)
     }
 
     async clickFun(create) {
@@ -593,10 +579,11 @@ export class qianghuaCtrl extends Component {
         if (!this.LevelUpResult.id) {
             return await util.message.prompt({ message: "请选择强化主卡" })
         }
-        if (!this.LevelUpResult.str) {
+        if (!this.myMap || this.myMap.size == 0) {
             return await util.message.prompt({ message: "请选择强化从卡" })
         }
         const config = getConfig()
+        const token = getToken()
         if (this.LevelUpResult.finalLevel > config.userData.lv * 2) {
             return await util.message.prompt({ message: "卡牌强化不得高于人物等级2倍" })
         }
@@ -605,7 +592,11 @@ export class qianghuaCtrl extends Component {
         if (this.LevelUpResult.totalSilverSpent > gold) {
             return await util.message.prompt({ message: "银两不足！" })
         }
-        var cahracter4 = cahracters.filter(x => this._ids.has(x.id) && x.star >= 4);
+        let cahracter4 = [];
+        this.myMap.forEach((value, key) => {
+            cahracter4 = cahracters.filter(x => key == x.id && x.star >= 4);
+        })
+        // 
         // 是否询问
         if (cahracter4.length > 0) {
             const result = await util.message.confirm({
@@ -614,11 +605,19 @@ export class qianghuaCtrl extends Component {
             // 是否确定
             if (result === false) return
         }
-        this.LevelUpResult.userId = config.userData.userId
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+            id: this._zhuId,
+            finalLevel:  this.LevelUpResult.finalLevel,       // 最终等级
+            remainingExp:  this.LevelUpResult.remainingExp,     // 当前等级的剩余经验
+            totalSilverSpent:  this.LevelUpResult.totalSilverSpent, // 升级消耗的总银两
+            myMap: Array.from(this.myMap), // 转二维数组：[["a",1], ["b",2]]
+        };
         const options = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(this.LevelUpResult),
+            body: JSON.stringify(postData),
         };
         fetch(config.ServerUrl.url + "/cardLevelUp2", options)
             .then(response => {
@@ -641,7 +640,7 @@ export class qianghuaCtrl extends Component {
                             this.congCard.getChildByName("num").getComponent(Label).string = null
                             this.gold.getComponent(Label).string = userInfo.gold
                             this.zhuCard.getChildByName("HeroCardItem").getChildByName("LV").getComponent(Label).string = 'Lv: ' + userInfo.characterList[i].lv
-                            this._ids.clear();
+                            this.myMap.clear();
                             AudioMgr.inst.playOneShot("sound/other/click");
                             const levelUpEffectSkeleton = this.node.getChildByName("LevelUpEffect").getComponent(sp.Skeleton)
                             //播放声音
@@ -677,7 +676,7 @@ export class qianghuaCtrl extends Component {
         this.congCard.getChildByName("main_bg").getComponent(Sprite).spriteFrame =
             await util.bundle.load(`image/qianghua/congCard2/spriteFrame`, SpriteFrame)
         this.congCard.getChildByName("num").getComponent(Label).string = null
-        this._ids = new Set()
+        this.myMap.clear();
         this._zhuId = null
     }
 }

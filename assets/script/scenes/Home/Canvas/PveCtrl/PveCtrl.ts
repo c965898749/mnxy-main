@@ -37,6 +37,8 @@ export class PveCtrl extends Component {
     page1: Node
     @property(Node)
     page2: Node
+    @property(Node)
+    BossList: Node
     chapter: string
     start() {
         this.refresh()
@@ -74,13 +76,22 @@ export class PveCtrl extends Component {
                 //console.log(data); // 处理响应数据
                 if (data.success == '1') {
                     var data = data.data
-
+                    for (let i = 0; i < data["pveBossDetails"].length; i++) {
+                        let pveBossDetails = data["pveBossDetails"][i];
+                        let bossNode = this.BossList.children[i];
+                        bossNode.getChildByName("Node").getComponent(Sprite).spriteFrame =
+                            await util.bundle.load('game/texture/frames/hero/Header/' + pveBossDetails.bossId + '/spriteFrame', SpriteFrame)
+                    }
                     const [chapter, tribulation, level] = data.id.split('-');
                     if (chapter == "1") {
                         this.page1.getComponent(Sprite).spriteFrame =
                             await util.bundle.load("image/PveCtrl/PvE_1_" + tribulation + "/spriteFrame", SpriteFrame)
+                        this.page2.getComponent(Sprite).spriteFrame =
+                            await util.bundle.load("image/PveCtrl/PvE_1_" + tribulation + "/spriteFrame", SpriteFrame)
                     } else {
                         this.page1.getComponent(Sprite).spriteFrame =
+                            await util.bundle.load("image/PveCtrl/PvE_" + chapter + "/spriteFrame", SpriteFrame)
+                        this.page2.getComponent(Sprite).spriteFrame =
                             await util.bundle.load("image/PveCtrl/PvE_" + chapter + "/spriteFrame", SpriteFrame)
                     }
                     var chapters = ["一", "二", "三", "四", "五", "六"]
@@ -196,7 +207,24 @@ export class PveCtrl extends Component {
                                 const pveDetail = map['pveDetail'];
                                 const rewards = map["rewards"];
                                 const levelUp = map["levelUp"]
+                                const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
+                                const holAnimationNode = instantiate(holAnimationPrefab)
+                                this.node.parent.addChild(holAnimationNode)
+                                await holAnimationNode
+                                    .getComponent(FightMap)
+                                    .render(battle.id, rewards, levelUp)
+                                find('Canvas').getComponent(HomeCanvas).audioSource.pause()
+                                this.node.parent.getChildByName("FightMap").active = true
                                 if (battle.isWin == 0) {
+                                    this.BossList.children.forEach((bossNode) => {
+                                        bossNode.getChildByName("Node").getComponent(Sprite).spriteFrame = null;
+                                    })
+                                    for (let i = 0; i < pveDetail["pveBossDetails"].length; i++) {
+                                        let pveBossDetails = pveDetail["pveBossDetails"][i];
+                                        let bossNode = this.BossList.children[i];
+                                        bossNode.getChildByName("Node").getComponent(Sprite).spriteFrame =
+                                            await util.bundle.load('game/texture/frames/hero/Header/' + pveBossDetails.bossId + '/spriteFrame', SpriteFrame)
+                                    }
                                     const [chapter, tribulation, level] = pveDetail.id.split('-');
                                     var chapters = ["一", "二", "三", "四", "五", "六"]
                                     this.mapTitle.getComponent(Label).string = "第" + chapters[tribulation - 1] + "章·" + pveDetail.jieName
@@ -220,14 +248,6 @@ export class PveCtrl extends Component {
                                 )
                                 this.chapter = battle.chapter
                                 localStorage.setItem("UserConfigData", JSON.stringify(config))
-                                const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
-                                const holAnimationNode = instantiate(holAnimationPrefab)
-                                this.node.parent.addChild(holAnimationNode)
-                                await holAnimationNode
-                                    .getComponent(FightMap)
-                                    .render(battle.id, rewards, levelUp)
-                                find('Canvas').getComponent(HomeCanvas).audioSource.pause()
-                                this.node.parent.getChildByName("FightMap").active = true
 
                             } else {
                                 const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })

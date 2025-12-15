@@ -38,32 +38,33 @@ export class FightSuccess extends Component {
 
     async read(rewards, levelUp) {
         this.levelUp = levelUp
-        if (rewards) {
+        if (rewards&&rewards.length>0) {
             for (var i = 0; i < rewards.length; i++) {
-                if (rewards[i] == "10000") {
-                    this.rewards.children[i].active = true
-                    this.rewards.children[i].getChildByName("Label").getComponent(Label).string = "10000"
-                    this.rewards.children[i].getChildByName("19999").active = true
-                } else if (rewards[i] == "3000") {
-                    this.rewards.children[i].active = true
-                    this.rewards.children[i].getChildByName("Label").getComponent(Label).string = "3000"
-                    this.rewards.children[i].getChildByName("3000").active = true
-                } else if (rewards[i] == "天兵") {
-                    this.rewards.children[i].active = true
-                    this.rewards.children[i].getChildByName("Label").getComponent(Label).string = "天兵"
-                    this.rewards.children[i].getChildByName("tian").active = true
-                } else if (rewards[i] == "20") {
-                    this.rewards.children[i].active = true
-                    this.rewards.children[i].getChildByName("Label").getComponent(Label).string = "20"
-                    this.rewards.children[i].getChildByName("20").active = true
-                } else {
-                    this.rewards.children[i].active = true
-                    const meta = CharacterEnum[rewards[i]]
+                let content = rewards[i]
+                this.rewards.children[i].active = true
+                this.rewards.children[i].getChildByName("Label").getComponent(Label).string = content.rewardAmount
+                if ("1" == content.rewardType) {
+                    //钻石
                     this.rewards.children[i].getChildByName("hero").getComponent(Sprite).spriteFrame =
-                        await util.bundle.load('game/texture/frames/hero/' + rewards[i] + '/spriteFrame', SpriteFrame)
+                        await util.bundle.load('image/ui/icon_08/spriteFrame', SpriteFrame)
+                } else if ("2" == content.rewardType) {
+                    //金边
+                    this.rewards.children[i].getChildByName("hero").getComponent(Sprite).spriteFrame =
+                        await util.bundle.load('image/ui/icon_22/spriteFrame', SpriteFrame)
+                } else if ("3" == content.rewardType) {
+                    //魂魄
+                    this.rewards.children[i].getChildByName("hero").getComponent(Sprite).spriteFrame =
+                        await util.bundle.load('image/ui/qiu/spriteFrame', SpriteFrame)
+                } else if ("4" == content.rewardType) {
+                    //护法、装备
+                    const meta = CharacterEnum[content.itemId]
+                      this.rewards.children[i].getChildByName("hero").getComponent(Sprite).spriteFrame =
+                    await util.bundle.load('game/texture/frames/hero/Header/' + content.itemId + '/spriteFrame', SpriteFrame)
                     this.rewards.children[i].getChildByName("Label").getComponent(Label).string = meta.name
                 }
             }
+        }else{
+            this.node.getChildByName("reward").active=false
         }
     }
     // 跳过战斗

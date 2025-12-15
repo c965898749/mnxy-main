@@ -58,6 +58,8 @@ class UserData extends Resource {
 
     public winCount: number = 0
 
+    public rate: number = 0
+
     public stopLevel: number = 0
     // 已经收集到的英雄
     public hasCollectCharacterId: string[] = []
@@ -76,6 +78,7 @@ class UserData extends Resource {
         this.soul = or.soul || 1000
         this.gameImg = or.gameImg
         this.winCount = or.winCount
+        this.rate = or.rate || 0
         this.stopLevel = or.stopLevel || 0
         this.useCardCount = or.useCardCount || "0/0"
         this.hasCollectCharacterId = or.hasCollectCharacterId || []

@@ -56,7 +56,7 @@ export class synthesisCtrl extends Component {
     @property(Node)
     t6: Node
     tuPuhenchenList = []
-
+    index = 0
     henc = false;
     public cahracterQueue: CharacterStateCreate[] = []
     start() {
@@ -194,12 +194,91 @@ export class synthesisCtrl extends Component {
     }
     async hechenBtn2() {
         AudioMgr.inst.playOneShot("sound/other/click");
-         return await util.message.prompt({ message: "暂未开放敬请期待" })
-        // let hut = this.hechen.getComponent(sp.Skeleton)
-        // hut.node.active = true
-        // AudioMgr.inst.playOneShot("sound/other/getcard");
-        // hut.setAnimation(0, "animation", false)
-        // hut.setCompleteListener(() => hut.node.active = false)
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+            id: this.tuPuhenchenList[this.index].id
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "/hechenCard", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    let hut = this.hechen.getComponent(sp.Skeleton)
+                    hut.node.active = true
+                    AudioMgr.inst.playOneShot("sound/other/getcard");
+                    hut.setAnimation(0, "animation", false)
+                    tween(this.t1)
+                        .to(0.5, { position: v3(0, 116.665) })
+                        .start();
+                    tween(this.t2)
+                        .to(0.5, { position: v3(0, 116.665) })
+                        .start();
+                    tween(this.t3)
+                        .to(0.5, { position: v3(0, 116.665) })
+                        .start();
+                    tween(this.t4)
+                        .to(0.5, { position: v3(0, 116.665) })
+                        .start();
+                    tween(this.t5)
+                        .to(0.5, { position: v3(0, 116.665) })
+                        .start();
+                    hut.setCompleteListener(() => {
+                        hut.node.active = false;
+                        this.t1.position = v3(3.955, -150.385)
+                        this.t2.position = v3(-241.24, 5.932)
+                        this.t3.position = v3(247.172, 7.91)
+                        this.t4.position = v3(-213.557, 290.674)
+                        this.t5.position = v3(191.805, 300.561)
+                    })
+                    var map = data.data;
+                    let dto = map['dto'];
+                    let user = map['user'];
+                    this.onceCard.active = true;
+                    // AudioMgr.inst.playOneShot("sound/other/click");
+                    if (this.onceCard.children.length > 0) {
+                        let comp = this.onceCard.getChildByName("RecuitCardItem").getComponent(RecuitCardItem);
+                        comp.init(dto.hero, () => {
+                            this.buttonOk.node.active = true;
+                        });
+                        config.userData.characters = dto.characters
+                        config.userData.gold = user.gold
+                        localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    } else {
+                        const nodePool = util.resource.getNodePool(
+                            await util.bundle.load("/prefab/RecuitCardItem", Prefab)
+                        )
+                        const node = nodePool.get()
+                        const characterAvatar = node.getComponent(RecuitCardItem)
+                        this.onceCard.addChild(node)
+                        // AudioMgr.inst.playOneShot("sound/other/getcard");
+                        characterAvatar.init(dto.hero, () => {
+                            this.buttonOk.node.active = true;
+                        });
+                        config.userData.characters = dto.characters
+                        config.userData.gold = user.go
+                        localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    }
+
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                //console.error('There was a problem with the fetch operation:', error);
+            }
+            );
     }
 
     isOk() {
@@ -247,8 +326,9 @@ export class synthesisCtrl extends Component {
     }
 
     async tupuhenchen(i) {
+        this.index = i
         AudioMgr.inst.playOneShot("sound/other/click");
-        let tuCharacter=this.tuPuhenchenList[i].materials
+        let tuCharacter = this.tuPuhenchenList[i].materials
         this.t1.getChildByName("Avatar").getComponent(Sprite).spriteFrame =
             await util.bundle.load(`game/texture/frames/hero/Header/${tuCharacter[0].id}/spriteFrame`, SpriteFrame)
 
@@ -266,7 +346,7 @@ export class synthesisCtrl extends Component {
 
         this.t6.getChildByName("Avatar").getComponent(Sprite).spriteFrame =
             await util.bundle.load('game/texture/frames/hero/Header/' + this.tuPuhenchenList[i].id + '/spriteFrame', SpriteFrame)
-            this.Gold2.getComponent(Label).string="本次合成需要"+this.tuPuhenchenList[i].extraCost+"银两"
+        this.Gold2.getComponent(Label).string = "本次合成需要" + this.tuPuhenchenList[i].extraCost + "银两"
     }
 
     goback() {
