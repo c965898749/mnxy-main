@@ -299,9 +299,9 @@ export class FightMap extends Component {
 
     // 战斗开始
     private async fightStart(): Promise<boolean> {
-        //初始化登场
-        let character_0 = this.L1.filter(x => x.goIntoNum == 1)[0];
-        let character_1 = this.R1.filter(x => x.goIntoNum == 1)[0];
+        // // 升序取第一个
+        const character_0 = [...this.L1].sort((a, b) => a.goIntoNum - b.goIntoNum)[0];
+        const character_1 = [...this.R1].sort((a, b) => a.goIntoNum - b.goIntoNum)[0];
         this.Character.children[0].setPosition(-180, 0, 0)
         const meta2 = CharacterEnum[character_0.id]
         this.Character.children[0].getComponent(Sprite).spriteFrame = await util.bundle.load(meta2.AvatarPath, SpriteFrame)
@@ -526,6 +526,8 @@ export class FightMap extends Component {
                 let characters = this.parseCharacterString(fieldUnitsStatus)
                 let charactersA = characters.A
                 let charactersB = characters.B
+                let sourceMaxHp = fightProcess.sourceHpBefore
+                let sourceAfterHp = fightProcess.sourceHpAfter
                 let sourceCamp = fightProcess.sourceCamp
                 let aoe = fightProcess.aoe
                 let sourcePosition = fightProcess.sourcePosition - 1
@@ -877,7 +879,11 @@ export class FightMap extends Component {
                     tween(this.tiem.children[direction].children[sourcePosition])
                         .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
                         .call(async () => {
-                            AudioMgr.inst.playOneShot("sound/fight/skill/" + effectType);
+                            if (effectType == 'HEAL' || effectType == 'XU_HEAL') {
+                                AudioMgr.inst.playOneShot("sound/fight/skill/HEAL");
+                            } else {
+                                AudioMgr.inst.playOneShot("sound/fight/skill/" + effectType);
+                            }
                             await this.showString(1, this.tiem.children[direction].children[sourcePosition], new math.Color(236, 163, 61, 255), eventType)
                             await new Promise(res => setTimeout(res, 300 / this.timeScale))
                             if (aoe == '1') {
@@ -973,7 +979,20 @@ export class FightMap extends Component {
                                 });
                             } else {
                                 if (targetIsGoON) {
-                                    let selectSkeleton = this.Character.children[targetDirection].getChildByName(effectType).getComponent(sp.Skeleton)
+                                    let effectTypeName = effectType
+                                    if (effectType == 'XU_HEAL') {
+                                        effectTypeName = 'HEAL'
+                                        await this.showString(1, this.tiem.children[direction].children[sourcePosition], new math.Color(255, 0, 0), "-" + value)
+                                        // 更新场下生命值
+                                        this.tiem.children[direction].children[sourcePosition].getChildByName("my_hp").getChildByName("Bar").setScale(
+                                            sourceAfterHp / sourceMaxHp,
+                                            1,
+                                            1
+                                        )
+                                        this.tiem.children[direction].children[sourcePosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = sourceAfterHp + "/" + sourceMaxHp
+
+                                    }
+                                    let selectSkeleton = this.Character.children[targetDirection].getChildByName(effectTypeName).getComponent(sp.Skeleton)
                                     selectSkeleton.node.active = true
                                     if (effectType == "POISON") {
                                         selectSkeleton.setAnimation(0, "animation", true)
@@ -984,7 +1003,7 @@ export class FightMap extends Component {
                                     //伤害掉血动画
                                     if (effectType == 'ATTACK_UP') {
                                         //暂无展示
-                                    } else if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                    } else if (effectType == 'HEAL' || effectType == 'HP_UP' || effectType == 'XU_HEAL') {
                                         this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], +value, new math.Color(82, 201, 25, 255), 40)
                                     } else {
                                         this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
@@ -1001,7 +1020,11 @@ export class FightMap extends Component {
                                         selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
                                     }
                                 }
-                                let eventSelectSkeleton = this.tiem.children[targetDirection].children[targetPosition].getChildByName("buff").getChildByName(effectType).getComponent(sp.Skeleton)
+                                let effectTypeName = effectType
+                                if (effectType == 'XU_HEAL') {
+                                    effectTypeName = 'HEAL'
+                                }
+                                let eventSelectSkeleton = this.tiem.children[targetDirection].children[targetPosition].getChildByName("buff").getChildByName(effectTypeName).getComponent(sp.Skeleton)
                                 eventSelectSkeleton.node.active = true
                                 if (effectType == "POISON") {
                                     eventSelectSkeleton.setAnimation(0, "animation", true)
@@ -1018,6 +1041,8 @@ export class FightMap extends Component {
                                 } else if (effectType == 'MAX_HP_DOWN') {
                                     let result = "生命上限 -" + value;
                                     await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), result)
+                                } else if (effectType == 'XU_HEAL') {
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), "+" + value)
                                 } else if (effectType == 'HP_UP') {
                                     let index = extraDesc.indexOf("，"); // 找到第一个空格的位置
                                     let result = extraDesc.substring(index + 1); // 截取第一个空格后面的所有字符

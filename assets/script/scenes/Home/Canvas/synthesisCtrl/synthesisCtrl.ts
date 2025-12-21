@@ -5,12 +5,14 @@ import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 import { SelectCardCtrl } from '../qianghua/SelectCardCtrl';
 import { RecuitCardItem } from '../RecruitCard/RecuitCardItem';
+import { CharacterEnum } from 'db://assets/script/game/fight/character/CharacterEnum';
 const { ccclass, property } = _decorator;
 
 @ccclass('synthesisCtrl')
 export class synthesisCtrl extends Component {
     @property({ type: Node, tooltip: "招募单张抽卡" }) onceCard: Node = null;
     @property({ type: Node, tooltip: "任务列表" }) ContentNode: Node = null;
+    @property({ type: Node, tooltip: "任务列表" }) ContentNode2: Node = null;
     @property({ type: Button }) buttonOk: Button = null;
     @property(Node)
     hechen: Node
@@ -55,6 +57,8 @@ export class synthesisCtrl extends Component {
     t5: Node
     @property(Node)
     t6: Node
+    @property(Node)
+    others: Node
     tuPuhenchenList = []
     index = 0
     henc = false;
@@ -64,6 +68,7 @@ export class synthesisCtrl extends Component {
         const token = getToken()
         const postData = {
             token: token,
+            // token: token,
         };
         const options = {
             method: 'POST',
@@ -178,7 +183,7 @@ export class synthesisCtrl extends Component {
                         characterAvatar.init(dto.hero, () => {
                             this.buttonOk.node.active = true;
                         });
-                        config.userData.characters = dto.characters
+                        config.userData.characters = dto.characterstuPuhenchenList
                         // config.userData.soul = user.soul
                         localStorage.setItem("UserConfigData", JSON.stringify(config))
                     }
@@ -318,16 +323,21 @@ export class synthesisCtrl extends Component {
                 node.getComponent(Button).zoomScale = 0.9
                 this.ContentNode.addChild(node)
                 // 绑定事件
-                node.on("click", () => this.tupuhenchen(i))
+                node.on("click", () => this.tupuhenchen(character.id))
+                if (i >= 18) {
+                    break
+                }
                 continue
             }
         }
         this.henc = !this.henc
     }
 
-    async tupuhenchen(i) {
-        this.index = i
+    async tupuhenchen(id) {
+        console.log(id, 111)
         AudioMgr.inst.playOneShot("sound/other/click");
+        let i = this.tuPuhenchenList.findIndex(x => x.id == id)
+        this.index = i
         let tuCharacter = this.tuPuhenchenList[i].materials
         this.t1.getChildByName("Avatar").getComponent(Sprite).spriteFrame =
             await util.bundle.load(`game/texture/frames/hero/Header/${tuCharacter[0].id}/spriteFrame`, SpriteFrame)
@@ -345,7 +355,7 @@ export class synthesisCtrl extends Component {
             await util.bundle.load('game/texture/frames/hero/Header/' + tuCharacter[4].id + '/spriteFrame', SpriteFrame)
 
         this.t6.getChildByName("Avatar").getComponent(Sprite).spriteFrame =
-            await util.bundle.load('game/texture/frames/hero/Header/' + this.tuPuhenchenList[i].id + '/spriteFrame', SpriteFrame)
+            await util.bundle.load('game/texture/frames/hero/Header/' + id + '/spriteFrame', SpriteFrame)
         this.Gold2.getComponent(Label).string = "本次合成需要" + this.tuPuhenchenList[i].extraCost + "银两"
     }
 
@@ -464,6 +474,40 @@ export class synthesisCtrl extends Component {
         this.z4.getChildByName("Avatar").getComponent(Sprite).spriteFrame = null
         this.z5Id = null
         this.z5.getChildByName("Avatar").getComponent(Sprite).spriteFrame = null
+    }
+    async moreBtn() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.others.active = true
+        const config = getConfig()
+        // const close = await util.message.load()
+        const cahracterQueue = []
+        // await this.render(config.userData.characters)
+        let characters = this.tuPuhenchenList
+        const nodePool = util.resource.getNodePool(
+            await util.bundle.load("prefab/HolCharacterAvatar", Prefab)
+        )
+        const childrens = [...this.ContentNode2.children]
+        for (let i = 0; i < childrens.length; i++) {
+            const node = childrens[i];
+            node.off("click")
+            node.getComponent(Button).transition = 0
+            nodePool.put(node)
+        }
+        for (const character of characters) {
+            const node = nodePool.get()
+            node.getChildByName("Avatar").getComponent(Sprite).spriteFrame = await util.bundle.load(`game/texture/frames/hero/Header/${character.id}/spriteFrame`, SpriteFrame)
+            node.getComponent(Button).transition = 3
+            node.getComponent(Button).zoomScale = 0.9
+            this.ContentNode2.addChild(node)
+            // 绑定事件
+            node.on("click", () =>{this.others.active=false;this.tupuhenchen(character.id)})
+            continue
+        }
+        return
+    }
+    closeMoreBtn() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.others.active = false
     }
 
 }

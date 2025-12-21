@@ -236,8 +236,10 @@ export class PveCtrl extends Component {
                                         1,
                                         1
                                     )
+                                     config.userData.characters = user.characterList
                                 }
                                 config.userData.exp = user.exp
+                                config.userData.diamond = user.diamond
                                 config.userData.lv = user.lv
                                 config.userData.chapter = user.chapter
                                 this.Exp.getChildByName("ExpCount").getComponent(Label).string = "还需" + (1000 - config.userData.exp)

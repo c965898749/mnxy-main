@@ -13,8 +13,7 @@ export class JinjichangCtrl extends Component {
     WinCount: Node
     @property(Node)
     GameRanking: Node
-    @property(Node)
-    Kk: Node
+    @property({ type: Node, tooltip: "任务列表" }) ContentNode: Node = null;
     @property(Node)
     energyHuoliLabel: Node//活力力显示
     @property(Node)
@@ -114,23 +113,36 @@ export class JinjichangCtrl extends Component {
                 //console.log(data); // 处理响应数据
                 if (data.success == '1') {
                     var map = data.data;
-                    let parking = map['parking'];
-                    for (let i = 0; i < this.Kk.children.length; i++) {
-                        this.Kk.children[i].children[1].children[0].getComponent(Label).string = "lv " + parking[i].lv
-                        this.Kk.children[i].children[2].off("click")
-                        this.Kk.children[i].children[3].off("click")
-                        // 绑定事件
-                        if (!parking[i].friendStatus) {
-                            this.Kk.children[i].children[2].on("click", () => { this.clickJiebanFun(parking[i].userId) })
-                        } else {
-                            this.Kk.children[i].children[2].active = false;
-                        }
-                        this.Kk.children[i].children[3].on("click", () => { this.clickTiaozhanFun(parking[i].userId) })
-                        this.Kk.children[i].children[4].getComponent(Label).string = parking[i].nickname
-                        this.Kk.children[i].children[5].getComponent(Label).string = "胜 " + parking[i].winCount
-                        this.Kk.children[i].getChildByName("yxjm_df_txk").getChildByName("header").getComponent(Sprite).spriteFrame =
-                            await util.bundle.load(parking[i].gameImg, SpriteFrame)
+                    let userlist = map['parking'];
+                    const nodePool = util.resource.getNodePool(
+                        await util.bundle.load("prefab/ff2", Prefab)
+                    )
+                    const childrens = [...this.ContentNode.children]
+                    for (let i = 0; i < childrens.length; i++) {
+                        const node = childrens[i];
+                        node.getChildByName("tiaozhan").off("click")
+                        node.getChildByName("jieban").off("click")
+                        nodePool.put(node)
                     }
+                    for (let i = 0; i < userlist.length; i++) {
+                        let item = nodePool.get()
+                        item.getChildByName("textbox_bg").children[0].getComponent(Label).string = "lv " + userlist[i].lv
+                        // 绑定事件
+                        item.getChildByName("name").getComponent(Label).string = userlist[i].nickname
+                        item.getChildByName("Count").getComponent(Label).string = "胜 " + userlist[i].winCount
+                        item.getChildByName("yxjm_df_txk").getChildByName("header").getComponent(Sprite).spriteFrame =
+                            await util.bundle.load(userlist[i].gameImg, SpriteFrame)
+                        item.getChildByName("tiaozhan").on("click", () => { this.clickTiaozhanFun(userlist[i].userId) })
+                        if (!userlist[i].friendStatus) {
+                            item.getChildByName("jieban").active = true
+                            item.getChildByName("jieban").on("click", () => {
+                                this.clickJiebanFun(userlist[i].userId, item)
+                            })
+                        }
+                        this.ContentNode.addChild(item)
+                        continue
+                    }
+
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                 }
@@ -140,7 +152,7 @@ export class JinjichangCtrl extends Component {
             }
             );
     }
-    public clickJiebanFun(userId) {
+    public clickJiebanFun(userId, item) {
         AudioMgr.inst.playOneShot("sound/other/click");
         // director.addPersistRootNode(this.node);
         const config = getConfig()
@@ -164,15 +176,7 @@ export class JinjichangCtrl extends Component {
             .then(async data => {
                 //console.log(data); // 处理响应数据
                 if (data.success == '1') {
-                    // this.refresh()
-                    // const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
-                    // const holAnimationNode = instantiate(holAnimationPrefab)
-                    // this.node.parent.addChild(holAnimationNode)
-                    // await holAnimationNode
-                    //     .getComponent(FightMap)
-                    //     .render(data.data.id, null, null)
-                    // find('Canvas').getComponent(HomeCanvas).audioSource.pause()
-                    // this.node.parent.getChildByName("FightMap").active = true
+                    item.getChildByName("jieban").active = false
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
@@ -279,7 +283,7 @@ export class JinjichangCtrl extends Component {
     goBack() {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.active = false
-        this.node.parent.getChildByName("JinjiCtrl").active=true
+        this.node.parent.getChildByName("JinjiCtrl").active = true
     }
 }
 

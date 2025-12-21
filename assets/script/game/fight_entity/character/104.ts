@@ -59,7 +59,7 @@ export class Character extends CharacterMetaState {
 
     `.replace(/ /ig, "")
 
-    introduce: string = "我是价值连城的切糕，一刀9999金币哦。"
+    introduce: string = "我是价值连城的切糕，一刀999999金币哦。"
 
     skillValue: string = ``
 

@@ -47,7 +47,7 @@ export class Character extends CharacterMetaState {
     PassiveIntroduceOne: string = `
     
     续命 Lv1
-    每回合转移160生命给场上我方，只能治疗仙界
+    每回合转移60生命给场上我方，只能治疗仙界
     `.replace(/ /ig, "")
 
 

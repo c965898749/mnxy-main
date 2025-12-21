@@ -1,7 +1,8 @@
-import { _decorator, Component, Node, Prefab, Sprite, SpriteFrame } from 'cc';
+import { _decorator, Button, Component, Node, Prefab, Sprite, SpriteFrame } from 'cc';
 import { getConfig } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
+import { ActiveCtrl } from '../ActiveCtrl/ActiveCtrl';
 const { ccclass, property } = _decorator;
 
 @ccclass('HotEventsCtrl')
@@ -48,17 +49,24 @@ export class HotEventsCtrl extends Component {
                     for (let i = 0; i < childrens.length; i++) {
                         const node = childrens[i];
                         node.getChildByName("anjian2").off("click")
+                        node.getComponent(Button).node.off("click")
                         nodePool.put(node)
                     }
                     for (let i = 0; i < data.length; i++) {
                         let hotActive = data[i]
                         let item = nodePool.get()
-                        console.log(hotActive.activityCode, 555)
                         item.getComponent(Sprite).spriteFrame =
                             await util.bundle.load("image/HotEvents/" + hotActive.activityCode + "/spriteFrame", SpriteFrame)
-                        item.getChildByName("anjian2").on("click", () => { 
-                            this.openHotEvents(hotActive.activityCode)
-                         })
+                        if (hotActive.isNotice == "1") {
+                            item.getChildByName("anjian2").active = false
+                            item.getComponent(Button).node.on("click", () => {
+                                this.noticeActive(hotActive.activityCode)
+                            })
+                        } else {
+                            item.getChildByName("anjian2").on("click", () => {
+                                this.openHotEvents(hotActive.activityCode)
+                            })
+                        }
                         this.ContentNode.addChild(item)
                         continue
                     }
@@ -72,13 +80,19 @@ export class HotEventsCtrl extends Component {
             );
     }
 
+    noticeActive(activityCode) {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        let activeCtrl = this.node.parent.getChildByName("ActiveCtrl")
+        activeCtrl.getComponent(ActiveCtrl).init(activityCode)
+        activeCtrl.active = true
+    }
     update(deltaTime: number) {
 
     }
 
     openHotEvents(reg) {
         AudioMgr.inst.playOneShot("sound/other/click");
-        this.node.parent.getChildByName(reg).active=true
+        this.node.parent.getChildByName(reg).active = true
     }
     goback() {
         AudioMgr.inst.playOneShot("sound/other/click");

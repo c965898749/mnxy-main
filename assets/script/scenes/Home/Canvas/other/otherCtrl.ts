@@ -42,6 +42,10 @@ export class otherCtrl extends Component {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.parent.getChildByName("HotEventsCtrl").active=true
     }
+    openBlessing() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("BlessingCrtl").active = true
+    }
 }
 
 
