@@ -161,6 +161,9 @@ export class SevenLuminariesCtrl extends Component {
                     const levelUp = map["levelUp"]
                     config.userData.exp = user.exp
                     config.userData.lv = user.lv
+                    if (battle.isWin == 0) {
+                        config.userData.characters = user.characterList
+                    }
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
                     const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
                     const holAnimationNode = instantiate(holAnimationPrefab)

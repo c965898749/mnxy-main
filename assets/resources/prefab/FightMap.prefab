@@ -40519,7 +40519,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": 0,
-      "y": 40,
+      "y": 120,
       "z": 0
     },
     "_lrot": {
@@ -40596,7 +40596,7 @@
       "a": 255
     },
     "_skeletonData": {
-      "__uuid__": "132bdf00-c8e0-4155-9eb5-885a27a51e9b",
+      "__uuid__": "d3412333-9186-4f7e-bad6-f7cb9a433c68",
       "__expectedType__": "sp.SkeletonData"
     },
     "defaultSkin": "default",
@@ -42618,7 +42618,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": 0,
-      "y": 40,
+      "y": 120,
       "z": 0
     },
     "_lrot": {
@@ -42695,7 +42695,7 @@
       "a": 255
     },
     "_skeletonData": {
-      "__uuid__": "132bdf00-c8e0-4155-9eb5-885a27a51e9b",
+      "__uuid__": "d3412333-9186-4f7e-bad6-f7cb9a433c68",
       "__expectedType__": "sp.SkeletonData"
     },
     "defaultSkin": "default",

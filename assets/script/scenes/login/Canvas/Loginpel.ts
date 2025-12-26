@@ -14,8 +14,8 @@ export class Loginpel extends Component {
     Password: EditBox;
     // redis-server.exe redis.windows.conf
     // url = "http://192.168.0.104:8080/"
-    // url = "http://127.0.0.1:8080/"
-    url="http://czx.yimem.com:3000/"
+    url = "http://127.0.0.1:8080/"
+    // url="http://czx.yimem.com:3000/"
     start() {
         const token = getToken()
         const postData = {
@@ -57,17 +57,18 @@ export class Loginpel extends Component {
                             "characters": userInfo.characterList,
                             "winCount": userInfo.winCount,
                             "chapter": userInfo.chapter,
-                             "stopLevel":userInfo.stopLevel
+                            "stopLevel": userInfo.stopLevel
                         },
                     }
                     this.SetLeaveEnergy(userInfo.tiliCount)
+                    localStorage.setItem('LastGetTime1', userInfo.tiliCountTime + "");
+                    localStorage.setItem('LastGetHuoliTime1', userInfo.huoliCountTime + "");
                     this.SetLeaveHuoliEnergy(userInfo.huoliCount)
-                    // localStorage.setItem("token", userInfo.token)
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
-                    director.preloadScene("Preload", () => {
-                        close()
-                    })
-                    director.loadScene("Preload")
+                    // director.preloadScene("Home", () => {
+                    //     close()
+                    // })
+                    director.loadScene("Home")
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                 }
@@ -77,7 +78,6 @@ export class Loginpel extends Component {
             }
             );
     }
-
     //体力
     GetLeaveEnergy() {
         var key = 'Leave_EnergyNumber2';
@@ -238,17 +238,19 @@ export class Loginpel extends Component {
                                 "gameImg": userInfo.gameImg,
                                 "winCount": userInfo.winCount,
                                 "chapter": userInfo.chapter,
-                                "stopLevel":userInfo.stopLevel
+                                "stopLevel": userInfo.stopLevel
                             },
                         }
                         this.SetLeaveEnergy(userInfo.tiliCount)
+                        localStorage.setItem('LastGetTime1', userInfo.tiliCountTime + "");
+                        localStorage.setItem('LastGetHuoliTime1', userInfo.huoliCountTime + "");
                         this.SetLeaveHuoliEnergy(userInfo.huoliCount)
                         localStorage.setItem("token", userInfo.token)
                         localStorage.setItem("UserConfigData", JSON.stringify(config))
-                        director.preloadScene("Preload", () => {
-                            close()
-                        })
-                        director.loadScene("Preload")
+                        // director.preloadScene("Home", () => {
+                        //     close()
+                        // })
+                        director.loadScene("Home")
                     } else {
                         const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                     }

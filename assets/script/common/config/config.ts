@@ -25,8 +25,8 @@ class VolumeDetail {
 class ServerUrl {
     // redis-server.exe redis.windows.conf
     // url = "http://192.168.0.104:8080/"
-    // url = "http://127.0.0.1:8080/"
-    url="http://czx.yimem.com:3000/"
+    url = "http://127.0.0.1:8080/"
+    // url="http://czx.yimem.com:3000/"
 }
 
 let globalId: number = 1
@@ -181,3 +181,115 @@ export function getConfig(): Config {
 export function getToken() {
     return localStorage.getItem("token")
 }
+
+
+export function updateTiliTime() {
+    const config = getConfig()
+    const token = getToken()
+    var lastTime = parseInt(localStorage.getItem('LastGetTime1'));
+    var key = 'Leave_EnergyNumber2';
+    var str = localStorage.getItem(key);
+    if (str) {
+        str
+    }
+    const postData = {
+        token: token,
+        str: lastTime,
+        tiLi: parseInt(str),
+        userId: config.userData.userId,
+    };
+    const options = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(postData),
+    };
+    fetch(config.ServerUrl.url + "/updateTli", options)
+        .then(response => {
+
+            return response.json(); // 解析 JSON 响应
+        })
+        .then(async data => {
+            if (data.success == '1') {
+                console.log("更新体力时间成功");
+            }
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        }
+        );
+
+}
+
+export function updateHuoliTime() {
+    const config = getConfig()
+    const token = getToken()
+    var lastTime = parseInt(localStorage.getItem('lastGetHuoliTime1'));
+    var key = 'Leave_EnergyHuoliNumber2';
+    var str = localStorage.getItem(key);
+    if (!str) {
+        str = "0";
+    }
+    const postData = {
+        token: token,
+        str: lastTime,
+        tiLi: parseInt(str),
+        userId: config.userData.userId,
+    };
+    const options = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(postData),
+    };
+    fetch(config.ServerUrl.url + "/updateTli3", options)
+        .then(response => {
+
+            return response.json(); // 解析 JSON 响应
+        })
+        .then(async data => {
+            if (data.success == '1') {
+                console.log("更新活力力时间成功");
+            }
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        }
+        );
+
+}
+
+export function updateTiliAndHuoLi() {
+    const config = getConfig()
+    const token = getToken()
+    const postData = {
+        token: token,
+        userId: config.userData.userId,
+    };
+    const options = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(postData),
+    };
+    fetch(config.ServerUrl.url + "/updateTli2", options)
+        .then(response => {
+
+            return response.json(); // 解析 JSON 响应
+        })
+        .then(async data => {
+            if (data.success == '1') {
+                const userInfo = data.data;
+                localStorage.setItem('Leave_EnergyNumber2', userInfo.tiliCount + "");
+                localStorage.setItem('LastGetTime1', userInfo.tiliCountTime + "");
+                localStorage.setItem('LastGetHuoliTime1', userInfo.huoliCountTime + "");
+                localStorage.setItem('Leave_EnergyHuoliNumber2', userInfo.huoliCount + "");
+            }
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        }
+        );
+
+}
+
+
+
+

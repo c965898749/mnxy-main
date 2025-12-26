@@ -128,6 +128,28 @@ export class ActiveCtrl extends Component {
 <color=#FF69B4><size=18>愿火焰指引你的道路，勇士们！</size></color>
 <color=#CCCCCC><size=14>【QQ神仙依梦工作室】2025年12月21日</size></color>`
         }
+                        if (this.page == "CelestialSpiritArchgeneral") {
+            content = `<color=#FF4500><size=28><b>【圣灵天将】版本更新与副本探险活动公告</b></size></color>
+<color=#FFE4B5><size=20>亲爱的烈焰勇士们：</size></color>
+
+<color=#FFA500><size=19>为优化副本探险体验，游戏将于以下时间进行版本更新：</size></color>
+<color=#FFFF00><size=18>▶ 维护时间：2025年12月21日 09:00-13:00（预计4小时）</size></color>
+<color=#FFFF00><size=18>▶ 维护范围：全服所有服务器</size></color>
+<color=#FF6347><size=18>▶ 维护补偿：钻石*5000 + 金币*10万 + 魂魄*500</size></color>
+
+<color=#FFA500><size=19>本次更新内容：</size></color>
+<color=#FFFFFF><size=17>1. 第五章【大闹天宫】关卡，掉落传说级【圣灵天将】合成材料</size></color>
+<color=#FFFFFF><size=17>2. 卡牌合成，增加传说级【圣灵天将】合成图谱</size></color>
+
+
+<color=#87CEFA><size=18>遇到烈焰屏障？联系我们：</size></color>
+<color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
+<color=#FFFFFF><size=16>▶ 官方①QQ群：587452663</size></color>
+<color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size></color>
+
+<color=#FF69B4><size=18>愿火焰指引你的道路，勇士们！</size></color>
+<color=#CCCCCC><size=14>【QQ神仙依梦工作室】2025年12月21日</size></color>`
+        }
         if (this.page == "page4") {
             content = `<color=#FFD700><size=28><b>【福利狂欢】海量奖励限时派送中！</b></size></color>
 <color=#FFFFFF><size=20>各位玩家请注意！多重福利盛宴已开启，多重错过！</size></color>
@@ -153,22 +175,17 @@ export class ActiveCtrl extends Component {
 <color=#FF69B4><size=18>海量奖励已就位，快来领取属于你的专属福利！</size></color>
 <color=#CCCCCC><size=14>【QQ神仙依梦工作室】2025年12月21日</size></color>`
         }
-        if (this.page == "page5") {
-            content = `<color=#9932CC><size=28><b>【神将降临】高级召唤概率UP活动开启！</b></size></color>
-<color=#E6E6FA><size=20>各位召唤师，传说中的高级神将已现世，限时召唤开启！</size></color>
+        if (this.page == "KongtongSealCtrl") {
+            content = `<color=#9932CC><size=28><b>【崆峒窟】副本每周六开启！</b></size></color>
+<color=#E6E6FA><size=20>各位召唤师，传说中的崆峒印已现世，限时召唤开启！</size></color>
 
-<color=#FF66FF><size=20>🎁 召唤池倍率开启 🎁</size></color>
-<color=#FFFF00><size=18>▶ 召唤概率：10次10连【女娲石】出现概率提升至100%（常规10%）</size></color>
-<color=#FFFF00><size=18>▶ 开放崆峒印副本，4星传说神将轻松合成</size></color>
-
-
-<color=#FF66FF><size=20>👑 本期卡池新增神将 👑</size></color>
-<color=#FFFFFF><size=17>▷ 【阎王】：群体AOE伤害+随机中毒，版本最强输出</size></color>
-<color=#FFFFFF><size=17>▷ 【东岳大帝】：被治疗释放飞弹+减攻对面，推图必备神将</size></color>
-<color=#FFFFFF><size=17>▷ 【萌年兽】：爆竹送给你群体AOE，再也不怕对面技能乱飞</size></color>
+<color=#FFFFFF><size=20>狼妖偶然得到了一批崆峒印，实力大涨不知天高地厚地到处为害世间。炼妖师赶快出手降妖，夺回崆峒印吧!集齐5个3星崆峒印，就能合成3.5星崆峒印，集齐5个3.5星崆峒印，就能合成4星战将!单个3.5星崆峒印还能和任意星级的满级卡牌合成出3.5星战将哦!</size></color>
+<color=#FFA500><size=19>副本开启时间：</size></color>
+<color=#FFFF00><size=18>▶ 每周六 00:00 - 23:00</size></color>
+<color=#FFFF00><size=18>▶ 挑战次数：每日3次</size></color>
  
 <color=#87CEFA><size=18>召唤入口：</size></color>
-<color=#FFFFFF><size=16>▶ 主界面-高级召唤阵</size></color>
+<color=#FFFFFF><size=16>▶ 探险-热门活动</size></color>
 <color=#FFFFFF><size=16>▶ 疑问咨询：chengzhixiang2023@163.com</size></color>
 
 <color=#FF69B4><size=18>抓住时机，让顶级神将助你横扫战场！</size></color>

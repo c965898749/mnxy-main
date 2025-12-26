@@ -10,7 +10,7 @@ export class PreloadCanvas extends Component {
         // director.preloadScene("Home")
         // HolPreLoad
         const holPreLoad = this.node.getChildByName("HolPreLoad").getComponent(HolPreLoad)
-        // director.preloadScene("Home")
+        director.preloadScene("Home")
         holPreLoad.setProcess(20)
 
         await util.message.preloadConfirm()

@@ -104,7 +104,6 @@ export class synthesisCtrl extends Component {
         }
         const config = getConfig()
         const token = getToken()
-        console.log(config.userData.userId, 555)
         const postData = {
             token: token,
             userId: config.userData.userId,
@@ -161,16 +160,15 @@ export class synthesisCtrl extends Component {
                     })
                     var map = data.data;
                     let dto = map['dto'];
-                    // let user = map['user'];
+                    let user = map['user'];
                     this.onceCard.active = true;
-                    // AudioMgr.inst.playOneShot("sound/other/click");
                     if (this.onceCard.children.length > 0) {
                         let comp = this.onceCard.getChildByName("RecuitCardItem").getComponent(RecuitCardItem);
                         comp.init(dto.hero, () => {
                             this.buttonOk.node.active = true;
                         });
                         config.userData.characters = dto.characters
-                        // config.userData.soul = user.soul
+                        config.userData.gold = user.gold
                         localStorage.setItem("UserConfigData", JSON.stringify(config))
                     } else {
                         const nodePool = util.resource.getNodePool(
@@ -179,12 +177,11 @@ export class synthesisCtrl extends Component {
                         const node = nodePool.get()
                         const characterAvatar = node.getComponent(RecuitCardItem)
                         this.onceCard.addChild(node)
-                        // AudioMgr.inst.playOneShot("sound/other/getcard");
                         characterAvatar.init(dto.hero, () => {
                             this.buttonOk.node.active = true;
                         });
-                        config.userData.characters = dto.characterstuPuhenchenList
-                        // config.userData.soul = user.soul
+                        config.userData.characters = dto.characters
+                        config.userData.gold = user.gold
                         localStorage.setItem("UserConfigData", JSON.stringify(config))
                     }
 
@@ -334,7 +331,6 @@ export class synthesisCtrl extends Component {
     }
 
     async tupuhenchen(id) {
-        console.log(id, 111)
         AudioMgr.inst.playOneShot("sound/other/click");
         let i = this.tuPuhenchenList.findIndex(x => x.id == id)
         this.index = i
@@ -370,20 +366,33 @@ export class synthesisCtrl extends Component {
         const config = getConfig()
         this.cahracterQueue = []
         this.cahracterQueue = config.userData.characters
+        const myMap = new Map<string, number>();
         if (this.z1Id) {
-            this.cahracterQueue = this.cahracterQueue.filter(x => this.z1Id != x.id)
+            myMap.set(this.z1Id, (myMap.get(this.z1Id) || 0) + 1);
         }
         if (this.z2Id) {
-            this.cahracterQueue = this.cahracterQueue.filter(x => this.z2Id != x.id)
+            myMap.set(this.z2Id, (myMap.get(this.z2Id) || 0) + 1);
         }
         if (this.z3Id) {
-            this.cahracterQueue = this.cahracterQueue.filter(x => this.z3Id != x.id)
+            myMap.set(this.z3Id, (myMap.get(this.z3Id) || 0) + 1);
         }
         if (this.z4Id) {
-            this.cahracterQueue = this.cahracterQueue.filter(x => this.z4Id != x.id)
+            myMap.set(this.z4Id, (myMap.get(this.z4Id) || 0) + 1);
         }
         if (this.z5Id) {
-            this.cahracterQueue = this.cahracterQueue.filter(x => this.z5Id != x.id)
+            myMap.set(this.z5Id, (myMap.get(this.z5Id) || 0) + 1);
+        }
+        for (const [key, value] of myMap.entries()) {
+            this.cahracterQueue = this.cahracterQueue.filter(x => {
+                if (key == x.id && x.stackCount - value < 0) return false;
+                return true;
+            });
+            this.cahracterQueue.forEach(x => {
+                if (x.id === key) {
+                    x.stackCount -= value;
+                    x.lv=1;
+                }
+            });
         }
         await this.render(this.cahracterQueue, customEventData)
     }
@@ -500,7 +509,7 @@ export class synthesisCtrl extends Component {
             node.getComponent(Button).zoomScale = 0.9
             this.ContentNode2.addChild(node)
             // 绑定事件
-            node.on("click", () =>{this.others.active=false;this.tupuhenchen(character.id)})
+            node.on("click", () => { this.others.active = false; this.tupuhenchen(character.id) })
             continue
         }
         return

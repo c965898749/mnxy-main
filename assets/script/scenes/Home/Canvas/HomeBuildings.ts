@@ -1,9 +1,10 @@
 import { _decorator, AudioClip, AudioSource, Component, director, EventTouch, Label, math, Node, screen, Sprite, SpriteFrame, tween, UITransform, v3, Vec3 } from 'cc';
 import { util } from '../../../util/util';
-import { getConfig } from '../../../common/config/config';
+import { getConfig, updateHuoliTime, updateTiliAndHuoLi, updateTiliTime } from '../../../common/config/config';
 import { AudioMgr } from "../../../util/resource/AudioMgr";
 import { CharacterState, CharacterStateCreate } from '../../../game/fight/character/CharacterState';
 import { LCoin } from '../../../common/common/Language';
+import { HolPreLoad } from '../../../prefab/HolPreLoad';
 const { ccclass, property } = _decorator;
 
 @ccclass('HomeBuildings')
@@ -58,6 +59,27 @@ export class HomeBuildings extends Component {
     //     });
     // }
     protected async start() {
+        // HolPreLoad 预加载进度条
+        const holPreLoad = this.node.parent.getChildByName("HolPreLoad").getComponent(HolPreLoad)
+        holPreLoad.setTips([
+            "提示\n不同阵营之间相互克制，巧用阵营可以出奇制胜",
+        ])
+        holPreLoad.setProcess(20)
+        updateTiliAndHuoLi()
+        if (this.isAroundChristmas()) {
+            this.node.getChildByName("zhanhuan").getChildByName("zhanhuan2").active = true
+            this.node.getChildByName("Conquer").getComponent(Sprite).spriteFrame =
+                await util.bundle.load(`image/building/conquer2/spriteFrame`, SpriteFrame)
+            this.node.getChildByName("Campaign").getComponent(Sprite).spriteFrame =
+                await util.bundle.load(`image/building/zhangyi2/spriteFrame`, SpriteFrame)
+            this.node.getChildByName("Shop").getComponent(Sprite).spriteFrame =
+                await util.bundle.load(`image/building/shop2/spriteFrame`, SpriteFrame)
+            this.node.getChildByName("Courage").getComponent(Sprite).spriteFrame =
+                await util.bundle.load(`image/building/courage2/spriteFrame`, SpriteFrame)
+        }
+        holPreLoad.setProcess(50)
+        // 当前进度
+        let process = 50
         const config = getConfig()
         this.node.getChildByName("Top").getChildByName("Gold").getComponent(Label).string = LCoin(config.userData.gold)
         this.node.getChildByName("Top").getChildByName("Lv").getComponent(Label).string = "Lv " +
@@ -92,6 +114,9 @@ export class HomeBuildings extends Component {
         let pos = this.pmdNode.getPosition()
         this.pmdOriginPos = v3(this.maskUITransform.width, pos.y, pos.z)
         this.pmdNode.setPosition(this.pmdOriginPos)
+          // 监听进度条完成函数
+        // 设置 100%
+        holPreLoad.setProcess(100)
         // 弹窗弹跳入场效果
         if (!this.checkIfTimeIsToday()) {
             this.node.parent.getChildByName("SignInCtrl").active = true
@@ -102,7 +127,20 @@ export class HomeBuildings extends Component {
             .start();
         //战力计算
         this.node.getChildByName("mid").getChildByName("user_fight_count").getComponent(Label).string = this.power + ""
+    }
 
+    isAroundChristmas(): boolean {
+        // 获取当前本地时间的日期对象
+        const today = new Date();
+
+        // 提取月份（注意：getMonth() 返回 0-11，所以12月对应 11）
+        const month = today.getMonth();
+        // 提取日期（1-31）
+        const day = today.getDate();
+
+        // 圣诞节是12月25日，前后3天即 25-3=22 到 25+3=28
+        // 所以判断条件：12月 且 日期在 22-28 之间
+        return month === 11 && day >= 22 && day <= 28;
     }
 
     public getZhanli(create: CharacterStateCreate) {
@@ -162,6 +200,7 @@ export class HomeBuildings extends Component {
     async update(deltaTime: number) {
         if (this.timer >= 50) {
             this.setTili();
+            // console.log("GetLeaveEnergyTime:", this.GetLeaveEnergyTime());
             this.timer = 0;
         }
         else {
@@ -240,15 +279,20 @@ export class HomeBuildings extends Component {
             if (this.CheckLoginDate(lastDate)) {
                 this.energy = this.MaxEnergy;
                 this.SetLeaveEnergy(this.MaxEnergy);
+                updateTiliTime();
             }
         } else if ((tiliCount + LeaveEnergy) >= this.MaxEnergy) {
             this.energy = this.MaxEnergy;
             localStorage.setItem('LastGetTime1', nowTime + "");
             this.SetLeaveEnergy(this.energy);
+            if (tiliCount > 0) {
+                updateTiliTime();
+            }
         } else if (tiliCount > 0) {
             this.energy = tiliCount + LeaveEnergy;
             localStorage.setItem('LastGetTime1', nowTime + "");
             this.SetLeaveEnergy(this.energy);
+            updateTiliTime();
         }
 
 
@@ -257,15 +301,20 @@ export class HomeBuildings extends Component {
             if (this.CheckLoginHuoliDate(lastDate)) {
                 this.huoliEnergy = this.MaxEnergy;
                 this.SetLeaveHuoliEnergy(this.MaxEnergy);
+                updateHuoliTime();
             }
         } else if ((hiliCount + LeaveHuoliEnergy) >= this.MaxEnergy) {
             this.huoliEnergy = this.MaxEnergy;
             localStorage.setItem('LastGetHuoliTime1', nowTime + "");
             this.SetLeaveHuoliEnergy(this.huoliEnergy);
+            if (hiliCount > 0) {
+                updateHuoliTime();
+            }
         } else if (hiliCount > 0) {
             this.huoliEnergy = hiliCount + LeaveHuoliEnergy;
             localStorage.setItem('LastGetHuoliTime1', nowTime + "");
             this.SetLeaveHuoliEnergy(this.huoliEnergy);
+            updateHuoliTime();
         }
 
 
@@ -307,10 +356,16 @@ export class HomeBuildings extends Component {
     }
     SetLeaveEnergy(i) {
         var key = 'Leave_EnergyNumber2';
+        if (i < 0) {
+            i = 0;
+        }
         var value = i + "";
         localStorage.setItem(key, value);
     }
     SetLeaveHuoliEnergy(i) {
+        if (i < 0) {
+            i = 0;
+        }
         var key = 'Leave_EnergyHuoliNumber2';
         var value = i + "";
         localStorage.setItem(key, value);

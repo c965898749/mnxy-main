@@ -63,6 +63,7 @@ export class HotEventsCtrl extends Component {
                                 this.noticeActive(hotActive.activityCode)
                             })
                         } else {
+                            item.getChildByName("anjian2").active = true
                             item.getChildByName("anjian2").on("click", () => {
                                 this.openHotEvents(hotActive.activityCode)
                             })

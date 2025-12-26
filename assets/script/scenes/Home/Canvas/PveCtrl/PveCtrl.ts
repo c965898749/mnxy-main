@@ -1,6 +1,6 @@
 import { _decorator, Component, Label, Node, tween, v3, sp, director, Prefab, instantiate, find, Sprite, SpriteFrame } from 'cc';
 import { L } from 'db://assets/script/common/common/Language';
-import { getConfig, getToken } from 'db://assets/script/common/config/config';
+import { getConfig, getToken, updateTiliAndHuoLi, updateTiliTime } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 import { FightMap } from '../../../Fight/Canvas/FightMap';
@@ -40,7 +40,13 @@ export class PveCtrl extends Component {
     @property(Node)
     BossList: Node
     chapter: string
+    @property({ type: cc.Integer, tooltip: "固定尺寸" })
+    MaxEnergy: 720//最大体力值
+    @property({ type: cc.Integer, tooltip: "固定尺寸" })
+    energy = 0
+    huoliEnergy = 0
     start() {
+        updateTiliAndHuoLi()
         this.refresh()
     }
     onEnable() {
@@ -121,8 +127,72 @@ export class PveCtrl extends Component {
             );
 
     }
-
+    //体力获取时间
+    GetLeaveEnergyTime() {
+        var key = 'Leave_EnergyTimes1';
+        var str = localStorage.getItem(key);
+        if (str) {
+            return parseInt(str);
+        }
+        return 600;
+    }
+    SetLeaveEnergyTime(i) {
+        var key = 'Leave_EnergyTimes1';
+        var value = i + "";
+        localStorage.setItem(key, value);
+    }
+    CheckLoginDate(time) {
+        var lastTime = new Date(time);
+        var now = new Date();
+        if (now.getFullYear() !== lastTime.getFullYear() ||
+            now.getMonth() !== lastTime.getMonth() ||
+            now.getDate() !== lastTime.getDate()) {
+            // this.needReset = true;
+            return true;
+        }
+        // cc.log("不需要重置", lastTime.toDateString(), now.toDateString())
+        return false;
+    }
     refresh() {
+        var EnergyReturnTime = 600
+        this.energy = this.GetLeaveEnergy();
+        //cc.log(this.energy);
+        var LeaveEnergy = this.GetLeaveEnergy();
+        var lastTime = parseInt(localStorage.getItem('LastGetTime1'));
+        if (!lastTime) {
+            lastTime = 0;
+        }
+        let nowTime = new Date().getTime();
+        var tiliCount = Math.round((nowTime - lastTime) / 1000 / EnergyReturnTime)
+        var hiliCount = Math.round((nowTime - lastTime) / 1000 / EnergyReturnTime)
+        var EnergyTime = EnergyReturnTime - Math.round(((nowTime - lastTime) / 1000 % EnergyReturnTime))
+        this.SetLeaveEnergyTime(EnergyTime);
+        if (tiliCount < 0) {
+            tiliCount = 0;
+        }
+        if (hiliCount < 0) {
+            hiliCount = 0;
+        }
+        if (this.energy > this.MaxEnergy) {
+            let lastDate = this.GetLeaveEnergyTime();
+            if (this.CheckLoginDate(lastDate)) {
+                this.energy = this.MaxEnergy;
+                this.SetLeaveEnergy(this.MaxEnergy);
+                updateTiliTime();
+            }
+        } else if ((tiliCount + LeaveEnergy) >= this.MaxEnergy) {
+            this.energy = this.MaxEnergy;
+            localStorage.setItem('LastGetTime1', nowTime + "");
+            this.SetLeaveEnergy(this.energy);
+            if (tiliCount > 0) {
+                updateTiliTime();
+            }
+        } else if (tiliCount > 0) {
+            this.energy = tiliCount + LeaveEnergy;
+            localStorage.setItem('LastGetTime1', nowTime + "");
+            this.SetLeaveEnergy(this.energy);
+            updateTiliTime();
+        }
         const config = getConfig()
         var LeaveEnergy = this.GetLeaveEnergy();
         this.Tili.getChildByName("TiliCount").getComponent(Label).string = LeaveEnergy + "/720";
@@ -236,7 +306,7 @@ export class PveCtrl extends Component {
                                         1,
                                         1
                                     )
-                                     config.userData.characters = user.characterList
+                                    config.userData.characters = user.characterList
                                 }
                                 config.userData.exp = user.exp
                                 config.userData.diamond = user.diamond

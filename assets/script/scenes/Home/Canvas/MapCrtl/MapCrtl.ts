@@ -1,8 +1,9 @@
 import { _decorator, Component, Label, Node, tween, v3, Vec3 } from 'cc';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { PveCtrl } from '../PveCtrl/PveCtrl';
-import { getConfig } from 'db://assets/script/common/config/config';
-import { ItemCtrl } from '../Tiem/ItemCtrl';
+import { getConfig, getToken } from 'db://assets/script/common/config/config';
+import { util } from 'db://assets/script/util/util';
+import { MapRankingCrtl } from '../MapRankingCrtl/MapRankingCrtl';
 const { ccclass, property } = _decorator;
 
 @ccclass('MapCrtl')
@@ -124,7 +125,45 @@ export class MapCrtl extends Component {
 
     openHotEvents() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        this.node.parent.getChildByName("HotEventsCtrl").active=true
+        this.node.parent.getChildByName("HotEventsCtrl").active = true
+    }
+    openRanking() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "mapRanking100", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                //console.log(data); // 处理响应数据
+                if (data.success == '1') {
+                    var data = data.data;
+                    await this.node.parent.getChildByName("MapRankingCrtl")
+                        .getComponent(MapRankingCrtl)
+                        .render(data)
+
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+
     }
 }
 

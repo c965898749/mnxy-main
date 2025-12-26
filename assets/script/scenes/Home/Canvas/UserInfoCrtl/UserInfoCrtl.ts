@@ -160,6 +160,7 @@ export class UserInfoCrtl extends Component {
         }
     }
 
+    
     //体力
     GetLeaveEnergy() {
         var key = 'Leave_EnergyNumber2';

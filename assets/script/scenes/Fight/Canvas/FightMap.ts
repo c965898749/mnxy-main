@@ -504,8 +504,12 @@ export class FightMap extends Component {
                 for (const event of eventData.units) {
                     if (event.side == "A") {
                         this.tiem.children[0].children[event.position - 1].getChildByName("dead").active = true
+                        //死亡移除所有动画
+                        this.tiem.children[0].children[event.position - 1].getChildByName("buff").children.forEach(buffNode => { buffNode.active = false; });
                     } else {
                         this.tiem.children[1].children[event.position - 1].getChildByName("dead").active = true
+                        //死亡移除所有动画
+                        this.tiem.children[1].children[event.position - 1].getChildByName("buff").children.forEach(buffNode => { buffNode.active = false; });
                     }
                 }
                 let characters = this.parseCharacterString(fieldUnitsStatus)
@@ -513,11 +517,17 @@ export class FightMap extends Component {
                 if (charactersA.HP[0] <= 0) {
                     this.Character.children[0].getComponent(Sprite).spriteFrame = null
                     this.tiem.children[0].children[charactersA.position].getChildByName("dead").active = true
+                    //死亡移除所有动画
+                    this.Character.children[0].children.forEach(buffNode => { buffNode.active = false; });
+                    this.tiem.children[0].children[charactersA.position].getChildByName("buff").children.forEach(buffNode => { buffNode.active = false; });
                 }
                 let charactersB = characters.B
                 if (charactersB.HP[0] <= 0) {
                     this.Character.children[1].getComponent(Sprite).spriteFrame = null
                     this.tiem.children[1].children[charactersB.position].getChildByName("dead").active = true
+                    //死亡移除所有动画
+                    this.Character.children[1].children.forEach(buffNode => { buffNode.active = false; });
+                    this.tiem.children[1].children[charactersB.position].getChildByName("buff").children.forEach(buffNode => { buffNode.active = false; });
                 }
                 // await new Promise(res => setTimeout(res, 200 / this.timeScale))
             } else if (eventType == "BATTLE_END") {
@@ -578,7 +588,7 @@ export class FightMap extends Component {
                     this.skillName.children[direction].active = true
                     this.skillName.children[direction].getChildByName("Label").getComponent(Label).string = eventType
                     await new Promise(res => setTimeout(res, 500 / this.timeScale))
-                    if (effectType == "MAX_HP_DOWN" || effectType == "FIRE_DAMAGE" || effectType == "POISON" || effectType == 'MISSILE_DAMAGE' || effectType == 'STUN' || effectType == 'HEAL' || effectType == 'HP_UP') {
+                    if (effectType == "MAX_HP_DOWN" || effectType == "FIRE_DAMAGE" || effectType == "POISON" || effectType == "SILENCE" || effectType == 'MISSILE_DAMAGE' || effectType == 'STUN' || effectType == 'HEAL' || effectType == 'HP_UP') {
                         // if (this.Character.children[targetDirection].getComponent(Sprite).spriteFrame) {
 
                         // }
@@ -605,8 +615,10 @@ export class FightMap extends Component {
                             }
                             skeletons.forEach(skeleton => {
                                 skeleton.node.active = true
-                                skeleton.setAnimation(0, "animation", false);
-                                if (effectType != "POISON") {
+                                if (effectType == "POISON" || effectType == "SILENCE") {
+                                    skeleton.setAnimation(0, "animation", true);
+                                } else {
+                                    skeleton.setAnimation(0, "animation", false);
                                     skeleton.setCompleteListener(() => skeleton.node.active = false)
                                 }
                             });
@@ -675,7 +687,7 @@ export class FightMap extends Component {
                             if (targetIsGoON) {
                                 let selectSkeleton = this.Character.children[targetDirection].getChildByName(effectType).getComponent(sp.Skeleton)
                                 selectSkeleton.node.active = true
-                                if (effectType == "POISON") {
+                                if (effectType == "POISON" || effectType == "SILENCE") {
                                     selectSkeleton.setAnimation(0, "animation", true)
                                 } else {
                                     selectSkeleton.setAnimation(0, "animation", false)
@@ -698,13 +710,13 @@ export class FightMap extends Component {
                                     1
                                 )
                                 this.Hp.children[targetDirection].getChildByName("user_li_count").getComponent(Label).string = targetAfterHp + "/" + targetMaxHp
-                                if (effectType != "POISON") {
+                                if (effectType != "POISON" && effectType != "SILENCE") {
                                     selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
                                 }
                             }
                             let eventSelectSkeleton = this.tiem.children[targetDirection].children[targetPosition].getChildByName("buff").getChildByName(effectType).getComponent(sp.Skeleton)
                             eventSelectSkeleton.node.active = true
-                            if (effectType == "POISON") {
+                            if (effectType == "POISON" || effectType == "SILENCE") {
                                 eventSelectSkeleton.setAnimation(0, "animation", true)
                             } else {
                                 eventSelectSkeleton.setAnimation(0, "animation", false)
@@ -729,7 +741,7 @@ export class FightMap extends Component {
                                 1
                             )
                             this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
-                            if (effectType != "POISON") {
+                            if (effectType != "POISON" && effectType != "SILENCE") {
                                 eventSelectSkeleton.setCompleteListener(() => eventSelectSkeleton.node.active = false)
                             }
                         }
@@ -994,7 +1006,7 @@ export class FightMap extends Component {
                                     }
                                     let selectSkeleton = this.Character.children[targetDirection].getChildByName(effectTypeName).getComponent(sp.Skeleton)
                                     selectSkeleton.node.active = true
-                                    if (effectType == "POISON") {
+                                    if (effectType == "POISON" || effectType == "SILENCE") {
                                         selectSkeleton.setAnimation(0, "animation", true)
                                     } else {
                                         selectSkeleton.setAnimation(0, "animation", false)
@@ -1016,7 +1028,7 @@ export class FightMap extends Component {
                                         1
                                     )
                                     this.Hp.children[targetDirection].getChildByName("user_li_count").getComponent(Label).string = targetAfterHp + "/" + targetMaxHp
-                                    if (effectType != "POISON") {
+                                    if (effectType != "POISON" && effectType != "SILENCE") {
                                         selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
                                     }
                                 }
@@ -1026,7 +1038,7 @@ export class FightMap extends Component {
                                 }
                                 let eventSelectSkeleton = this.tiem.children[targetDirection].children[targetPosition].getChildByName("buff").getChildByName(effectTypeName).getComponent(sp.Skeleton)
                                 eventSelectSkeleton.node.active = true
-                                if (effectType == "POISON") {
+                                if (effectType == "POISON" || effectType == "SILENCE") {
                                     eventSelectSkeleton.setAnimation(0, "animation", true)
                                 } else {
                                     eventSelectSkeleton.setAnimation(0, "animation", false)
@@ -1059,7 +1071,7 @@ export class FightMap extends Component {
                                     1
                                 )
                                 this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
-                                if (effectType != "POISON") {
+                                if (effectType != "POISON" && effectType != "SILENCE") {
                                     eventSelectSkeleton.setCompleteListener(() => eventSelectSkeleton.node.active = false)
                                 }
                             }
@@ -1095,6 +1107,9 @@ export class FightMap extends Component {
         holNumber.color = color
         holNumber.frontSize = size
         holNumber.number = num
+        if (this.isOverFight) {
+            if (!numberNode || !numberNode.position || !numberNode.position.x || !numberNode.position.y || !numberNode.position.z) return
+        }
         character.addChild(numberNode)
 
         const ordinarySibling = numberNode.getSiblingIndex()
@@ -1138,6 +1153,9 @@ export class FightMap extends Component {
         label.fontSize = 30
         label.color = color
         // label.color = new math.Color(236, 163, 61, 255)
+        if (this.isOverFight) {
+            if (!node || !node.position || !node.position.x || !node.position.y || !node.position.z) return
+        }
         character.addChild(node)
         let index = 0
         const inter = setInterval(() => {
