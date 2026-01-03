@@ -65,11 +65,11 @@ export class MessageCrtl extends Component {
                     node.getChildByName("fEsnbpxoT").off("click")
                     nodePool.put(node)
                 }
-              
+
                 for (let i = 0; i < messageDetails.length; i++) {
                     let messageDetail = messageDetails[i]
                     let item = nodePool.get()
-                  
+
                     if (this.type == 1) {
                         item.getChildByName("regitPlaye").active = true
                         item.getChildByName("fEsmZCGbB").active = false
@@ -90,13 +90,16 @@ export class MessageCrtl extends Component {
                             } else {
                                 content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>竞技场</color>攻击了<color=#EEE365>${messageDetail.toUserName}</color>，激烈战斗后最终<color=#00BCD4>${messageDetail.isWin == 0 ? '获胜' : '落败'}</color>。</color>`
                             }
-                        }else if (messageDetail.type == "3") {
+                        } else if (messageDetail.type == "3") {
                             if (config.userData.userId != messageDetail.userId) {
                                 content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>好友挑战</color>遭到<color=#EEE365>${messageDetail.userName}</color>偷袭，毫无防备最终<color=#00BCD4>${messageDetail.isWin == 1 ? '获胜' : '落败'}</color>。</color>`
 
                             } else {
                                 content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>好友挑战</color>攻击了<color=#EEE365>${messageDetail.toUserName}</color>，激烈战斗后最终<color=#00BCD4>${messageDetail.isWin == 0 ? '获胜' : '落败'}</color>。</color>`
                             }
+                        } else if (messageDetail.type == "4") {
+                            content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>${messageDetail.userName}</color>在<color=#EEE365>擂台赛</color>攻击了<color=#EEE365>${messageDetail.toUserName}</color>，激烈战斗后最终<color=#00BCD4>${messageDetail.isWin == 0 ? '获胜' : '落败'}</color>。</color>`
+
                         }
                         item.getChildByName("RichText").getComponent(RichText).string = content
                     } else if (this.type == 2) {

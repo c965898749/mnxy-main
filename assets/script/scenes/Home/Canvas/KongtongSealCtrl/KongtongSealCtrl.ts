@@ -124,7 +124,7 @@ export class KongtongSealCtrl extends Component {
         if (str) {
             return parseInt(str);
         }
-        return 10;
+        return 0;
     }
     SetLeaveEnergy(i) {
         var key = 'Leave_EnergyNumber2';

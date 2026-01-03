@@ -22,7 +22,7 @@ export class RankingCrtl extends Component {
     }
 
     async render(userlist, myRangking) {
-        console.log(userlist)
+        // console.log(userlist)
         this.node.active = true
         const nodePool = util.resource.getNodePool(
             await util.bundle.load("prefab/ff", Prefab)

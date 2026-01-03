@@ -14,8 +14,8 @@ export class Loginpel extends Component {
     Password: EditBox;
     // redis-server.exe redis.windows.conf
     // url = "http://192.168.0.104:8080/"
-    url = "http://127.0.0.1:8080/"
-    // url="http://czx.yimem.com:3000/"
+    // url = "http://127.0.0.1:8080/"
+    url="http://czx.yimem.com:3000/"
     start() {
         const token = getToken()
         const postData = {
@@ -57,7 +57,8 @@ export class Loginpel extends Component {
                             "characters": userInfo.characterList,
                             "winCount": userInfo.winCount,
                             "chapter": userInfo.chapter,
-                            "stopLevel": userInfo.stopLevel
+                            "stopLevel": userInfo.stopLevel,
+                            "weiwanCount": userInfo.weiwanCount
                         },
                     }
                     this.SetLeaveEnergy(userInfo.tiliCount)
@@ -85,7 +86,7 @@ export class Loginpel extends Component {
         if (str) {
             return parseInt(str);
         }
-        return 10;
+        return 0;
     }
     GetLeaveHuoliEnergy() {
         var key = 'Leave_EnergyHuoliNumber2';
@@ -93,7 +94,7 @@ export class Loginpel extends Component {
         if (str) {
             return parseInt(str);
         }
-        return 10;
+        return 0;
     }
     SetLeaveEnergy(i) {
         var key = 'Leave_EnergyNumber2';
@@ -238,7 +239,8 @@ export class Loginpel extends Component {
                                 "gameImg": userInfo.gameImg,
                                 "winCount": userInfo.winCount,
                                 "chapter": userInfo.chapter,
-                                "stopLevel": userInfo.stopLevel
+                                "stopLevel": userInfo.stopLevel,
+                                "weiwanCount": userInfo.weiwanCount
                             },
                         }
                         this.SetLeaveEnergy(userInfo.tiliCount)

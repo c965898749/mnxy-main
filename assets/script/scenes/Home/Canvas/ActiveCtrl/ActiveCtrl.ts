@@ -74,7 +74,7 @@ export class ActiveCtrl extends Component {
 <color=#FF4500><size=18>★ 专属称号【擂台霸主】（永久属性加成）</size></color>
 <color=#FF4500><size=18>★ 传说级武器【如意金箍棒】</size></color>
 <color=#FF4500><size=18>★ 争霸赛冠军雕像（主城广场展示1个月）</size></color>
-<color=#FF4500><size=18>★ 钻石*5000 + 顶级强化石*20</size></color>
+<color=#FF4500><size=18>★ 钻石*5000 + 魂力宝珠*5</size></color>
 
 <color=#87CEFA><size=18>赛事相关问题：</size></color>
 <color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>

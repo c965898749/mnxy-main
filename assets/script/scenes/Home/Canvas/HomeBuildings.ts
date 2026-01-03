@@ -65,7 +65,6 @@ export class HomeBuildings extends Component {
             "提示\n不同阵营之间相互克制，巧用阵营可以出奇制胜",
         ])
         holPreLoad.setProcess(20)
-        updateTiliAndHuoLi()
         if (this.isAroundChristmas()) {
             this.node.getChildByName("zhanhuan").getChildByName("zhanhuan2").active = true
             this.node.getChildByName("Conquer").getComponent(Sprite).spriteFrame =
@@ -114,7 +113,7 @@ export class HomeBuildings extends Component {
         let pos = this.pmdNode.getPosition()
         this.pmdOriginPos = v3(this.maskUITransform.width, pos.y, pos.z)
         this.pmdNode.setPosition(this.pmdOriginPos)
-          // 监听进度条完成函数
+        // 监听进度条完成函数
         // 设置 100%
         holPreLoad.setProcess(100)
         // 弹窗弹跳入场效果
@@ -152,10 +151,12 @@ export class HomeBuildings extends Component {
 
 
     onEnable() {
+        updateTiliAndHuoLi()
         if (!this.initialized) {
             // 初始化代码
             this.initialized = true;
         } else {
+
             this.refresh()
         }
 
@@ -253,7 +254,7 @@ export class HomeBuildings extends Component {
 
     //体力系统
     setTili() {
-        var EnergyReturnTime = 600
+        var EnergyReturnTime = 300
         this.energy = this.GetLeaveEnergy();
         this.huoliEnergy = this.GetLeaveHuoliEnergy();
         //cc.log(this.energy);
@@ -263,11 +264,27 @@ export class HomeBuildings extends Component {
         if (!lastTime) {
             lastTime = 0;
         }
+        var lastTime2 = parseInt(localStorage.getItem('LastGetHuoliTime1'));
+        if (!lastTime2) {
+            lastTime2 = 0;
+        }
         let nowTime = new Date().getTime();
-        var tiliCount = Math.round((nowTime - lastTime) / 1000 / EnergyReturnTime)
-        var hiliCount = Math.round((nowTime - lastTime) / 1000 / EnergyReturnTime)
-        var EnergyTime = EnergyReturnTime - Math.round(((nowTime - lastTime) / 1000 % EnergyReturnTime))
+        var tiliCount = Math.floor((nowTime - lastTime) / 1000 / EnergyReturnTime)
+        var hiliCount = Math.floor((nowTime - lastTime2) / 1000 / EnergyReturnTime)
+        // 修正问题2：移除多余的 Math.round，保证剩余秒数精确性
+        var passedEnergySeconds = (nowTime - lastTime) / 1000; // 体力已流逝秒数
+        var EnergyTime = EnergyReturnTime - (passedEnergySeconds % EnergyReturnTime); // 下次体力恢复剩余秒数
+        // 活力下次恢复剩余秒数（同理，保持一致性）
+        var passedHuoliSeconds = (nowTime - lastTime2) / 1000;
+        var HuoliTime = EnergyReturnTime - (passedHuoliSeconds % EnergyReturnTime);
+        if (tiliCount < 0) {
+            tiliCount = 0;
+        }
+        if (hiliCount < 0) {
+            hiliCount = 0;
+        }
         this.SetLeaveEnergyTime(EnergyTime);
+        this.SetLeaveEnergyHuoliTime(HuoliTime);
         if (tiliCount < 0) {
             tiliCount = 0;
         }
@@ -344,7 +361,7 @@ export class HomeBuildings extends Component {
         if (str) {
             return parseInt(str);
         }
-        return 10;
+        return 0;
     }
     GetLeaveHuoliEnergy() {
         var key = 'Leave_EnergyHuoliNumber2';
@@ -352,7 +369,7 @@ export class HomeBuildings extends Component {
         if (str) {
             return parseInt(str);
         }
-        return 10;
+        return 0;
     }
     SetLeaveEnergy(i) {
         var key = 'Leave_EnergyNumber2';
@@ -476,6 +493,10 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("PveCtrl").active = false
         this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("MyFriendsCrtl").active = false
+        this.node.parent.getChildByName("ArenaCrtl").active = false
+        this.node.parent.getChildByName("ArenaApplyCrtl").active = false
+        this.node.parent.getChildByName("ArenaDetailCrtl").active = false
+        this.node.parent.getChildByName("bagCrtl").active = false
         this.node.parent.getChildByName("MapCrtl").active = true
     }
 
@@ -512,6 +533,10 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("MyFriendsCrtl").active = false
         this.node.parent.getChildByName("MessageCrtl").active = false
+        this.node.parent.getChildByName("ArenaCrtl").active = false
+        this.node.parent.getChildByName("ArenaApplyCrtl").active = false
+        this.node.parent.getChildByName("ArenaDetailCrtl").active = false
+        this.node.parent.getChildByName("bagCrtl").active = false
         this.node.parent.getChildByName("CardCrtl").active = true
     }
 
@@ -548,6 +573,10 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("MyFriendsCrtl").active = false
         this.node.parent.getChildByName("MessageCrtl").active = false
+        this.node.parent.getChildByName("ArenaCrtl").active = false
+        this.node.parent.getChildByName("ArenaApplyCrtl").active = false
+        this.node.parent.getChildByName("ArenaDetailCrtl").active = false
+        this.node.parent.getChildByName("bagCrtl").active = false
         this.node.parent.getChildByName("Buildings").active = true
     }
     //挑战
@@ -562,6 +591,10 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("PveCtrl").active = false
         this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("MessageCrtl").active = false
+        this.node.parent.getChildByName("qianghuaCtrl").active = false
+        this.node.parent.getChildByName("ArenaApplyCrtl").active = false
+        this.node.parent.getChildByName("ArenaDetailCrtl").active = false
+        this.node.parent.getChildByName("bagCrtl").active = false
         this.node.parent.getChildByName("JinjiCtrl").active = true
     }
 
@@ -585,6 +618,10 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("MyFriendsCrtl").active = false
         this.node.parent.getChildByName("MessageCrtl").active = false
+        this.node.parent.getChildByName("ArenaCrtl").active = false
+        this.node.parent.getChildByName("ArenaApplyCrtl").active = false
+        this.node.parent.getChildByName("ArenaDetailCrtl").active = false
+        this.node.parent.getChildByName("bagCrtl").active = false
         this.node.parent.getChildByName("otherCtrl").active = true
     }
 
@@ -601,6 +638,10 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("MyFriendsCrtl").active = false
         this.node.parent.getChildByName("MessageCrtl").active = false
+        this.node.parent.getChildByName("ArenaCrtl").active = false
+        this.node.parent.getChildByName("ArenaApplyCrtl").active = false
+        this.node.parent.getChildByName("ArenaDetailCrtl").active = false
+        this.node.parent.getChildByName("bagCrtl").active = false
         this.node.parent.getChildByName("EquipmentCtrl").active = true
     }
 
@@ -616,6 +657,10 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("MyFriendsCrtl").active = false
         this.node.parent.getChildByName("MessageCrtl").active = false
+        this.node.parent.getChildByName("ArenaCrtl").active = false
+        this.node.parent.getChildByName("ArenaApplyCrtl").active = false
+        this.node.parent.getChildByName("ArenaDetailCrtl").active = false
+        this.node.parent.getChildByName("bagCrtl").active = false
         this.node.parent.getChildByName("ShopCtrl").active = true
     }
 

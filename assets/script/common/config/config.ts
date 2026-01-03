@@ -25,8 +25,8 @@ class VolumeDetail {
 class ServerUrl {
     // redis-server.exe redis.windows.conf
     // url = "http://192.168.0.104:8080/"
-    url = "http://127.0.0.1:8080/"
-    // url="http://czx.yimem.com:3000/"
+    // url = "http://127.0.0.1:8080/"
+    url="http://czx.yimem.com:3000/"
 }
 
 let globalId: number = 1
@@ -61,6 +61,8 @@ class UserData extends Resource {
     public rate: number = 0
 
     public stopLevel: number = 0
+
+    public weiwanCount: number = 0
     // 已经收集到的英雄
     public hasCollectCharacterId: string[] = []
 
@@ -80,6 +82,7 @@ class UserData extends Resource {
         this.winCount = or.winCount
         this.rate = or.rate || 0
         this.stopLevel = or.stopLevel || 0
+        this.weiwanCount = or.weiwanCount || 0
         this.useCardCount = or.useCardCount || "0/0"
         this.hasCollectCharacterId = or.hasCollectCharacterId || []
             // 原有的物品
@@ -210,7 +213,7 @@ export function updateTiliTime() {
         })
         .then(async data => {
             if (data.success == '1') {
-                console.log("更新体力时间成功");
+                // console.log("更新体力时间成功");
             }
         })
         .catch(error => {
@@ -223,7 +226,7 @@ export function updateTiliTime() {
 export function updateHuoliTime() {
     const config = getConfig()
     const token = getToken()
-    var lastTime = parseInt(localStorage.getItem('lastGetHuoliTime1'));
+    var lastTime = parseInt(localStorage.getItem('LastGetHuoliTime1'));
     var key = 'Leave_EnergyHuoliNumber2';
     var str = localStorage.getItem(key);
     if (!str) {
@@ -232,7 +235,7 @@ export function updateHuoliTime() {
     const postData = {
         token: token,
         str: lastTime,
-        tiLi: parseInt(str),
+        huoLi: parseInt(str),
         userId: config.userData.userId,
     };
     const options = {
@@ -247,7 +250,7 @@ export function updateHuoliTime() {
         })
         .then(async data => {
             if (data.success == '1') {
-                console.log("更新活力力时间成功");
+                // console.log("更新活力力时间成功");
             }
         })
         .catch(error => {

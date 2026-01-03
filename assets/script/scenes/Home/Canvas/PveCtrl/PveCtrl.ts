@@ -154,7 +154,7 @@ export class PveCtrl extends Component {
         return false;
     }
     refresh() {
-        var EnergyReturnTime = 600
+        var EnergyReturnTime = 300
         this.energy = this.GetLeaveEnergy();
         //cc.log(this.energy);
         var LeaveEnergy = this.GetLeaveEnergy();
@@ -163,15 +163,13 @@ export class PveCtrl extends Component {
             lastTime = 0;
         }
         let nowTime = new Date().getTime();
-        var tiliCount = Math.round((nowTime - lastTime) / 1000 / EnergyReturnTime)
-        var hiliCount = Math.round((nowTime - lastTime) / 1000 / EnergyReturnTime)
-        var EnergyTime = EnergyReturnTime - Math.round(((nowTime - lastTime) / 1000 % EnergyReturnTime))
+        var tiliCount = Math.floor((nowTime - lastTime) / 1000 / EnergyReturnTime)
+        // 修正问题2：移除多余的 Math.round，保证剩余秒数精确性
+        var passedEnergySeconds = (nowTime - lastTime) / 1000; // 体力已流逝秒数
+        var EnergyTime = EnergyReturnTime - (passedEnergySeconds % EnergyReturnTime); // 下次体力恢复剩余秒数
         this.SetLeaveEnergyTime(EnergyTime);
         if (tiliCount < 0) {
             tiliCount = 0;
-        }
-        if (hiliCount < 0) {
-            hiliCount = 0;
         }
         if (this.energy > this.MaxEnergy) {
             let lastDate = this.GetLeaveEnergyTime();
@@ -342,7 +340,7 @@ export class PveCtrl extends Component {
         if (str) {
             return parseInt(str);
         }
-        return 10;
+        return 0;
     }
     SetLeaveEnergy(i) {
         var key = 'Leave_EnergyNumber2';

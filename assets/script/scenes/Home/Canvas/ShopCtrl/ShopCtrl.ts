@@ -10,39 +10,108 @@ export class ShopCtrl extends Component {
     timeLabel: Node
     @property(Button)
     btnUpdate: Button
+    @property(Node)
+    storeImg
+    shopUpdate: number
+    timer = 0
     @property({ type: Node, tooltip: "任务列表" }) ContentNode: Node = null;
+    initialized = false;
     start() {
-        this.init()
+        this.init("0")
     }
 
-    update(deltaTime: number) {
+    onEnable() {
+        if (!this.initialized) {
+            // 初始化代码
+            this.initialized = true;
+        } else {
+            this.init("0")
+        }
+
+    }
+    async update(deltaTime: number) {
+        if (this.timer >= 50) {
+            // 调用函数，传入目标时间戳1767383923000
+            const result = this.checkTimeDifference(this.shopUpdate);
+            // 打印结果（可根据需求自行处理结果）
+            if (typeof result === 'number') {
+                this.btnUpdate.interactable = false
+                this.timeLabel.active = true
+                let time = result
+                let lable = this.timeLabel.getComponent(Label)
+                let self = this
+                self.storeImg.getComponent(Sprite).spriteFrame = null
+                lable.string = this.formatTime(time) + "秒后可以刷新"
+            } else {
+                this.btnUpdate.interactable = true
+                this.timeLabel.active = false
+                this.storeImg.getComponent(Sprite).spriteFrame =
+                    await util.bundle.load(`image/store/store_06/spriteFrame`, SpriteFrame)
+            }
+            // console.log("GetLeaveEnergyTime:", this.GetLeaveEnergyTime());
+            this.timer = 0;
+        }
+        else {
+            this.timer++;
+        }
 
     }
     updateStoreData() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        this.init();
-        this.btnUpdate.interactable = false
-        this.timeLabel.active = true
-        let time = 10
-        let lable = this.timeLabel.getComponent(Label)
-        let self = this
-        lable.string = time + "秒后可以刷新"
-        this.schedule(function () {
-            time--
-            lable.string = time + "秒后可以刷新"
-            if (time <= 0) {
-                lable.string = ""
-            }
-        }, 1, 10)
-        this.scheduleOnce(function () {
-            self.btnUpdate.interactable = true
-            self.timeLabel.active = false
-        }, 10)
+        this.init("1");
+        // this.btnUpdate.interactable = false
+        // this.timeLabel.active = true
+        // let time = 10
+        // let lable = this.timeLabel.getComponent(Label)
+        // let self = this
+        // lable.string = time + "秒后可以刷新"
+        // this.schedule(function () {
+        //     time--
+        //     lable.string = time + "秒后可以刷新"
+        //     if (time <= 0) {
+        //         lable.string = ""
+        //     }
+        // }, 1, 10)
+        // this.scheduleOnce(function () {
+        //     self.btnUpdate.interactable = true
+        //     self.timeLabel.active = false
+        // }, 10)
+    }
+    formatTime(remainingSeconds) {
+        var minutes = Math.floor(remainingSeconds / 60); // 向下取整，获取准确分钟数
+        var seconds = Math.floor(remainingSeconds % 60); // 向下取整，获取准确秒数
+        // 秒数补零：不足两位时，前面加0
+        var formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
+        return minutes + ":" + formattedSeconds;
+    }
+    checkTimeDifference(targetTimestamp: number): boolean | number {
+        // 1. 定义30分钟对应的毫秒数：30分钟 = 30 * 60秒 * 1000毫秒/秒
+        const thirtyMinutesMs = 30 * 60 * 1000;
+
+        // 2. 获取当前时间的时间戳（毫秒级）
+        const currentTimestamp = Date.now();
+
+        // 3. 计算时间差值（绝对值，避免目标时间早于/晚于当前时间的异常）
+        const timeDiffMs = Math.abs(targetTimestamp - currentTimestamp);
+
+        // 4. 判断差值是否大于30分钟
+        if (timeDiffMs > thirtyMinutesMs) {
+            return true;
+        } else {
+            // 5. 未超过30分钟时，计算剩余毫秒数并转换为秒（向下取整，也可使用Math.round四舍五入）
+            const remainingMs = thirtyMinutesMs - timeDiffMs;
+            const remainingSeconds = Math.floor(remainingMs / 1000);
+            return remainingSeconds;
+        }
     }
 
-    init() {
+    init(str) {
         const config = getConfig()
+        const token = getToken()
         const postData = {
+            token: token,
+            userId: config.userData.userId,
+            str: str
         };
         const options = {
             method: 'POST',
@@ -68,7 +137,23 @@ export class ShopCtrl extends Component {
                         })
                         nodePool.put(node)
                     }
-                    var objArray = data.data
+                    let map = data.data
+                    let shopUpdate = map["shopUpdate"]
+                    this.shopUpdate = shopUpdate
+                    let picked = map["picked"]
+                    let objArray = picked
+                    let buyId = []
+                    if (objArray) {
+                        localStorage.setItem("picked", JSON.stringify(objArray))
+                        localStorage.setItem("buyId", "")
+                    } else {
+                        picked = localStorage.getItem("picked")
+                        objArray = JSON.parse(picked)
+                        let buyIdJson = localStorage.getItem("buyId")
+                        if (buyIdJson) {
+                            buyId = JSON.parse(buyIdJson)
+                        }
+                    }
                     for (let i = 0; i < objArray.length; i += 4) {
                         let item = nodePool.get()
                         const group = objArray.slice(i, i + 4);
@@ -97,11 +182,25 @@ export class ShopCtrl extends Component {
                                 aa.getChildByName("th").getComponent(Sprite).spriteFrame =
                                     await util.bundle.load(`game/texture/frames/hero/Header/${itemC.itemId}/spriteFrame`, SpriteFrame)
                             }
-                            aa.getChildByName("sell").getChildByName("Background").on("click", () => { this.clickFun(itemC.itemId, aa) })
+
+                            if (buyId && buyId.length > 0) {
+                                let cc = buyId.filter(x => x == itemC.id)
+                                if (cc && cc.length > 0) {
+                                    console.log(999)
+                                    aa.getChildByName("sell").getChildByName("Background").getComponent(Button).interactable = false
+                                    aa.getChildByName("sell").getChildByName("Background")
+                                        .getChildByName("Label").getComponent(Label).string = "已购买"
+                                    aa.getChildByName("sell").getChildByName("Background").getComponent(Sprite).spriteFrame =
+                                        await util.bundle.load(`image/store/store_12/spriteFrame`, SpriteFrame)
+                                }
+
+                            }
+                            aa.getChildByName("sell").getChildByName("Background").on("click", () => { this.clickFun(itemC.id, itemC.itemId, aa) })
                         }
                         this.ContentNode.addChild(item)
                         continue
                     }
+
                 }
             })
             .catch(error => {
@@ -109,7 +208,15 @@ export class ShopCtrl extends Component {
             }
             );
     }
-    clickFun(itemId: any, aa: Node) {
+    clickFun(id, itemId: any, aa: Node) {
+        let buyId = []
+        let buyIdJson = localStorage.getItem("buyId")
+        if (buyIdJson) {
+            buyId = JSON.parse(buyIdJson)
+            console.log(buyId, 777)
+        }
+        buyId.push(id)
+        localStorage.setItem("buyId", JSON.stringify(buyId))
         const config = getConfig()
         const token = getToken()
         const postData = {
@@ -147,6 +254,11 @@ export class ShopCtrl extends Component {
                 console.error('There was a problem with the fetch operation:', error);
             }
             );
+    }
+
+    openBag() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("bagCrtl").active = true
     }
 }
 
