@@ -40,11 +40,15 @@ export class otherCtrl extends Component {
     }
     openHotEvents() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        this.node.parent.getChildByName("HotEventsCtrl").active=true
+        this.node.parent.getChildByName("HotEventsCtrl").active = true
     }
     openBlessing() {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.parent.getChildByName("BlessingCrtl").active = true
+    }
+    openBag() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("bagCrtl").active = true
     }
 }
 

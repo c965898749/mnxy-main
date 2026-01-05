@@ -13,11 +13,26 @@ export class ShopCtrl extends Component {
     @property(Node)
     storeImg
     shopUpdate: number
+    @property(Node)
+    zhan: Node
+    @property(Node)
+    find: Node
+    @property(Node)
+    itemDetail1: Node
+    @property(Node)
+    itemDetail2: Node
+    @property(Node)
+    introduceBack: Node
+    byItemDetail = null
     timer = 0
+    @property(Node)
+    byNum: Node
     @property({ type: Node, tooltip: "任务列表" }) ContentNode: Node = null;
+    @property({ type: Node, tooltip: "任务列表" }) ContentNode2: Node = null;
     initialized = false;
     start() {
         this.init("0")
+        // this.init2()
     }
 
     onEnable() {
@@ -59,23 +74,6 @@ export class ShopCtrl extends Component {
     updateStoreData() {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.init("1");
-        // this.btnUpdate.interactable = false
-        // this.timeLabel.active = true
-        // let time = 10
-        // let lable = this.timeLabel.getComponent(Label)
-        // let self = this
-        // lable.string = time + "秒后可以刷新"
-        // this.schedule(function () {
-        //     time--
-        //     lable.string = time + "秒后可以刷新"
-        //     if (time <= 0) {
-        //         lable.string = ""
-        //     }
-        // }, 1, 10)
-        // this.scheduleOnce(function () {
-        //     self.btnUpdate.interactable = true
-        //     self.timeLabel.active = false
-        // }, 10)
     }
     formatTime(remainingSeconds) {
         var minutes = Math.floor(remainingSeconds / 60); // 向下取整，获取准确分钟数
@@ -208,6 +206,128 @@ export class ShopCtrl extends Component {
             }
             );
     }
+
+    init2() {
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "/getStore2", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                let items = data.data
+                this.byItemDetail = null
+                console.log(111)
+                const nodePool2 = util.resource.getNodePool(
+                    await util.bundle.load("prefab/ff5", Prefab)
+                )
+                const childrens = [...this.ContentNode2.children]
+                for (let i = 0; i < childrens.length; i++) {
+                    const node = childrens[i];
+                    node.getChildByName("buy").off("click")
+                    nodePool2.put(node)
+                }
+
+                for (let i = 0; i < items.length; i++) {
+                    let itemDetail = items[i]
+                    let item = nodePool2.get()
+                    console.log(222)
+                    item.getChildByName("buy").on("click", () => { this.clickBuyFun(itemDetail) })
+                    item.getChildByName("name").getComponent(Label).string = itemDetail.itemName
+                    item.getChildByName("Count").getComponent(Label).string = itemDetail.description
+                    item.getChildByName("price").getComponent(Label).string = itemDetail.gemPrice
+                    item.getChildByName("textbox_bg").getChildByName("num").getComponent(Label).string = "限购"+itemDetail.stock
+                    item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
+                        await util.bundle.load(itemDetail.icon, SpriteFrame)
+                    this.ContentNode2.addChild(item)
+                    continue
+                }
+            })
+            .catch(error => {
+                //console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+
+    }
+
+    async clickBuyFun(itemDetail) {
+        const config = getConfig()
+        const token = getToken()
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.introduceBack.active = true
+        this.byItemDetail = itemDetail
+        this.introduceBack.getChildByName("name").getComponent(Label).string = itemDetail.itemName
+        this.introduceBack.getChildByName("price").getComponent(Label).string = itemDetail.gemPrice + " (剩余" + config.userData.diamond + ")"
+        this.introduceBack.getChildByName("yxjm_df_txk").getChildByName("header").getComponent(Sprite).spriteFrame =
+            await util.bundle.load(itemDetail.icon, SpriteFrame)
+    }
+
+
+    async buyBtn() {
+        if (!this.byItemDetail) {
+            return await util.message.prompt({ message: "请选择商品" })
+        }
+        var playerItemCount = Number(this.byNum.getComponent(Label).string)
+        if (!playerItemCount || playerItemCount < 1) {
+            return await util.message.prompt({ message: "请选择商品数量" })
+        }
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+            id: this.byItemDetail.itemId,
+            str: playerItemCount
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "/buyStore2", options)
+            .then(response => {
+
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    let userInfo = data.data;
+                    config.userData.gold = userInfo.gold
+                    config.userData.diamond = userInfo.diamond
+                    config.userData.soul = userInfo.soul
+                    config.userData.characters = userInfo.characterList
+                    localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    await util.message.prompt({ message: "购买成功" })
+                    this.byItemDetail = null;
+                    this.byNum.getComponent(Label).string = 1 + ""
+                    this.introduceBack.active = false
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+    }
+
+    cannleBtn() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.introduceBack.active = false
+        this.byItemDetail = null
+    }
+
     clickFun(id, itemId: any, aa: Node) {
         let buyId = []
         let buyIdJson = localStorage.getItem("buyId")
@@ -258,8 +378,27 @@ export class ShopCtrl extends Component {
 
     openBag() {
         AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.active = false
         this.node.parent.getChildByName("bagCrtl").active = true
     }
+
+    async zhanbao() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.zhan.getComponent(Sprite).spriteFrame = await util.bundle.load('image/button/lian/spriteFrame', SpriteFrame)
+        this.find.getComponent(Sprite).spriteFrame = await util.bundle.load('image/button/lian2/spriteFrame', SpriteFrame)
+        this.itemDetail2.active = false
+        this.itemDetail1.active = true
+        this.init("0")
+    }
+    async frineds() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.zhan.getComponent(Sprite).spriteFrame = await util.bundle.load('image/button/lian2/spriteFrame', SpriteFrame)
+        this.find.getComponent(Sprite).spriteFrame = await util.bundle.load('image/button/lian/spriteFrame', SpriteFrame)
+        this.itemDetail1.active = false
+        this.itemDetail2.active = true
+        this.init2()
+    }
+
 }
 
 

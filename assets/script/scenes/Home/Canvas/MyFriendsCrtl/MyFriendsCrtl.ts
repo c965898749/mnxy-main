@@ -73,11 +73,13 @@ export class MyFriendsCrtl extends Component {
                         item.getChildByName("yxjm_df_txk").getChildByName("header").getComponent(Sprite).spriteFrame =
                             await util.bundle.load(userlist[i].gameImg, SpriteFrame)
                         item.getChildByName("tiaozhan").on("click", () => { this.clickTiaozhanFun(userlist[i].userId) })
-                        if (userlist[i].fbId==null||userlist[i].fbId=="") {
+                        if (userlist[i].fbId == null || userlist[i].fbId == "") {
                             item.getChildByName("zhufu").active = true
                             item.getChildByName("zhufu").on("click", () => {
                                 this.BlessingCrtl(userlist[i].userId, config.userData.userId, item)
                             })
+                        } else {
+                            item.getChildByName("zhufu").active = false
                         }
                         this.ContentNode.addChild(item)
                         continue

@@ -25,7 +25,6 @@ export class MessageCrtl extends Component {
             // 初始化代码
             this.initialized = true;
         } else {
-            console.log(222222)
             this.refresh()
         }
 
