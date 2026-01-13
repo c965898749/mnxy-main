@@ -341,7 +341,8 @@ export class ShopCtrl extends Component {
         const token = getToken()
         const postData = {
             token: token,
-            id: itemId
+            id: itemId,
+            userId: config.userData.userId,
         };
         const options = {
             method: 'POST',

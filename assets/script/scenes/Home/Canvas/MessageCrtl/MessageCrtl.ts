@@ -237,7 +237,8 @@ export class MessageCrtl extends Component {
         const token = getToken()
         const postData = {
             token: token,
-            str: giftCode
+            str: giftCode,
+            userId:config.userData.userId
         };
         const options = {
             method: 'POST',

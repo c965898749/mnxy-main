@@ -119,7 +119,8 @@ export class HeroCharacterDetailPorperty extends Component {
         const token = getToken()
         const postData = {
             token: token,
-            id: this.$state.create.id
+            id: this.$state.create.id,
+            userId:config.userData.userId
         };
         const options = {
             method: 'POST',

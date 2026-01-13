@@ -106,7 +106,7 @@ export class ActiveCtrl extends Component {
 <color=#FF69B4><size=18>愿火焰指引你的道路，勇士们！</size></color>
 <color=#CCCCCC><size=14>【QQ神仙依梦工作室】2025年12月21日</size></color>`
         }
-                if (this.page == "NetherBattlefield") {
+        if (this.page == "NetherBattlefield") {
             content = `<color=#FF4500><size=28><b>【幽冥战域】版本更新与副本探险活动公告</b></size></color>
 <color=#FFE4B5><size=20>亲爱的烈焰勇士们：</size></color>
 
@@ -128,7 +128,7 @@ export class ActiveCtrl extends Component {
 <color=#FF69B4><size=18>愿火焰指引你的道路，勇士们！</size></color>
 <color=#CCCCCC><size=14>【QQ神仙依梦工作室】2025年12月21日</size></color>`
         }
-                        if (this.page == "CelestialSpiritArchgeneral") {
+        if (this.page == "CelestialSpiritArchgeneral") {
             content = `<color=#FF4500><size=28><b>【圣灵天将】版本更新与副本探险活动公告</b></size></color>
 <color=#FFE4B5><size=20>亲爱的烈焰勇士们：</size></color>
 
@@ -151,30 +151,70 @@ export class ActiveCtrl extends Component {
 <color=#CCCCCC><size=14>【QQ神仙依梦工作室】2025年12月21日</size></color>`
         }
         if (this.page == "page4") {
-            content = `<color=#FFD700><size=28><b>【福利狂欢】海量奖励限时派送中！</b></size></color>
-<color=#FFFFFF><size=20>各位玩家请注意！多重福利盛宴已开启，多重错过！</size></color>
+            content = `<size=30><color=#FFD700><b>【试炼塔开启 登顶赢锻造神材】</b></color></size>
+<color=#FFE4B5><size=20>亲爱的烈焰勇士们：</size></color>
 
-<color=#FF6347><size=20>✨ 全民登录豪礼 ✨</size></color>
-<color=#FFFF00><size=18>▶ 累计登录2天：钻石*500</size></color>
-<color=#FFFF00><size=18>▶ 累计登录5天：开荒神器【轩辕剑】</size></color>
-<color=#FFFF00><size=18>▶ 累计登录7天：传说伙伴【瑶池仙女】</size></color>
+<color=#FFA500><size=20>全新试炼塔现已震撼开放！共设三大段位，层层闯关，步步为营，<color=#FFFFFF><b>海量锻造材料</b></color>等你来拿，助力打造专属仙侠神装！</size></color>
+<size=19>
+<color=#CD7F32><b>◆ 青铜之塔 ◆</b></color>
+<color=#FFFFFF>入门试炼，新手进阶必争之地
+通关奖励：<color=#CD7F32>青铜矿、初级强化石</color>
+适用装备：新手过渡武器/防具</color>
+<color=#C0C0C0>────────────────</color>
+<color=#E6E6FA><b>◆ 白银之塔 ◆</b></color>
+<color=#FFFFFF>高手角逐，实力验证进阶战场
+通关奖励：<color=#E6E6FA>玄铁矿、中级强化石</color>
+适用装备：精品仙侠套装部件</color>
+<color=#C0C0C0>────────────────</color>
+<color=#FFD700><b>◆ 黄金之塔 ◆</b></color>
+<color=#FFFFFF>巅峰对决，登顶者傲视全服
+通关奖励：<color=#FFD700>紫金石、高级强化石、顶级神器图谱</color>
+适用装备：传说级仙侠神装</color>
+<color=#C0C0C0>▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁</color>
+<color=#FF6B6B><b>【挑战规则】</b></color>
+<color=#FFFFFF>1. 每日可免费挑战3次，次数耗尽可消耗仙玉重置
+2. 每段位分100层，逐层通关解锁下一层奖励
+3. 通关塔顶后选择一键探索，将自动探索
+4. 通关黄金之塔顶层可获得<b>专属称号：【塔王】</b></color>
 
-<color=#FF6347><size=20>🎁 兑换福利 🎁</size></color>
-<color=#FFFF00><size=18>▶ 拒绝玄学，集齐指定素材可合成：传说级4.5星伙伴【齐天大圣】等</size></color>
-<color=#FFFF00><size=18>▶ 完成日常任务额外得：限定头像框「福利达人」</size></color>
-<color=#FFFF00><size=18>▶ 分享活动至社交平台：钻石*100 + 10万*金币</size></color>
+<color=#4ECDC4><b>【锻造指引】</b></color>
+<color=#FFFFFF>收集对应段位材料后，可前往【装备打造】打造/强化装备
+高段位材料可合成高品质道具，神装进阶不容错过！</color></size>
 
-<color=#FFA500><size=19>活动时间：永久</size></color>
-<color=#FFA500><size=19>分享活动奖励领取：祭坛-客服石碑</size></color>
-
-<color=#87CEFA><size=18>奖励发放问题请联系：</size></color>
+<color=#87CEFA><size=18>遇到烈焰屏障？联系我们：</size></color>
 <color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
 <color=#FFFFFF><size=16>▶ 官方①QQ群：587452663</size></color>
 <color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size></color>
 
-<color=#FF69B4><size=18>海量奖励已就位，快来领取属于你的专属福利！</size></color>
-<color=#CCCCCC><size=14>【QQ神仙依梦工作室】2025年12月21日</size></color>`
+<color=#FFD700><size=18><b>即刻登顶试炼塔，锻造你的专属仙侠神兵！</b></size></color>
+<color=#CCCCCC><size=14>【QQ神仙依梦工作室】2026年1月11日</size></color>
+`
         }
+        //         if (this.page == "page4") {
+        //             content = `<color=#FFD700><size=28><b>【福利狂欢】海量奖励限时派送中！</b></size></color>
+        // <color=#FFFFFF><size=20>各位玩家请注意！多重福利盛宴已开启，多重错过！</size></color>
+
+        // <color=#FF6347><size=20>✨ 全民登录豪礼 ✨</size></color>
+        // <color=#FFFF00><size=18>▶ 累计登录2天：钻石*500</size></color>
+        // <color=#FFFF00><size=18>▶ 累计登录5天：开荒神器【轩辕剑】</size></color>
+        // <color=#FFFF00><size=18>▶ 累计登录7天：传说伙伴【瑶池仙女】</size></color>
+
+        // <color=#FF6347><size=20>🎁 兑换福利 🎁</size></color>
+        // <color=#FFFF00><size=18>▶ 拒绝玄学，集齐指定素材可合成：传说级4.5星伙伴【齐天大圣】等</size></color>
+        // <color=#FFFF00><size=18>▶ 完成日常任务额外得：限定头像框「福利达人」</size></color>
+        // <color=#FFFF00><size=18>▶ 分享活动至社交平台：钻石*100 + 10万*金币</size></color>
+
+        // <color=#FFA500><size=19>活动时间：永久</size></color>
+        // <color=#FFA500><size=19>分享活动奖励领取：祭坛-客服石碑</size></color>
+
+        // <color=#87CEFA><size=18>奖励发放问题请联系：</size></color>
+        // <color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
+        // <color=#FFFFFF><size=16>▶ 官方①QQ群：587452663</size></color>
+        // <color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size></color>
+
+        // <color=#FF69B4><size=18>海量奖励已就位，快来领取属于你的专属福利！</size></color>
+        // <color=#CCCCCC><size=14>【QQ神仙依梦工作室】2025年12月21日</size></color>`
+        //         }
         if (this.page == "KongtongSealCtrl") {
             content = `<color=#9932CC><size=28><b>【崆峒窟】副本每周六开启！</b></size></color>
 <color=#E6E6FA><size=20>各位召唤师，传说中的崆峒印已现世，限时召唤开启！</size></color>

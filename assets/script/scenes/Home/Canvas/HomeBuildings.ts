@@ -1,10 +1,11 @@
-import { _decorator, AudioClip, AudioSource, Component, director, EventTouch, Label, math, Node, screen, Sprite, SpriteFrame, tween, UITransform, v3, Vec3 } from 'cc';
+import { _decorator, AudioClip, AudioSource, Component, director, EventTouch, find, Label, math, Node, screen, Sprite, SpriteFrame, tween, UITransform, v3, Vec3 } from 'cc';
 import { util } from '../../../util/util';
 import { getConfig, updateHuoliTime, updateTiliAndHuoLi, updateTiliTime } from '../../../common/config/config';
 import { AudioMgr } from "../../../util/resource/AudioMgr";
 import { CharacterState, CharacterStateCreate } from '../../../game/fight/character/CharacterState';
 import { LCoin } from '../../../common/common/Language';
 import { HolPreLoad } from '../../../prefab/HolPreLoad';
+import { HomeCanvas } from '../HomeCanvas';
 const { ccclass, property } = _decorator;
 
 @ccclass('HomeBuildings')
@@ -60,11 +61,22 @@ export class HomeBuildings extends Component {
     // }
     protected async start() {
         // HolPreLoad 预加载进度条
+        console.log(777)
         const holPreLoad = this.node.parent.getChildByName("HolPreLoad").getComponent(HolPreLoad)
         holPreLoad.setTips([
             "提示\n不同阵营之间相互克制，巧用阵营可以出奇制胜",
         ])
-        holPreLoad.setProcess(20)
+        holPreLoad.setProcess(10)
+        const config = getConfig()
+        // 音乐们
+        const musics = await util.bundle.loadDir<AudioClip>("sound/home", AudioClip)
+        const music = musics[Math.floor(musics.length * Math.random())]
+        let Canvas = find("Canvas")
+        let audioSource = Canvas.getComponent(HomeCanvas).audioSource
+        audioSource.clip = music
+        audioSource.volume = config.volume * config.volumeDetail.home
+        audioSource.play()
+        holPreLoad.setProcess(30)
         if (this.isAroundChristmas()) {
             this.node.getChildByName("zhanhuan").getChildByName("zhanhuan2").active = true
             this.node.getChildByName("Conquer").getComponent(Sprite).spriteFrame =
@@ -79,7 +91,6 @@ export class HomeBuildings extends Component {
         holPreLoad.setProcess(50)
         // 当前进度
         let process = 50
-        const config = getConfig()
         this.node.getChildByName("Top").getChildByName("Gold").getComponent(Label).string = LCoin(config.userData.gold)
         this.node.getChildByName("Top").getChildByName("Lv").getComponent(Label).string = "Lv " +
             util.sundry.formateNumber(config.userData.lv)
@@ -115,17 +126,9 @@ export class HomeBuildings extends Component {
         this.pmdNode.setPosition(this.pmdOriginPos)
         // 监听进度条完成函数
         // 设置 100%
-        holPreLoad.setProcess(100)
-        // 弹窗弹跳入场效果
-        if (!this.checkIfTimeIsToday()) {
-            this.node.parent.getChildByName("SignInCtrl").active = true
-        }
-        this.node.parent.getChildByName("SignInCtrl").scale = new Vec3(0, 0, 0)
-        tween(this.node.parent.getChildByName("SignInCtrl"))
-            .to(1, { scale: new Vec3(1, 1, 1) }, { easing: 'elasticOut' })
-            .start();
         //战力计算
         this.node.getChildByName("mid").getChildByName("user_fight_count").getComponent(Label).string = this.power + ""
+        holPreLoad.setProcess(100)
     }
 
     isAroundChristmas(): boolean {
@@ -441,18 +444,7 @@ export class HomeBuildings extends Component {
     }
 
 
-    public checkIfTimeIsToday() {
-        const cachedTime = localStorage.getItem('cachedTime');
-        if (!cachedTime) return false;
 
-        const cachedDate = new Date(cachedTime);
-        const today = new Date();
-        console.log(cachedDate)
-        console.log(today)
-        return cachedDate.getFullYear() === today.getFullYear() &&
-            cachedDate.getMonth() === today.getMonth() &&
-            cachedDate.getDate() === today.getDate();
-    }
     // protected onDestroy(): void {
     //     // 触摸事件销毁
     //     this.node.off(Node.EventType.TOUCH_MOVE, this.onNodeTouchMove, this)

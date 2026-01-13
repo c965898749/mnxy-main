@@ -122,6 +122,9 @@ export class MapCrtl extends Component {
             .getComponent(PveCtrl)
             .render(mapId)
     }
+    async openta(){
+          return await util.message.prompt({ message: "暂未开放" })
+    }
 
     openHotEvents() {
         AudioMgr.inst.playOneShot("sound/other/click");

@@ -52,13 +52,17 @@ export class Loginpel extends Component {
                             "useCardCount": userInfo.useCardCount,
                             "signCount": userInfo.signCount,
                             "backpack": [],
-                            "equipments": [],
+                            "equipments": userInfo.eqCharactersList,
                             "gameImg": userInfo.gameImg,
                             "characters": userInfo.characterList,
                             "winCount": userInfo.winCount,
                             "chapter": userInfo.chapter,
                             "stopLevel": userInfo.stopLevel,
-                            "weiwanCount": userInfo.weiwanCount
+                            "weiwanCount": userInfo.weiwanCount,
+                            "bronze": userInfo.bronze,
+                            "darkSteel": userInfo.darkSteel,
+                            "purpleGold": userInfo.purpleGold,
+                            "crystal": userInfo.crystal,
                         },
                     }
                     this.SetLeaveEnergy(userInfo.tiliCount)
@@ -66,9 +70,6 @@ export class Loginpel extends Component {
                     localStorage.setItem('LastGetHuoliTime1', userInfo.huoliCountTime + "");
                     this.SetLeaveHuoliEnergy(userInfo.huoliCount)
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
-                    // director.preloadScene("Home", () => {
-                    //     close()
-                    // })
                     director.loadScene("Home")
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
@@ -234,13 +235,17 @@ export class Loginpel extends Component {
                                 "signCount": userInfo.signCount,
                                 "useCardCount": userInfo.useCardCount,
                                 "backpack": [],
-                                "equipments": [],
+                                "equipments": userInfo.eqCharactersList,
                                 "characters": userInfo.characterList,
                                 "gameImg": userInfo.gameImg,
                                 "winCount": userInfo.winCount,
                                 "chapter": userInfo.chapter,
                                 "stopLevel": userInfo.stopLevel,
-                                "weiwanCount": userInfo.weiwanCount
+                                "weiwanCount": userInfo.weiwanCount,
+                                "bronze": userInfo.bronze,
+                                "darkSteel": userInfo.darkSteel,
+                                "purpleGold": userInfo.purpleGold,
+                                "crystal": userInfo.crystal,
                             },
                         }
                         this.SetLeaveEnergy(userInfo.tiliCount)
@@ -249,9 +254,6 @@ export class Loginpel extends Component {
                         this.SetLeaveHuoliEnergy(userInfo.huoliCount)
                         localStorage.setItem("token", userInfo.token)
                         localStorage.setItem("UserConfigData", JSON.stringify(config))
-                        // director.preloadScene("Home", () => {
-                        //     close()
-                        // })
                         director.loadScene("Home")
                     } else {
                         const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })

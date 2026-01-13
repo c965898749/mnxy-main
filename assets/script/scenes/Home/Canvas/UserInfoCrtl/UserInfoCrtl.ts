@@ -253,14 +253,15 @@ export class UserInfoCrtl extends Component {
         if (result === false) return
         const postData = {
             token: token,
-            str: username
+            str: username,
+            userId:config.userData.userId
         };
         const options = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/aaaa", options)
+        fetch(config.ServerUrl.url + "/changeName", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');

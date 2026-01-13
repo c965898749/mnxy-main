@@ -117,6 +117,11 @@ export class blessingCrtl extends Component {
                 if (data.success == '1') {
                     // this.refresh()
                     item.getChildByName("huizhu").active = false
+                    const userInfo = data.data;
+                    localStorage.setItem('Leave_EnergyNumber2', userInfo.tiliCount + "");
+                    localStorage.setItem('LastGetTime1', userInfo.tiliCountTime + "");
+                    localStorage.setItem('LastGetHuoliTime1', userInfo.huoliCountTime + "");
+                    localStorage.setItem('Leave_EnergyHuoliNumber2', userInfo.huoliCount + "");
                     const close = util.message.confirm({ message: data.errorMsg || "祝福成功" })
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })

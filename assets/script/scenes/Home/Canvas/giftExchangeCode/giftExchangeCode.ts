@@ -35,6 +35,7 @@ export class giftExchangeCode extends Component {
             const postData = {
                 token: token,
                 str: giftCode,
+                userId:config.userData.userId
             };
             const options = {
                 method: 'POST',

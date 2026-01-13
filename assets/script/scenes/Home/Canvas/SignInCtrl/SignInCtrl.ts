@@ -27,12 +27,12 @@ export class SignInCtrl extends Component {
 
     async refresh() {
         // 你的刷新逻辑
-       // console.log('节点被激活，正在刷新状态');
+        // console.log('节点被激活，正在刷新状态');
         // 例如，重新加载数据，更新UI等
         const config = getConfig()
         const signCount = config.userData.signCount
-       // console.log(config.userData, 333)
-       // console.log(signCount, 2222)
+        // console.log(config.userData, 333)
+        // console.log(signCount, 2222)
         for (var i = 0; i < signCount; i++) {
             this.DayLi.children[i].getChildByName("sign_18").active = true
             this.DayLi.children[i].getChildByName("sign_15").active = true
@@ -46,13 +46,16 @@ export class SignInCtrl extends Component {
     public close() {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.active = false
+        const now = new Date();
+        const config = getConfig()
+        localStorage.setItem('cachedTime' + config.userData.userId, now.toString());
     }
 
     public qiandao() {
         AudioMgr.inst.playOneShot("sound/other/click");
         const now = new Date();
-        localStorage.setItem('cachedTime', now.toString());
         const config = getConfig()
+        localStorage.setItem('cachedTime' + config.userData.userId, now.toString());
         const token = getToken()
         const postData = {
             token: token,
@@ -85,7 +88,7 @@ export class SignInCtrl extends Component {
                 }
             })
             .catch(error => {
-               // console.error('There was a problem with the fetch operation:', error);
+                // console.error('There was a problem with the fetch operation:', error);
             }
             );
 

@@ -15,6 +15,12 @@ export class ArenaApplyCrtl extends Component {
     @property(Node)
     Item: Node
     @property(Node)
+    apply: Node
+    @property(Node)
+    Item2: Node
+    @property(Node)
+    enterAnra: Node
+    @property(Node)
     remainingTime: Node
     @property(Node)
     side1: Node
@@ -120,32 +126,80 @@ export class ArenaApplyCrtl extends Component {
         return `${formatNumber(hours)}:${formatNumber(minutes)}:${formatNumber(seconds)}`;
     }
 
-    async renderApply(arenaId, gameArenaRanks) {
-        this.ArenaId = arenaId;
-        this.weiwanId = null
-        this.arenaRanking100 = []
+    async renderApply(arenaId) {
         const config = getConfig()
-        const create = config.userData.characters.filter(x => x.goIntoNum != 0)
-        console.log("ArenaDetailCrtl render", arenaId);
-        this.ArenaId = arenaId;
-        this.Item.children.forEach(n => n.children[0].getComponent(Sprite).spriteFrame = null)
-        for (let i = 0; i < create.length; i++) {
-            var goIntoNum = create[i].goIntoNum
-            this.Item.children[goIntoNum - 1].children[0].getComponent(Sprite).spriteFrame =
-                await util.bundle.load(`game/texture/frames/hero/Header/${create[i].id}/spriteFrame`, SpriteFrame)
-        }
-        this.node.active = true
-        if (gameArenaRanks && gameArenaRanks.length > 0) {
-            let gameArenaRank = gameArenaRanks[0]
-            this.header.getComponent(Sprite).spriteFrame =
-                await util.bundle.load(gameArenaRank.gameImg, SpriteFrame)
-            this.arenaRanking100 = gameArenaRanks
-            this.weiwanId = gameArenaRank.userId
-            this.winName.getComponent(Label).string = gameArenaRank.nickname
-            this.weiwanCount.getComponent(Label).string = gameArenaRank.weiwanCount
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+            str: arenaId
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "isSignedUp", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                //console.log(data); // 处理响应数据
+                if (data.success == '1') {
+                    let map = data.data;
+                    let isSignedUp = map["isSignedUp"]
+                    let gameArenaRanks = map["gameArenaRanks"]
+                    this.ArenaId = arenaId;
+                    this.weiwanId = null
+                    this.arenaRanking100 = []
+                    this.node.active = true
+                    if (isSignedUp) {
+                        const create = map['gameArenaBattlecharacters'];
+                        this.Item2.active = true
+                        this.Item.active = false
+                        this.apply.active = false
+                        this.enterAnra.active = true
+                        for (let i = 0; i < create.length; i++) {
+                            var goIntoNum2 = create[i].goIntoNum
+                            this.Item2.children[goIntoNum2 - 1].children[0].getComponent(Sprite).spriteFrame =
+                                await util.bundle.load(`game/texture/frames/hero/Header/${create[i].id}/spriteFrame`, SpriteFrame)
+                        }
 
-        }
-        // 
+                    } else {
+                        this.Item.active = true
+                        this.Item2.active = false
+                        this.apply.active = true
+                        this.enterAnra.active = false
+                        const create = config.userData.characters.filter(x => x.goIntoNum != 0)
+                        this.ArenaId = arenaId;
+                        this.Item.children.forEach(n => n.children[0].getComponent(Sprite).spriteFrame = null)
+                        for (let i = 0; i < create.length; i++) {
+                            var goIntoNum = create[i].goIntoNum
+                            this.Item.children[goIntoNum - 1].children[0].getComponent(Sprite).spriteFrame =
+                                await util.bundle.load(`game/texture/frames/hero/Header/${create[i].id}/spriteFrame`, SpriteFrame)
+                        }
+                    }
+                    if (gameArenaRanks && gameArenaRanks.length > 0) {
+                        let gameArenaRank = gameArenaRanks[0]
+                        this.header.getComponent(Sprite).spriteFrame =
+                            await util.bundle.load(gameArenaRank.gameImg, SpriteFrame)
+                        this.arenaRanking100 = gameArenaRanks
+                        this.weiwanId = gameArenaRank.userId
+                        this.winName.getComponent(Label).string = gameArenaRank.nickname
+                        this.weiwanCount.getComponent(Label).string = gameArenaRank.weiwanCount
+
+                    }
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
     }
 
     async mobai() {
@@ -330,6 +384,11 @@ export class ArenaApplyCrtl extends Component {
             this.side2.getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`game/texture/frames/hero/Header/${reg.id}/spriteFrame`, SpriteFrame)
         }
+    }
+    async render() {
+        await this.node.parent.getChildByName("ArenaDetailCrtl")
+            .getComponent(ArenaDetailCrtl)
+            .render(this.ArenaId)
     }
 
 

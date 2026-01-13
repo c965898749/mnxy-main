@@ -63,6 +63,11 @@ class UserData extends Resource {
     public stopLevel: number = 0
 
     public weiwanCount: number = 0
+    public bronze: number = 0
+    public darkSteel: number = 0
+    public purpleGold: number = 0
+    public crystal: number = 0
+
     // 已经收集到的英雄
     public hasCollectCharacterId: string[] = []
 
@@ -81,6 +86,10 @@ class UserData extends Resource {
         this.gameImg = or.gameImg
         this.winCount = or.winCount
         this.rate = or.rate || 0
+        this.bronze = or.bronze || 0
+        this.darkSteel = or.darkSteel || 0
+        this.purpleGold = or.purpleGold || 0
+        this.crystal = or.crystal || 0
         this.stopLevel = or.stopLevel || 0
         this.weiwanCount = or.weiwanCount || 0
         this.useCardCount = or.useCardCount || "0/0"
@@ -90,19 +99,32 @@ class UserData extends Resource {
             // 原有角色
             ; (or.characters || []).forEach(c => { this.addNewCharacter(c) })
             // 原有装备
-            ; (or.equipments || []).forEach(e => { this.addNewEquipment(e.id, e.lv) })
+            ; (or.equipments || []).forEach(e => { this.addNewEquipment(e) })
     }
 
     // 添加新装备
-    public addNewEquipment(id: string, lv?: number, quality?: number) {
+    public addNewEquipment(character: EquipmentStateCreate) {
         this.equipments.push({
-            id,
-            lv: lv || 1,
-            uuid: ++globalId,
-            quality: quality || 1
+            ...character,
         })
     }
+    // // id
+    // id: string
+    // // uuid
+    // uuid?: number
+    // // 等级
+    // lv: number
+    // // 品质
+    // quality: number
 
+    // // 星级
+    // star: number
+    // //d队伍第几个
+    // goIntoNum: number
+
+    // stackCount: number
+
+    // isChecked: number
     // 添加新角色
     public addNewCharacter(character: CharacterStateCreate) {
         const equipment: EquipmentStateCreate[] = [];

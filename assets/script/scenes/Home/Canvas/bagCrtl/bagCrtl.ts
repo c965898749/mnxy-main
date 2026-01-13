@@ -67,7 +67,11 @@ export class bagCrtl extends Component {
                     let item = nodePool.get()
 
                     if (this.type == 1) {
-                        item.getChildByName("use").on("click", () => { this.clickUseFun(itemDetail.itemId) })
+                        if (itemDetail.itemType==6) {
+                            item.getChildByName("use").active=false
+                        } else {
+                            item.getChildByName("use").on("click", () => { this.clickUseFun(itemDetail.itemId) })
+                        }
                         item.getChildByName("diu").on("click", () => { this.clickDiuFun(itemDetail.itemId) })
                         item.getChildByName("name").getComponent(Label).string = itemDetail.itemName
                         item.getChildByName("Count").getComponent(Label).string = itemDetail.description
@@ -159,6 +163,13 @@ export class bagCrtl extends Component {
             })
             .then(async data => {
                 if (data.success == '1') {
+                    const userInfo = data.data;
+                    config.userData.gold = userInfo.gold
+                    localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    localStorage.setItem('Leave_EnergyNumber2', userInfo.tiliCount + "");
+                    localStorage.setItem('LastGetTime1', userInfo.tiliCountTime + "");
+                    localStorage.setItem('LastGetHuoliTime1', userInfo.huoliCountTime + "");
+                    localStorage.setItem('Leave_EnergyHuoliNumber2', userInfo.huoliCount + "");
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })

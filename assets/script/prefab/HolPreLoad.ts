@@ -1,4 +1,5 @@
-import { _decorator, Component, Label, Node } from 'cc';
+import { _decorator, Component, Label, Node, tween, Vec3 } from 'cc';
+import { getConfig } from '../common/config/config';
 const { ccclass, property } = _decorator;
 
 @ccclass('HolPreLoad')
@@ -37,20 +38,41 @@ export class HolPreLoad extends Component {
             //执行场景方法
             this.$completeQueue.forEach(c => c())
             this.node.active = false
+            // 弹窗弹跳入场效果
+            if (!this.checkIfTimeIsToday()) {
+                this.node.parent.getChildByName("SignInCtrl").active = true
+                this.node.parent.getChildByName("SignInCtrl").scale = new Vec3(0, 0, 0)
+                tween(this.node.parent.getChildByName("SignInCtrl"))
+                    .to(1, { scale: new Vec3(1, 1, 1) }, { easing: 'elasticOut' })
+                    .start();
+            }
             return
         }
         if (this.$current < this.$process) {
             this.$current += dt * 45
-            this.ValueNode.setScale(this.$current / 100 , 1 , 1)
+            this.ValueNode.setScale(this.$current / 100, 1, 1)
         }
         this.$accumulateTime -= dt
         if (this.$accumulateTime <= 0) {
-            this.TipNode.getComponent(Label).string = 
+            this.TipNode.getComponent(Label).string =
                 this.$tips[this.$currentIndex]
             this.$currentIndex++
             this.$accumulateTime = 4
-            if (this.$currentIndex >= this.$tips.length) this.$currentIndex = 0 
+            if (this.$currentIndex >= this.$tips.length) this.$currentIndex = 0
         }
+    }
+    public checkIfTimeIsToday() {
+        const config = getConfig()
+        const cachedTime = localStorage.getItem('cachedTime' + config.userData.userId);
+        if (!cachedTime) return false;
+
+        const cachedDate = new Date(cachedTime);
+        const today = new Date();
+        console.log(cachedDate)
+        console.log(today)
+        return cachedDate.getFullYear() === today.getFullYear() &&
+            cachedDate.getMonth() === today.getMonth() &&
+            cachedDate.getDate() === today.getDate();
     }
 }
 

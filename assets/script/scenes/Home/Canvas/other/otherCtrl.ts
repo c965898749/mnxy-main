@@ -16,6 +16,7 @@ export class otherCtrl extends Component {
 
     }
 
+    //退出
     public backLogin() {
         AudioMgr.inst.playOneShot("sound/other/click");
         localStorage.setItem("token", null)

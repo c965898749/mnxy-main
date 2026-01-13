@@ -150,7 +150,8 @@ export class ItemCtrl extends Component {
         const token = getToken()
         const postData = {
             token: token,
-            id: create.id
+            id: create.id,
+            userId:config.userData.userId
         };
         const options = {
             method: 'POST',
