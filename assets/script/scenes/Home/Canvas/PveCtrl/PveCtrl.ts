@@ -64,7 +64,8 @@ export class PveCtrl extends Component {
         const token = getToken()
         const postData = {
             token: token,
-            id: mapId
+            id: mapId,
+            userId: config.userData.userId
         };
         const options = {
             method: 'POST',
@@ -253,7 +254,8 @@ export class PveCtrl extends Component {
                     bossComing.node.active = false
                     const postData = {
                         token: token,
-                        str: chapter + "-" + tribulation + "-" + level
+                        str: chapter + "-" + tribulation + "-" + level,
+                        userId: config.userData.userId,
                     };
                     const options = {
                         method: 'POST',

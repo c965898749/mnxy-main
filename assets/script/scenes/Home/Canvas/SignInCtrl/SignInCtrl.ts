@@ -59,6 +59,7 @@ export class SignInCtrl extends Component {
         const token = getToken()
         const postData = {
             token: token,
+            userId: config.userData.userId
         };
         const options = {
             method: 'POST',

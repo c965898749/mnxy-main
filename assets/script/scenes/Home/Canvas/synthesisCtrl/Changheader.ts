@@ -89,7 +89,8 @@ export class changheader extends Component {
         console.log(config.userData.userId, 555)
         const postData = {
             token: token,
-            str: "game/texture/frames/hero/Header/" + this.id + "/spriteFrame"
+            str: "game/texture/frames/hero/Header/" + this.id + "/spriteFrame",
+            userId: config.userData.userId
         };
         const options = {
             method: 'POST',

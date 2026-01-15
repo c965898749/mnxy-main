@@ -161,7 +161,8 @@ export class TiemCtrl extends Component {
         const token = getToken()
         const postData = {
             token: token,
-            str: str.join(',')
+            str: str.join(','),
+            userId: config.userData.userId
         };
         console.log(item, 555)
         const options = {

@@ -44,6 +44,8 @@ class UserData extends Resource {
 
     public chapter: string = '1-1-1'
 
+    public bronze1: number = 1
+
     public nickname: string = "用户12138"
 
     public backpack: ItemStateCreate[] = []
@@ -93,6 +95,7 @@ class UserData extends Resource {
         this.stopLevel = or.stopLevel || 0
         this.weiwanCount = or.weiwanCount || 0
         this.useCardCount = or.useCardCount || "0/0"
+        this.bronze1 = or.bronze1 || 1
         this.hasCollectCharacterId = or.hasCollectCharacterId || []
             // 原有的物品
             ; (or.backpack || []).forEach(i => this.addNewItem(i.id, i.number))

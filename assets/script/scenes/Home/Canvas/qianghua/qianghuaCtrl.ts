@@ -577,7 +577,7 @@ export class qianghuaCtrl extends Component {
             return await util.message.prompt({ message: "请重置后重新选择" })
         }
         if (!this.LevelUpResult.id) {
-            return await util.message.prompt({ message: "请选择强化主卡" })
+            return await util.message.prompt({ message: "请选择强化主卡或从卡" })
         }
         if (!this.myMap || this.myMap.size == 0) {
             return await util.message.prompt({ message: "请选择强化从卡" })

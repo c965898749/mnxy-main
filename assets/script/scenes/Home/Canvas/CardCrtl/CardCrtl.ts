@@ -17,9 +17,9 @@ export class CardCrtl extends Component {
     async OpenHero() {
         AudioMgr.inst.playOneShot("sound/other/click");
         // const close = await util.message.load()
-        director.preloadScene("Hero", () => {
-            close()
-        })
+        // director.preloadScene("Hero", () => {
+        //     close()
+        // })
         director.loadScene("Hero")
     }
 

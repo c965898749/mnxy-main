@@ -157,7 +157,8 @@ export class MessageCrtl extends Component {
         const postData = {
             token: token,
             id: id,
-            str: "1"
+            str: "1",
+            userId: config.userData.userId
         };
         const options = {
             method: 'POST',
@@ -197,7 +198,8 @@ export class MessageCrtl extends Component {
         const postData = {
             token: token,
             id: id,
-            str: "2"
+            str: "2",
+            userId: config.userData.userId
         };
         const options = {
             method: 'POST',

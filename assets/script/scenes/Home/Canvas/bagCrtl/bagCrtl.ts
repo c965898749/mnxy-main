@@ -67,9 +67,10 @@ export class bagCrtl extends Component {
                     let item = nodePool.get()
 
                     if (this.type == 1) {
-                        if (itemDetail.itemType==6) {
-                            item.getChildByName("use").active=false
+                        if (itemDetail.itemType == 6) {
+                            item.getChildByName("use").active = false
                         } else {
+                            item.getChildByName("use").active = true
                             item.getChildByName("use").on("click", () => { this.clickUseFun(itemDetail.itemId) })
                         }
                         item.getChildByName("diu").on("click", () => { this.clickDiuFun(itemDetail.itemId) })

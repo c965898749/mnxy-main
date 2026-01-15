@@ -179,6 +179,7 @@ export class JinjichangCtrl extends Component {
         const token = getToken()
         const postData = {
             token: token,
+            userId: config.userData.userId
         };
         const options = {
             method: 'POST',
@@ -242,7 +243,8 @@ export class JinjichangCtrl extends Component {
         const token = getToken()
         const postData = {
             token: token,
-            userId: userId
+            userId: userId,
+            id: config.userData.userId
         };
         const options = {
             method: 'POST',
@@ -288,7 +290,8 @@ export class JinjichangCtrl extends Component {
         this.SetLeaveHuoliEnergy(LeaveHuoliEnergy - 10)
         const postData = {
             token: token,
-            userId: userId
+            userId: userId,
+            id: config.userData.userId
         };
         const options = {
             method: 'POST',

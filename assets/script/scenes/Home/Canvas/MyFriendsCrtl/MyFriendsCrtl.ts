@@ -211,7 +211,8 @@ export class MyFriendsCrtl extends Component {
         const token = getToken()
         const postData = {
             token: token,
-            userId: userId
+            userId: userId,
+            id: config.userData.userId
         };
         const options = {
             method: 'POST',

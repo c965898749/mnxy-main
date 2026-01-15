@@ -123,7 +123,9 @@ export class MapCrtl extends Component {
             .render(mapId)
     }
     async openta(){
-          return await util.message.prompt({ message: "暂未开放" })
+        //   return await util.message.prompt({ message: "暂未开放" })
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("TrialTowerCrtl").active = true
     }
 
     openHotEvents() {

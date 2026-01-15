@@ -217,7 +217,8 @@ export class ArenaDetailCrtl extends Component {
         const postData = {
             token: token,
             str: str.join(','),
-            finalLevel: this.ArenaId
+            finalLevel: this.ArenaId,
+            userId: config.userData.userId
         };
         const options = {
             method: 'POST',
