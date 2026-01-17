@@ -4,6 +4,7 @@ import { PveCtrl } from '../PveCtrl/PveCtrl';
 import { getConfig, getToken } from 'db://assets/script/common/config/config';
 import { util } from 'db://assets/script/util/util';
 import { MapRankingCrtl } from '../MapRankingCrtl/MapRankingCrtl';
+import { TrialTowerCrtl } from '../TrialTowerCrtl/TrialTowerCrtl';
 const { ccclass, property } = _decorator;
 
 @ccclass('MapCrtl')
@@ -14,9 +15,9 @@ export class MapCrtl extends Component {
     Map: Node
     index: number = 0
     initialized = false;
-    tiles = ["踏上旅途", "冲向妖界", "龙宫探宝", "地府改命", "大闹天宫"]
+    tiles = ["踏上旅途", "冲向妖界", "龙宫探宝", "地府改命", "大闹天宫","西天取经"]
     start() {
-        this.Title.getComponent(Label).string = "踏上旅途 1/5"
+        this.Title.getComponent(Label).string = "踏上旅途 1/6"
         this.refresh()
     }
     onEnable() {
@@ -38,7 +39,7 @@ export class MapCrtl extends Component {
         // 验证关卡格式是否正确
         if (
             isNaN(currentChapter) || isNaN(currentCalamity) || isNaN(currentStage) ||
-            currentChapter < 1 || currentChapter > 5 ||
+            currentChapter < 1 || currentChapter > 6 ||
             currentCalamity < 1 || currentCalamity > 6 ||
             currentStage < 1 || currentStage > 10
         ) {
@@ -86,10 +87,10 @@ export class MapCrtl extends Component {
             .to(0.5, { position: v3(-640, 0) })
             .start();
         this.index++
-        if (this.index >= 5) {
+        if (this.index >= 6) {
             this.index = 0
         }
-        this.Title.getComponent(Label).string = this.tiles[this.index] + (this.index + 1) + "/5"
+        this.Title.getComponent(Label).string = this.tiles[this.index] + (this.index + 1) + "/6"
         this.Map.children[this.index].setPosition(640, 0, 0)
         tween(this.Map.children[this.index])
             .to(0.5, { position: v3(0, 0) })
@@ -102,9 +103,9 @@ export class MapCrtl extends Component {
             .start();
         this.index--
         if (this.index < 0) {
-            this.index = 4
+            this.index = 5
         }
-        this.Title.getComponent(Label).string = this.tiles[this.index] + (this.index + 1) + "/5"
+        this.Title.getComponent(Label).string = this.tiles[this.index] + (this.index + 1) + "/6"
         this.Map.children[this.index].setPosition(-640, 0, 0)
         tween(this.Map.children[this.index])
             .to(0.5, { position: v3(0, 0) })
@@ -122,10 +123,44 @@ export class MapCrtl extends Component {
             .getComponent(PveCtrl)
             .render(mapId)
     }
-    async openta(){
-        //   return await util.message.prompt({ message: "暂未开放" })
+    async openta(event: Event, customEventData: string) {
         AudioMgr.inst.playOneShot("sound/other/click");
-        this.node.parent.getChildByName("TrialTowerCrtl").active = true
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+            str: customEventData,
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "getTower", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                //console.log(data); // 处理响应数据
+                if (data.success == '1') {
+                    let info = data.data;
+                    info.customEventData = customEventData
+                    await this.node.parent.getChildByName("TrialTowerCrtl")
+                        .getComponent(TrialTowerCrtl)
+                        .render(info)
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+
     }
 
     openHotEvents() {
@@ -133,7 +168,7 @@ export class MapCrtl extends Component {
         this.node.parent.getChildByName("HotEventsCtrl").active = true
     }
     openRanking() {
-        AudioMgr.inst.playOneShot("sound/other/click");
+        // AudioMgr.inst.playOneShot("sound/other/click");
         const config = getConfig()
         const token = getToken()
         const postData = {
