@@ -65,6 +65,7 @@ export class HeroCharacterDetail extends Component {
         characterAnimationNode.addChild(holAnimationNode)
         this.$lastaNimation = holAnimationNode
         holAnimationNode.active = false
+        console.log(1111111111111111111111)
         // 设置属性
         await propertyNode.getComponent(HeroCharacterDetailPorperty).renderProperty(create)
         close()

@@ -1,10 +1,13 @@
-import { _decorator, AudioSource, Component, find, Label, Node, sp, Sprite } from 'cc';
+import { _decorator, AudioSource, Component, find, instantiate, Label, Node, Prefab, sp, Sprite, SpriteFrame } from 'cc';
 import { CharacterState, CharacterStateCreate } from '../../../../game/fight/character/CharacterState';
 import { util } from '../../../../util/util';
 import { getConfig, getToken, updateConfig } from '../../../../common/config/config';
 import { HolUserResource } from '../../../../prefab/HolUserResource';
 import { CharacterEnum } from '../../../../game/fight/character/CharacterEnum';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
+import { EqHeroCharacterDetail } from '../../../Equipment/Canvas/EqHeroCharacterDetail';
+import { EquipmentStateCreate } from 'db://assets/script/game/fight/equipment/EquipmentState';
+import { SelectEqCardCtrl } from '../../../Home/Canvas/qianghua/SelectEqCardCtrl';
 const { ccclass, property } = _decorator;
 
 // 升级所需金币
@@ -24,6 +27,8 @@ function levelUpNeedSoule(create: CharacterStateCreate): number {
 @ccclass('HeroCharacterDetailPorperty')
 export class HeroCharacterDetailPorperty extends Component {
 
+    @property(Node)
+    empNode: Node
     // 角色状态
     private $state: CharacterState
 
@@ -36,6 +41,7 @@ export class HeroCharacterDetailPorperty extends Component {
 
     // 渲染属性
     async renderProperty(create: CharacterStateCreate) {
+        console.log("渲染角色属性", create)
         this.$state = new CharacterState(create, null)
         this.node.getChildByName("Name").getComponent(Label).string = "名称: " + this.$state.meta.name
         this.node.getChildByName("Lv").getComponent(Label).string = "Lv: " + this.$state.lv
@@ -56,6 +62,7 @@ export class HeroCharacterDetailPorperty extends Component {
         ]);
 
         const position = ["仙灵", "神将", "武圣"]
+        const nameNode = ["防具", "兵刃", "法器", "宝具"]
         this.node.getChildByName("Zhongzu").getComponent(Label).string = cmp.get(this.$state.meta.CharacterCamp) + "." + position[this.$state.meta.position]
 
         // 渲染星级
@@ -77,21 +84,145 @@ export class HeroCharacterDetailPorperty extends Component {
         } else {
             this.node.getChildByName("State").getChildByName("shanzhen").children[0].active = false
         }
-        // 是否满级
-        if (create.lv >= 100) {
-            this.node.getChildByName("LevelUp").active = false
+        let eqCharactersList = getConfig().userData.equipments
+        this.empNode.children.forEach(async (n, index) => {
+            n.off("click")
+            let eqCharacters = eqCharactersList.find(x => x.eqType == index && x.goIntoNum + "" == create.id)
+            if (eqCharacters) {
+                n.getChildByName("Label").getComponent(Label).string = ""
+                n.getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
+                await util.bundle.load(`game/texture/frames/emp/${eqCharacters.id}/spriteFrame`, SpriteFrame)
+            } else {
+                n.getChildByName("Label").getComponent(Label).string = nameNode[index]
+                n.getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame = null
+            }
+            n.on("click", () => this.empOnclick(create.id, index))
+        })
+    }
+
+    async empOnclick(itemId, empType) {
+        // AudioMgr.inst.playOneShot("sound/other/click");
+        console.log("点击了装备栏位", itemId, empType)
+        const config = getConfig()
+        var cahracterQueue = []
+        cahracterQueue = config.userData.equipments
+        cahracterQueue = cahracterQueue.filter(x => x.goIntoNum == itemId && x.eqType == empType)
+        if (cahracterQueue.length > 0) {
+            let eqCharacters = cahracterQueue[0]
+            const holAnimationPrefab = await util.bundle.load("prefab/CharacterDetail", Prefab)
+            const holAnimationNode = instantiate(holAnimationPrefab)
+            this.node.parent.addChild(holAnimationNode)
+            await holAnimationNode
+                .getComponent(EqHeroCharacterDetail)
+                .setCharacter(eqCharacters, async (c, n) => {
+                    // n.removeFromParent();
+                    // n.destroy()
+                    this.clickFun1(c.id, n, empType)
+                    return
+                })
+            this.node.parent.getChildByName("CharacterDetail").active = true
         } else {
-            this.node.getChildByName("LevelUp").active = true
-            // 升级所需资源
-            this.node.getChildByName("LevelUp")
-                .getChildByName("LevelUpGold")
-                .getChildByName("Value")
-                .getComponent(Label).string = util.sundry.formateNumber(levelUpNeedGold(create))
-            this.node.getChildByName("LevelUp")
-                .getChildByName("LevelUpSoul")
-                .getChildByName("Value")
-                .getComponent(Label).string = util.sundry.formateNumber(levelUpNeedSoule(create))
+            var cahracterQueue2 = []
+            cahracterQueue2 = config.userData.equipments
+            cahracterQueue2 = cahracterQueue2.filter(x => x.goIntoNum == 0 && x.eqType == empType)
+            await this.render(cahracterQueue2, itemId, empType)
         }
+    }
+    async render(characterQueue: EquipmentStateCreate[], itemId: string, empType: number) {
+        const holAnimationPrefab = await util.bundle.load("prefab/SelectEqCardCtrl", Prefab)
+        const holAnimationNode = instantiate(holAnimationPrefab)
+        this.node.parent.addChild(holAnimationNode)
+        await holAnimationNode
+            .getComponent(SelectEqCardCtrl)
+            .render(characterQueue, async (c, n) => {
+                n.removeFromParent();
+                n.destroy()
+                this.clickFun2(c, itemId, empType)
+                return
+            })
+    }
+    // 上阵
+    public async clickFun1(itemId, node, empType) {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            id: itemId,
+            userId: config.userData.userId
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "/changeEqState", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    var userInfo = data.data;
+                    const nameNode = ["防具", "兵刃", "法器", "宝具"]
+                    config.userData.equipments = userInfo.eqCharactersList
+                    localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    this.empNode.children[empType].getChildByName("Label").getComponent(Label).string = nameNode[empType]
+                    this.empNode.children[empType].getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame = null
+                    node.getChildByName("sell").active = false
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+    }
+
+    public async clickFun2(create, itemId, empType) {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            id: create.id,
+            str: itemId,
+            userId: config.userData.userId
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "/changeEqState2", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    var userInfo = data.data;
+                    config.userData.equipments = userInfo.eqCharactersList
+                    localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    let cahracterQueue = userInfo.eqCharactersList.filter(x => x.goIntoNum == itemId && x.eqType == empType)
+                    this.empNode.children[empType].getChildByName("Label").getComponent(Label).string = ""
+                    this.empNode.children[empType].getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
+                          await util.bundle.load(`game/texture/frames/emp/${cahracterQueue[0].id}/spriteFrame`, SpriteFrame)
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+
+
     }
 
     // 显示所有的属性
@@ -120,7 +251,7 @@ export class HeroCharacterDetailPorperty extends Component {
         const postData = {
             token: token,
             id: this.$state.create.id,
-            userId:config.userData.userId
+            userId: config.userData.userId
         };
         const options = {
             method: 'POST',
@@ -190,6 +321,18 @@ export class HeroCharacterDetailPorperty extends Component {
         levelUpEffectSkeleton.node.children[0]?.getComponent(sp.Skeleton).setAnimation(0, "animation", false)
         levelUpEffectSkeleton.setAnimation(0, "animation", false)
         levelUpEffectSkeleton.setCompleteListener(() => levelUpEffectSkeleton.node.active = false)
+    }
+
+    async touchCancel() {
+        // if (this.data.create) {
+        //     this.clickFun(this.data.create)
+        // } else {
+        //     const config = getConfig()
+        //     var cahracterQueue = []
+        //     cahracterQueue = config.userData.characters
+        //     cahracterQueue = cahracterQueue.filter(x => x.goIntoNum == 0)
+        //     await this.render(cahracterQueue)
+        // }
     }
 
     async characteSell() {

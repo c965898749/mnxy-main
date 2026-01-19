@@ -20,7 +20,9 @@ export class EqHeroCharacterDetail extends Component {
     // 返回
     async goBack() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        this.node.active = false
+        // this.node.active = false;
+        this.node.removeFromParent();
+        this.node.destroy();
         // const config = getConfig()
         // const close = await util.message.load()
         // await this.HeroAllHeroNode.getComponent(EqHeroAllHeros).render(config.userData.equipments)
@@ -45,7 +47,8 @@ export class EqHeroCharacterDetail extends Component {
     // 上一次的角色动画
     private $lastaNimation: Node
     // 设置角色
-    async setCharacter(create: EquipmentStateCreate) {
+    //  async render(create: EquipmentStateCreate[], clickFun?: (characters: EquipmentStateCreate, node: Node) => any) {
+    async setCharacter(create: EquipmentStateCreate, clickFun?: (characters: EquipmentStateCreate, node: Node) => any) {
         const propertyNode = this.node.getChildByName("Property")
         // const close = await util.message.load()
         const characterAnimationNode = this.node.getChildByName("CharacterAnimation")
@@ -67,7 +70,7 @@ export class EqHeroCharacterDetail extends Component {
         // this.$lastaNimation = holAnimationNode
         // holAnimationNode.active = false
         // 设置属性
-        await propertyNode.getComponent(EqHeroCharacterDetailPorperty).renderProperty(create)
+        await propertyNode.getComponent(EqHeroCharacterDetailPorperty).renderProperty(create,clickFun)
         // close()
         // setTimeout(async () => {
         //     holAnimationNode.active = true
@@ -75,6 +78,7 @@ export class EqHeroCharacterDetail extends Component {
         // }, 50
         // )
         return
+
     }
 
 

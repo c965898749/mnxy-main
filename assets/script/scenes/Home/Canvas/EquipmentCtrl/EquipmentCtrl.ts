@@ -21,13 +21,13 @@ export class EquipmentCtrl extends Component {
     // 打开背包
     async OpenHero() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        this.node.active=false
-        this.node.parent.getChildByName("Equipment").active=true
+        // this.node.active=false
+        // this.node.parent.getChildByName("Equipment").active=true
         // const close = await util.message.load()
         // director.preloadScene("Equipment", () => {
         //     close()
         // })
-        // director.loadScene("Equipment")
+        director.loadScene("Equipment")
     }
 
     //强化

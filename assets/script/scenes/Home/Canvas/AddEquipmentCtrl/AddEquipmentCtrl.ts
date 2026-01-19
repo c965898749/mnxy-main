@@ -152,7 +152,7 @@ export class AddEquipmentCtrl extends Component {
                     let user = map['user'];
                     let self = this
                     this.AvatarNode.getComponent(Sprite).spriteFrame =
-                        await util.bundle.load(heroInfo.img, SpriteFrame)
+                        await util.bundle.load(`game/texture/frames/emp/${heroInfo.id}/spriteFrame`, SpriteFrame)
                     if (heroInfo.star > 3) {
                         this.Pingzhi.getComponent(Sprite).spriteFrame =
                             await util.bundle.load(`image/ui/pingzhi_0${heroInfo.star}/spriteFrame`, SpriteFrame)

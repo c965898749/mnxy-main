@@ -42,9 +42,10 @@ export class HolEqCharacterAvatar extends Component {
     Bottom: Node
 
     async setCharacter(create: EquipmentStateCreate) {
+        console.log(create, '--- IGNORE ---')
         const meta = EquipmentEnum[create.id]
         this.AvatarNode.getComponent(Sprite).spriteFrame =
-            await util.bundle.load(create.img, SpriteFrame)
+            await util.bundle.load(`game/texture/frames/emp/${create.id}/spriteFrame`, SpriteFrame)
         if (create.star < 4.5) {
             this.LegendBorderNode.active = false
         } else {

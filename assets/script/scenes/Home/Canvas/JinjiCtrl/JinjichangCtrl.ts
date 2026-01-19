@@ -354,7 +354,7 @@ export class JinjichangCtrl extends Component {
                     var data = data.data;
                     await this.node.parent.getChildByName("RankingCrtl")
                         .getComponent(RankingCrtl)
-                        .render(data, this.gameRanking)
+                        .render(this.gameRanking)
 
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })

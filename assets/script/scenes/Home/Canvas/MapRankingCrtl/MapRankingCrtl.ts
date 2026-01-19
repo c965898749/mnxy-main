@@ -113,7 +113,7 @@ export class MapRankingCrtl extends Component {
                 await util.bundle.load(config.userData.gameImg, SpriteFrame)
             this.ff3.getChildByName("name").getComponent(Label).string = config.userData.nickname
             const index = userlist.findIndex((item) => item.userId === config.userData.userId)
-            this.ff3.getChildByName("jingdu").getComponent(Label).string = "我当前进度：第 " + config.userData.bronze1 + " 层"
+            this.ff3.getChildByName("jingdu").getComponent(Label).string = "我当前进度：第 " + (config.userData.bronze1 == 1 ? 1 : config.userData.bronze1-1)  + " 层"
             if (index === -1) {
                 this.ff3.getChildByName("ranking").getChildByName("num").getComponent(Label).string = "暂未上榜"
             } else {
@@ -123,7 +123,7 @@ export class MapRankingCrtl extends Component {
             for (let i = 0; i < userlist.length; i++) {
                 let item = nodePool.get()
                 item.getChildByName("titleName").getComponent(Label).string = "青铜塔"
-                item.getChildByName("jieName").getComponent(Label).string = "第" + (userlist[i].floorNum > 100 ? 100 : userlist[i].floorNum) + "层"
+                item.getChildByName("jieName").getComponent(Label).string = "第" + (userlist[i].floorNum == 1 ? 1 : userlist[i].floorNum-1) + "层"
                 item.getChildByName("guanName").getComponent(Label).string = this.formatToAncientDate(userlist[i].passTime)
                 item.getChildByName("name").getComponent(Label).string = userlist[i].nickname
                 item.getChildByName("Lv").getComponent(Label).string = "lv " + userlist[i].lv

@@ -42,6 +42,27 @@ export type EquipmentStateCreate = {
     camp: string
 
     introduce: string
+
+    eqType: number
+
+        // 等级
+    maxLv: number
+    profession: String
+     // 攻击力
+    attack: number
+    // 防御力
+    defence: number
+    // 速度
+    speed: number
+    // 治疗效率
+    curePercent: number
+    // 伤害率
+    hurtPercent: number
+    // 暴击
+    critical: number
+    // 格挡
+    block: number
+
 }
 
 export class EquipmentState extends BasicState<EquipmentMetaState> {
@@ -90,6 +111,9 @@ export class EquipmentState extends BasicState<EquipmentMetaState> {
     introduce: string
     // id
     id: string
+    eqType: number
+    profession: String
+
     // 构造器
     constructor(create: EquipmentStateCreate, character: CharacterState) {
         const meta = EquipmentEnum[create.id]
@@ -115,7 +139,10 @@ export class EquipmentState extends BasicState<EquipmentMetaState> {
         this.name = create.name
         this.camp = create.camp
         this.id = create.id
-        this.introduce=create.introduce
+        this.introduce = create.introduce
+        this.eqType = create.eqType
+        this.maxLv = create.maxLv
+        this.profession = create.profession
     }
 
     // 添加属性到角色

@@ -2,6 +2,8 @@ import { _decorator, AudioSource, Component, find, Label, Node, sp, Sprite, Spri
 import { util } from '../../../../util/util';
 import { CharacterEnum } from '../../../../game/fight/character/CharacterEnum';
 import { EquipmentState, EquipmentStateCreate } from 'db://assets/script/game/fight/equipment/EquipmentState';
+import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
+import { getConfig, getToken } from 'db://assets/script/common/config/config';
 const { ccclass, property } = _decorator;
 
 // 升级所需金币
@@ -22,7 +24,7 @@ function levelUpNeedSoule(create: EquipmentStateCreate): number {
 export class EqHeroCharacterDetailPorperty extends Component {
 
     // 角色状态
-    // private $state: EquipmentState
+    private $state: EquipmentStateCreate
 
     // 是否询问升级
     private $answerLevelUp: boolean = true
@@ -32,19 +34,17 @@ export class EqHeroCharacterDetailPorperty extends Component {
 
 
     // 渲染属性
-    async renderProperty(create: EquipmentStateCreate) {
+    async renderProperty(create: EquipmentStateCreate, clickFun?: (characters: EquipmentStateCreate, node: Node) => any) {
+        this.$state = create
         // console.log(create,333)
         // create = new EquipmentState(create, null)
         this.node.getChildByName("Name").getComponent(Label).string = "名称: " + create.name
         this.node.getChildByName("Lv").getComponent(Label).string = "Lv: " + create.lv
-        // this.node.getChildByName("Hp").getChildByName("Value").getComponent(Label).string = Math.ceil(create.maxHp) + ''
-        // this.node.getChildByName("Attack").getChildByName("Value").getComponent(Label).string = Math.ceil(create.attack) + ''
-        // this.node.getChildByName("Defence").getChildByName("Value").getComponent(Label).string = Math.ceil(create.defence) + ''
-        // this.node.getChildByName("Speed").getChildByName("Value").getComponent(Label).string = Math.ceil(create.speed) + ''
+        // this.node.getChildByName("Attribute").getChildByName("Attack").getChildByName("Value").getComponent(Label).string = Math.ceil(create.attack) + ''
+        // this.node.getChildByName("Attribute").getChildByName("Defence").getChildByName("Value").getComponent(Label).string = Math.ceil(create.defence) + ''
         this.node.getChildByName("introduce").getComponent(Label).string = create.introduce + ''
-        // this.node.getChildByName("skill").getChildByName("Value").getComponent(Label).string = create.skillValue + ''
         this.node.getChildByName("CharacterAnimation").getComponent(Sprite).spriteFrame =
-                        await util.bundle.load(create.img, SpriteFrame)
+            await util.bundle.load(`game/texture/frames/emp/${create.id}/spriteFrame`, SpriteFrame)
         // 仙、佛、圣、魔、妖、兽
         const cmp = new Map([
             ['sacred', '仙界'],
@@ -55,8 +55,7 @@ export class EqHeroCharacterDetailPorperty extends Component {
             ['ordinary', '兽界'],
         ]);
 
-        // const position = ["仙灵", "神将", "武圣"]
-        // this.node.getChildByName("Zhongzu").getComponent(Label).string = cmp.get(create.CharacterCamp) + "." + position[create.position]
+        this.node.getChildByName("Zhongzu").getComponent(Label).string = cmp.get(create.camp) + "     " + create.profession
 
         // 渲染星级
         const starNode = this.node.getChildByName("Star")
@@ -71,40 +70,31 @@ export class EqHeroCharacterDetailPorperty extends Component {
                 starNode.children[i].children[1].active = true
             }
         }
-
+        this.node.getChildByName("sell").off("click")
         if (create.goIntoNum != 0) {
-            this.node.getChildByName("State").getChildByName("shanzhen").children[0].active = true
+            this.node.getChildByName("sell").active = true
+            this.node.getChildByName("sell").on("click", () => { if (clickFun) clickFun(create, this.node) })
         } else {
-            this.node.getChildByName("State").getChildByName("shanzhen").children[0].active = false
-        }
-        // 是否满级
-        if (create.lv >= 100) {
-            this.node.getChildByName("LevelUp").active = false
-        } else {
-            this.node.getChildByName("LevelUp").active = true
-            // 升级所需资源
-            this.node.getChildByName("LevelUp")
-                .getChildByName("LevelUpGold")
-                .getChildByName("Value")
-                .getComponent(Label).string = util.sundry.formateNumber(levelUpNeedGold(create))
-            this.node.getChildByName("LevelUp")
-                .getChildByName("LevelUpSoul")
-                .getChildByName("Value")
-                .getComponent(Label).string = util.sundry.formateNumber(levelUpNeedSoule(create))
+            this.node.getChildByName("sell").active = false
         }
     }
 
     // 显示所有的属性
     async showAllProperty() {
-        let message = ``
+        let message = `基本属性\n`
+        message += `攻击: ${Math.ceil(this.$state.attack)}\n`
+        message += `洗练属性\n`
+        message += `暂无开放\n`
+        message += `技能\n`
+        message += `无\n`
         // message += `${create.PassiveIntroduceOne}\n`
         // message += `${create.PassiveIntroduceTwo}\n`
         // message += `${create.SkillIntroduce}\n`
-        // message += ` 攻击力: ${Math.ceil(create.attack)}\n`
-        // message += ` 防御力: ${Math.ceil(create.defence)}\n`
-        // message += ` 速度值: ${Math.ceil(create.speed)}\n`
-        // message += ` 穿透值: ${Math.ceil(create.pierce)}\n`
-        // message += ` 格挡率: ${Math.ceil(create.block)}%\n`
+        // message += ` 攻击: ${Math.ceil(create.attack)}\n`
+        // message += ` 物抗: ${Math.ceil(create.defence)}\n`
+        // message += ` 速度: ${Math.ceil(create.speed)}\n`
+        // message += ` 真实: ${Math.ceil(create.pierce)}\n`
+        // message += ` 闪避率: ${Math.ceil(create.block)}%\n`
         // message += ` 暴击率: ${Math.ceil(create.critical)}%\n`
         // message += ` 免伤率: ${Math.ceil(create.FreeInjuryPercent * 100)}%\n`
         // message += ` 最大能量: ${Math.ceil(create.maxEnergy)}\n`
@@ -112,44 +102,7 @@ export class EqHeroCharacterDetailPorperty extends Component {
     }
 
 
-    // 上阵
-    // async changeState() {
-    //     AudioMgr.inst.playOneShot("sound/other/click");
-    //     const config = getConfig()
-    //     const token = getToken()
-    //     const postData = {
-    //         token: token,
-    //         id: create.create.id
-    //     };
-    //     const options = {
-    //         method: 'POST',
-    //         headers: { 'Content-Type': 'application/json' },
-    //         body: JSON.stringify(postData),
-    //     };
-    //     fetch(config.ServerUrl.url + "/changeState", options)
-    //         .then(response => {
-    //             if (!response.ok) {
-    //                 throw new Error('Network response was not ok');
-    //             }
-    //             return response.json(); // 解析 JSON 响应
-    //         })
-    //         .then(async data => {
-    //             if (data.success == '1') {
-    //                 var userInfo = data.data;
-    //                 config.userData.characters = userInfo.characterList
-    //                 localStorage.setItem("UserConfigData", JSON.stringify(config))
-    //                 this.node.getChildByName("State").getChildByName("shanzhen").children[0].active = !this.node.getChildByName("State").getChildByName("shanzhen").children[0].active
-    //             } else {
-    //                 const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
-    //             }
-    //         })
-    //         .catch(error => {
-    //             console.error('There was a problem with the fetch operation:', error);
-    //         }
-    //         );
 
-
-    // }
 
     // // 英雄升级
     // async characterLevelUp() {
