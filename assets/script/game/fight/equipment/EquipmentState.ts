@@ -45,10 +45,10 @@ export type EquipmentStateCreate = {
 
     eqType: number
 
-        // 等级
+    // 等级
     maxLv: number
     profession: String
-     // 攻击力
+    // 攻击力
     attack: number
     // 防御力
     defence: number
@@ -62,6 +62,16 @@ export type EquipmentStateCreate = {
     critical: number
     // 格挡
     block: number
+
+    wlAtk: number
+    hyAtk: number
+    dsAtk: number
+    fdAtk: number
+    wlDef: number
+    hyDef: number
+    dsDef: number
+    fdDef: number
+    zlDef: number
 
 }
 
@@ -113,6 +123,15 @@ export class EquipmentState extends BasicState<EquipmentMetaState> {
     id: string
     eqType: number
     profession: String
+    wlAtk: number
+    hyAtk: number
+    dsAtk: number
+    fdAtk: number
+    wlDef: number
+    hyDef: number
+    dsDef: number
+    fdDef: number
+    zlDef: number
 
     // 构造器
     constructor(create: EquipmentStateCreate, character: CharacterState) {
@@ -143,6 +162,16 @@ export class EquipmentState extends BasicState<EquipmentMetaState> {
         this.eqType = create.eqType
         this.maxLv = create.maxLv
         this.profession = create.profession
+        this.wlAtk = create.lv * create.wlAtk
+        this.hyAtk = create.lv * create.hyAtk
+        this.dsAtk = create.lv * create.dsAtk
+        this.fdAtk = create.lv * create.fdAtk
+        this.wlDef = create.lv * create.wlDef
+        this.hyDef = create.lv * create.hyDef
+        this.dsDef = create.lv * create.dsDef
+        this.fdDef = create.lv * create.fdDef
+        this.zlDef = create.lv * create.zlDef
+
     }
 
     // 添加属性到角色

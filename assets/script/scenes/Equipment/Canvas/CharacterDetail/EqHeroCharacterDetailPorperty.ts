@@ -36,15 +36,81 @@ export class EqHeroCharacterDetailPorperty extends Component {
     // 渲染属性
     async renderProperty(create: EquipmentStateCreate, clickFun?: (characters: EquipmentStateCreate, node: Node) => any) {
         this.$state = create
-        // console.log(create,333)
-        // create = new EquipmentState(create, null)
         this.node.getChildByName("Name").getComponent(Label).string = "名称: " + create.name
         this.node.getChildByName("Lv").getComponent(Label).string = "Lv: " + create.lv
-        // this.node.getChildByName("Attribute").getChildByName("Attack").getChildByName("Value").getComponent(Label).string = Math.ceil(create.attack) + ''
-        // this.node.getChildByName("Attribute").getChildByName("Defence").getChildByName("Value").getComponent(Label).string = Math.ceil(create.defence) + ''
         this.node.getChildByName("introduce").getComponent(Label).string = create.introduce + ''
         this.node.getChildByName("CharacterAnimation").getComponent(Sprite).spriteFrame =
-            await util.bundle.load(`game/texture/frames/emp/${create.id}/spriteFrame`, SpriteFrame)
+            await util.bundle.load(`game/texture/frames/emp/${create.id.split('_')[0]}/spriteFrame`, SpriteFrame)
+        this.node.getChildByName("Attribute").children.forEach(n => n.active = false)
+        if (create.star < 3.5) {
+            this.node.getChildByName("Attribute").children[0].active = true
+            this.node.getChildByName("Attribute").children[0].getChildByName("Icon").getComponent(Label).string = create.name.split('.')[0]
+            if (create.name.split('.')[0] == "锋利") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.wlAtk + ''
+            } else if (create.name.split('.')[0] == "坚韧") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.wlDef + ''
+            } else if (create.name.split('.')[0] == "火焰") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.hyAtk + ''
+            } else if (create.name.split('.')[0] == "火抗") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.hyDef + ''
+            } else if (create.name.split('.')[0] == "毒素") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.dsDef + ''
+            } else if (create.name.split('.')[0] == "毒抗") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.dsDef + ''
+            } else if (create.name.split('.')[0] == "飞弹") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.fdAtk + ''
+            } else if (create.name.split('.')[0] == "弹抗") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.fdDef + ''
+            } else if (create.name.split('.')[0] == "治愈") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.zlDef + ''
+            }
+        }
+        if (create.star >= 3.5) {
+            this.node.getChildByName("Attribute").children[0].active = true
+            this.node.getChildByName("Attribute").children[0].getChildByName("Icon").getComponent(Label).string = create.name.split('.')[0]
+            if (create.name.split('.')[0] == "锋利") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.wlAtk + ''
+            } else if (create.name.split('.')[0] == "坚韧") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.wlDef + ''
+            } else if (create.name.split('.')[0] == "火焰") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.hyAtk + ''
+            } else if (create.name.split('.')[0] == "火抗") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.hyDef + ''
+            } else if (create.name.split('.')[0] == "毒素") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.dsAtk + ''
+            } else if (create.name.split('.')[0] == "毒抗") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.dsDef + ''
+            } else if (create.name.split('.')[0] == "飞弹") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.fdAtk + ''
+            } else if (create.name.split('.')[0] == "弹抗") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.fdDef + ''
+            } else if (create.name.split('.')[0] == "治愈") {
+                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.zlDef + ''
+            }
+
+
+            this.node.getChildByName("Attribute").children[1].active = true
+            this.node.getChildByName("Attribute").children[1].getChildByName("Icon").getComponent(Label).string = create.name.split('.')[1]
+            if (create.name.split('.')[0] == "锋利") {
+                this.node.getChildByName("Attribute").children[1].getChildByName("Value").getComponent(Label).string = create.wlAtk + ''
+            } else if (create.name.split('.')[0] == "坚韧") {
+                this.node.getChildByName("Attribute").children[1].getChildByName("Value").getComponent(Label).string = create.wlDef + ''
+            } else if (create.name.split('.')[0] == "火焰") {
+                this.node.getChildByName("Attribute").children[1].getChildByName("Value").getComponent(Label).string = create.hyAtk + ''
+            } else if (create.name.split('.')[0] == "火抗") {
+                this.node.getChildByName("Attribute").children[1].getChildByName("Value").getComponent(Label).string = create.hyDef + ''
+            } else if (create.name.split('.')[0] == "毒素") {
+                this.node.getChildByName("Attribute").children[1].getChildByName("Value").getComponent(Label).string = create.dsAtk + ''
+            } else if (create.name.split('.')[0] == "毒抗") {
+                this.node.getChildByName("Attribute").children[1].getChildByName("Value").getComponent(Label).string = create.dsDef + ''
+            } else if (create.name.split('.')[0] == "飞弹") {
+                this.node.getChildByName("Attribute").children[1].getChildByName("Value").getComponent(Label).string = create.fdAtk + ''
+            } else if (create.name.split('.')[0] == "弹抗") {
+                this.node.getChildByName("Attribute").children[1].getChildByName("Value").getComponent(Label).string = create.fdDef + ''
+            } else if (create.name.split('.')[0] == "治愈") {
+                this.node.getChildByName("Attribute").children[1].getChildByName("Value").getComponent(Label).string = create.zlDef + ''
+            }
+        }
         // 仙、佛、圣、魔、妖、兽
         const cmp = new Map([
             ['sacred', '仙界'],
@@ -82,9 +148,9 @@ export class EqHeroCharacterDetailPorperty extends Component {
     // 显示所有的属性
     async showAllProperty() {
         let message = `基本属性\n`
-        message += `攻击: ${Math.ceil(this.$state.attack)}\n`
+        message += `攻击: ${Math.ceil(this.$state.attack)}\n\n`
         message += `洗练属性\n`
-        message += `暂无开放\n`
+        message += `暂无开放\n\n`
         message += `技能\n`
         message += `无\n`
         // message += `${create.PassiveIntroduceOne}\n`

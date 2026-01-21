@@ -20,7 +20,7 @@ export class EqHeroCharacterDetail extends Component {
     // 返回
     async goBack() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        // this.node.active = false;
+        this.node.active = false;
         this.node.removeFromParent();
         this.node.destroy();
         // const config = getConfig()

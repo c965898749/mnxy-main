@@ -51,7 +51,7 @@ export class SelectEqCardCtrl extends Component {
             let item = nodePool.get()
             item.getChildByName("Button").active = true
             item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
-               await util.bundle.load(`game/texture/frames/emp/${create[i].id}/spriteFrame`, SpriteFrame)
+               await util.bundle.load(`game/texture/frames/emp/${create[i].id.split('_')[0]}/spriteFrame`, SpriteFrame)
             // 渲染星级
             item.getChildByName("star-001").children.forEach(n => n.active = false)
             for (let j = 0; j < create[i].star; j++) {

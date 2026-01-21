@@ -61,9 +61,9 @@ export class HeroCharacterDetailPorperty extends Component {
             ['ordinary', '兽界'],
         ]);
 
-        const position = ["仙灵", "神将", "武圣"]
-        const nameNode = ["防具", "兵刃", "法器", "宝具"]
-        this.node.getChildByName("Zhongzu").getComponent(Label).string = cmp.get(this.$state.meta.CharacterCamp) + "." + position[this.$state.meta.position]
+        // const position = ["仙灵", "神将", "武圣"]
+        const nameNode = ["兵刃", "防具", "宝具", "法器"]
+        // this.node.getChildByName("Zhongzu").getComponent(Label).string = cmp.get(this.$state.meta.CharacterCamp) + "." + position[this.$state.meta.position]
 
         // 渲染星级
         const starNode = this.node.getChildByName("Star")
@@ -91,7 +91,7 @@ export class HeroCharacterDetailPorperty extends Component {
             if (eqCharacters) {
                 n.getChildByName("Label").getComponent(Label).string = ""
                 n.getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
-                await util.bundle.load(`game/texture/frames/emp/${eqCharacters.id}/spriteFrame`, SpriteFrame)
+                    await util.bundle.load(`game/texture/frames/emp/${eqCharacters.id.split('_')[0]}/spriteFrame`, SpriteFrame)
             } else {
                 n.getChildByName("Label").getComponent(Label).string = nameNode[index]
                 n.getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame = null
@@ -213,6 +213,7 @@ export class HeroCharacterDetailPorperty extends Component {
                     this.empNode.children[empType].getChildByName("Label").getComponent(Label).string = ""
                     this.empNode.children[empType].getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
                           await util.bundle.load(`game/texture/frames/emp/${cahracterQueue[0].id}/spriteFrame`, SpriteFrame)
+
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                 }
