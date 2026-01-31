@@ -1,5 +1,6 @@
 import { _decorator, Component, Node } from 'cc';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
+import { util } from 'db://assets/script/util/util';
 const { ccclass, property } = _decorator;
 
 @ccclass('JinjiCtrl')
@@ -32,6 +33,16 @@ export class JinjiCtrl extends Component {
         this.node.parent.getChildByName("Buildings").active = false
         this.node.parent.getChildByName("JinjiCtrl").active = false
         this.node.parent.getChildByName("ArenaCrtl").active = true
+    }
+
+    openHotEvents() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("HotEventsCtrl").active = true
+    }
+
+    public async duofeisheng() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        return await util.message.prompt({ message: "暂未开放" })
     }
 }
 

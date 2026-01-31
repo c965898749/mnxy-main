@@ -147,8 +147,7 @@ export class HomeBuildings extends Component {
 
     public getZhanli(create: CharacterStateCreate) {
         // let zhanli = propts[PART_PROPTS.GongJi] * 25 + propts[PART_PROPTS.FangYu] * 25 + propts[PART_PROPTS.XueLiang] + propts[PART_PROPTS.BaoJi] * 2 + 500 * propts[PART_PROPTS.ShanBi] + 300 * (propts[PART_PROPTS.HuoGong] + propts[PART_PROPTS.HuoKang] + propts[PART_PROPTS.BingGong] + propts[PART_PROPTS.BingKang])
-        var state = new CharacterState(create, null)
-        let zhanli = state.attack * 25 + state.defence * 25 + state.maxHp + state.critical * 2 + 500 * state.FreeInjuryPercent + 300 * state.speed
+        let zhanli = create.attack * 25 + create.defence?create.defence * 25:0 + create.maxHp  + 300 * create.speed
         return zhanli;
     }
 
@@ -488,7 +487,6 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("ArenaCrtl").active = false
         this.node.parent.getChildByName("ArenaApplyCrtl").active = false
         this.node.parent.getChildByName("ArenaDetailCrtl").active = false
-        this.node.parent.getChildByName("bagCrtl").active = false
         this.node.parent.getChildByName("MapCrtl").active = true
     }
 
@@ -528,7 +526,6 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("ArenaCrtl").active = false
         this.node.parent.getChildByName("ArenaApplyCrtl").active = false
         this.node.parent.getChildByName("ArenaDetailCrtl").active = false
-        this.node.parent.getChildByName("bagCrtl").active = false
         this.node.parent.getChildByName("CardCrtl").active = true
     }
 
@@ -568,7 +565,6 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("ArenaCrtl").active = false
         this.node.parent.getChildByName("ArenaApplyCrtl").active = false
         this.node.parent.getChildByName("ArenaDetailCrtl").active = false
-        this.node.parent.getChildByName("bagCrtl").active = false
         this.node.parent.getChildByName("Buildings").active = true
     }
     //挑战
@@ -586,7 +582,6 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("qianghuaCtrl").active = false
         this.node.parent.getChildByName("ArenaApplyCrtl").active = false
         this.node.parent.getChildByName("ArenaDetailCrtl").active = false
-        this.node.parent.getChildByName("bagCrtl").active = false
         this.node.parent.getChildByName("JinjiCtrl").active = true
     }
 
@@ -613,7 +608,6 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("ArenaCrtl").active = false
         this.node.parent.getChildByName("ArenaApplyCrtl").active = false
         this.node.parent.getChildByName("ArenaDetailCrtl").active = false
-        this.node.parent.getChildByName("bagCrtl").active = false
         this.node.parent.getChildByName("otherCtrl").active = true
     }
 
@@ -633,7 +627,6 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("ArenaCrtl").active = false
         this.node.parent.getChildByName("ArenaApplyCrtl").active = false
         this.node.parent.getChildByName("ArenaDetailCrtl").active = false
-        this.node.parent.getChildByName("bagCrtl").active = false
         this.node.parent.getChildByName("EquipmentCtrl").active = true
     }
 
@@ -652,7 +645,6 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("ArenaCrtl").active = false
         this.node.parent.getChildByName("ArenaApplyCrtl").active = false
         this.node.parent.getChildByName("ArenaDetailCrtl").active = false
-        this.node.parent.getChildByName("bagCrtl").active = false
         this.node.parent.getChildByName("ShopCtrl").active = true
     }
 

@@ -135,8 +135,7 @@ export class TiemCtrl extends Component {
     }
     public getZhanli(create: CharacterStateCreate) {
         // let zhanli = propts[PART_PROPTS.GongJi] * 25 + propts[PART_PROPTS.FangYu] * 25 + propts[PART_PROPTS.XueLiang] + propts[PART_PROPTS.BaoJi] * 2 + 500 * propts[PART_PROPTS.ShanBi] + 300 * (propts[PART_PROPTS.HuoGong] + propts[PART_PROPTS.HuoKang] + propts[PART_PROPTS.BingGong] + propts[PART_PROPTS.BingKang])
-        var state = new CharacterState(create, null)
-        let zhanli = state.attack * 25 + state.defence * 25 + state.maxHp + state.critical * 2 + 500 * state.FreeInjuryPercent + 300 * state.speed
+        let zhanli = create.attack * 25 + create.defence?create.defence * 25:0 + create.maxHp + 300 * create.speed
         return zhanli;
     }
 

@@ -43,12 +43,12 @@ export class HeroCharacterDetailPorperty extends Component {
     async renderProperty(create: CharacterStateCreate) {
         console.log("渲染角色属性", create)
         this.$state = new CharacterState(create, null)
-        this.node.getChildByName("Name").getComponent(Label).string = "名称: " + this.$state.meta.name
+        this.node.getChildByName("Name").getComponent(Label).string = "名称: " + create.name
         this.node.getChildByName("Lv").getComponent(Label).string = "Lv: " + this.$state.lv
-        this.node.getChildByName("Hp").getChildByName("Value").getComponent(Label).string = Math.ceil(this.$state.maxHp) + ''
-        this.node.getChildByName("Attack").getChildByName("Value").getComponent(Label).string = Math.ceil(this.$state.attack) + ''
-        this.node.getChildByName("Defence").getChildByName("Value").getComponent(Label).string = Math.ceil(this.$state.defence) + ''
-        this.node.getChildByName("Speed").getChildByName("Value").getComponent(Label).string = Math.ceil(this.$state.speed) + ''
+        this.node.getChildByName("Hp").getChildByName("Value").getComponent(Label).string = Math.ceil(create.maxHp) + ''
+        this.node.getChildByName("Attack").getChildByName("Value").getComponent(Label).string = Math.ceil(create.attack) + ''
+        this.node.getChildByName("Defence").getChildByName("Value").getComponent(Label).string = Math.ceil(create.defence) + ''
+        this.node.getChildByName("Speed").getChildByName("Value").getComponent(Label).string = Math.ceil(create.speed) + ''
         this.node.getChildByName("introduce").getComponent(Label).string = this.$state.meta.introduce + ''
         this.node.getChildByName("skill").getChildByName("Value").getComponent(Label).string = this.$state.meta.skillValue + ''
         // 仙、佛、圣、魔、妖、兽
@@ -63,7 +63,7 @@ export class HeroCharacterDetailPorperty extends Component {
 
         // const position = ["仙灵", "神将", "武圣"]
         const nameNode = ["兵刃", "防具", "宝具", "法器"]
-        // this.node.getChildByName("Zhongzu").getComponent(Label).string = cmp.get(this.$state.meta.CharacterCamp) + "." + position[this.$state.meta.position]
+        this.node.getChildByName("Zhongzu").getComponent(Label).string = cmp.get(create.camp) + "." + create.profession
 
         // 渲染星级
         const starNode = this.node.getChildByName("Star")
@@ -166,7 +166,7 @@ export class HeroCharacterDetailPorperty extends Component {
             .then(async data => {
                 if (data.success == '1') {
                     var userInfo = data.data;
-                    const nameNode = ["防具", "兵刃", "法器", "宝具"]
+                    const nameNode =["兵刃", "防具", "宝具", "法器"]
                     config.userData.equipments = userInfo.eqCharactersList
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
                     this.empNode.children[empType].getChildByName("Label").getComponent(Label).string = nameNode[empType]
@@ -212,7 +212,7 @@ export class HeroCharacterDetailPorperty extends Component {
                     let cahracterQueue = userInfo.eqCharactersList.filter(x => x.goIntoNum == itemId && x.eqType == empType)
                     this.empNode.children[empType].getChildByName("Label").getComponent(Label).string = ""
                     this.empNode.children[empType].getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
-                          await util.bundle.load(`game/texture/frames/emp/${cahracterQueue[0].id}/spriteFrame`, SpriteFrame)
+                          await util.bundle.load(`game/texture/frames/emp/${cahracterQueue[0].id.split('_')[0]}/spriteFrame`, SpriteFrame)
 
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })

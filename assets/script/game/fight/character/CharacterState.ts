@@ -5,7 +5,6 @@ import { BuffState } from "../buff/BuffState";
 import { CharacterEnum } from "./CharacterEnum";
 import { EquipmentState, EquipmentStateCreate } from "../equipment/EquipmentState";
 import { HolCharacter } from "../../../prefab/HolCharacter";
-import { util } from "../../../util/util";
 
 export type CharacterStateCreate = {
     // id
@@ -28,6 +27,16 @@ export type CharacterStateCreate = {
     stackCount: number
 
     isChecked: number
+
+    profession: string
+
+    camp: string
+    maxHp: number
+    attack: number
+    defence: number
+    speed: number
+    pierce: number
+    name: string
 }
 
 export class CharacterState extends BasicState<CharacterMetaState> {
@@ -84,6 +93,10 @@ export class CharacterState extends BasicState<CharacterMetaState> {
     // 是否上场
     onStage: number
 
+    profession: string
+
+    camp: string
+
     /** 
      * 构造器
      * component 是所属组件
@@ -94,19 +107,23 @@ export class CharacterState extends BasicState<CharacterMetaState> {
         this.lv = create.lv
         this.maxLv = create.maxLv
         this.star = create.star
-        this.name = meta.name
+        this.name = create.name
         this.component = component
         this.create = create
         this.onStage = create.onStage
 
         this.maxEnergy = meta.Energy
-        this.maxHp = create.lv * meta.HpGrowth * ((create.star - 1) * 0.15 + 1) * (create.lv / 80 + 0.8)
-        this.attack = create.lv * meta.AttackGrowth * ((create.star - 1) * 0.15 + 1) * (create.lv / 80 + 0.8)
-        this.defence = create.lv * meta.DefenceGrowth * ((create.star - 1) * 0.15 + 1) * (create.lv / 80 + 0.8)
-        this.speed = create.lv * meta.SpeedGrowth * ((create.star - 1) * 0.15 + 1) * (create.lv / 80 + 0.8)
-        this.pierce = create.lv * meta.PierceGrowth * ((create.star - 1) * 0.15 + 1) * (create.lv / 80 + 0.8)
+        this.maxHp = create.maxHp 
+        this.attack = create.attack 
+        this.defence = create.defence
+        this.speed = create.speed
+        this.pierce = create.pierce
         this.critical = meta.Critical
         this.block = meta.Block
+
+        this.profession = create.profession
+
+        this.camp = create.camp
 
         // create.equipment.forEach(ec => this.addEquipment(ec))
         meta.OnCreateState(this)
@@ -115,21 +132,4 @@ export class CharacterState extends BasicState<CharacterMetaState> {
         this.energy = 20
     }
 
-    // 合理化数据
-    reasonableData() {
-        if (this.hp > this.maxHp) this.hp = this.maxHp
-        if (this.energy > this.maxEnergy) this.energy = this.maxEnergy
-        if (this.hp < 0) this.hp = 0
-        if (this.energy < 0) this.energy = 0
-    }
-
-    /** 
-     * 添加装备函数
-     * 在构造时调用会将装备所添加的属性加到该对象上
-     */
-    private addEquipment(equipment: EquipmentStateCreate) {
-        const equipmentState = new EquipmentState(equipment, this)
-        this.equipment.push(equipmentState)
-        equipmentState.AddPropertyToCharacter(equipmentState)
-    }
 }

@@ -1,4 +1,4 @@
-import { _decorator, Button, Component, Label, Node, Prefab, Sprite, SpriteFrame } from 'cc';
+import { _decorator, Button, Component, director, Label, Node, Prefab, Sprite, SpriteFrame } from 'cc';
 import { getConfig, getToken } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
@@ -6,6 +6,8 @@ const { ccclass, property } = _decorator;
 
 @ccclass('ShopCtrl')
 export class ShopCtrl extends Component {
+    @property(Node)
+    chongzhiNode: Node
     @property(Node)
     timeLabel: Node
     @property(Button)
@@ -30,8 +32,10 @@ export class ShopCtrl extends Component {
     @property({ type: Node, tooltip: "任务列表" }) ContentNode: Node = null;
     @property({ type: Node, tooltip: "任务列表" }) ContentNode2: Node = null;
     initialized = false;
+    isChongzhi = false
     start() {
         this.init("0")
+        this.isChongzhi = false
         // this.init2()
     }
 
@@ -103,6 +107,100 @@ export class ShopCtrl extends Component {
         }
     }
 
+
+    async chongzhi() {
+        if (!this.isChongzhi) {
+            const result = await util.message.confirm({
+                message: "确定使用钻石重置限时商城吗?"
+            })
+            // 是否确定
+            if (result === false) return
+        }
+        this.isChongzhi = true
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "/chongzhi", options)
+            .then(response => {
+
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    const nodePool = util.resource.getNodePool(
+                        await util.bundle.load("prefab/StoreEquipItem", Prefab)
+                    )
+                    const childrens = [...this.ContentNode.children]
+                    for (let i = 0; i < childrens.length; i++) {
+                        const node = childrens[i];
+                        node.getChildByName("arms").children.forEach(x => {
+                            x.getChildByName("sell").getChildByName("Background").off("click")
+                            x.getChildByName("sell").getChildByName("Background").getComponent(Button).interactable = true
+                        })
+                        nodePool.put(node)
+                    }
+                    let map = data.data
+                    // let shopUpdate = map["shopUpdate"]
+                    // this.shopUpdate = shopUpdate
+                    let picked = map["picked"]
+                    let chongzhi = map["chongzhi"]
+                    let userInfo = map["userInfo"]
+                    config.userData.diamond = userInfo.diamond
+                    localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    this.chongzhiNode.getComponent(Label).string = chongzhi + "  (" + config.userData.diamond + ")"
+                    let objArray = picked
+                    for (let i = 0; i < objArray.length; i += 4) {
+                        let item = nodePool.get()
+                        const group = objArray.slice(i, i + 4);
+                        const groupIndex = Math.floor(i / 4) + 1;
+                        // 内层循环：遍历组内的每个元素
+                        for (let j = 0; j < group.length; j++) {
+                            const itemC = group[j];
+                            let aa = item.getChildByName("arms").children[j];
+                            aa.getChildByName("sell").getChildByName("Background").getComponent(Sprite).spriteFrame =
+                                await util.bundle.load(`image/store/store_10/spriteFrame`, SpriteFrame)
+                            if (itemC.goldEdgePrice != 0) {
+                                aa.getChildByName("sell").getChildByName("Background")
+                                    .getChildByName("Label").getComponent(Label).string = itemC.goldEdgePrice
+                                aa.getChildByName("sell").getChildByName("Background").getChildByName("icon_61").getComponent(Sprite).spriteFrame =
+                                    await util.bundle.load(`image/ui/icon_61/spriteFrame`, SpriteFrame)
+                            } else {
+                                aa.getChildByName("sell").getChildByName("Background")
+                                    .getChildByName("Label").getComponent(Label).string = itemC.gemPrice
+                                aa.getChildByName("sell").getChildByName("Background").getChildByName("icon_61").getComponent(Sprite).spriteFrame =
+                                    await util.bundle.load(`image/ui/icon_69/spriteFrame`, SpriteFrame)
+                            }
+                            // icon_61
+                            aa.getComponent(Sprite).spriteFrame =
+                                await util.bundle.load(`image/store/common_0${itemC.quality}/spriteFrame`, SpriteFrame)
+                            if (itemC.type == 1) {
+                                aa.getChildByName("th").getComponent(Sprite).spriteFrame =
+                                    await util.bundle.load(`game/texture/frames/hero/Header/${itemC.itemId}/spriteFrame`, SpriteFrame)
+                            }
+                            aa.getChildByName("sell").getChildByName("Background").on("click", () => { this.clickFun(itemC.id, aa) })
+                        }
+                        this.ContentNode.addChild(item)
+                        continue
+                    }
+
+                } else {
+                    util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+    }
+
     init(str) {
         const config = getConfig()
         const token = getToken()
@@ -139,19 +237,9 @@ export class ShopCtrl extends Component {
                     let shopUpdate = map["shopUpdate"]
                     this.shopUpdate = shopUpdate
                     let picked = map["picked"]
+                    let chongzhi = map["chongzhi"]
+                    this.chongzhiNode.getComponent(Label).string = chongzhi + "  (" + config.userData.diamond + ")"
                     let objArray = picked
-                    let buyId = []
-                    if (objArray) {
-                        localStorage.setItem("picked", JSON.stringify(objArray))
-                        localStorage.setItem("buyId", "")
-                    } else {
-                        picked = localStorage.getItem("picked")
-                        objArray = JSON.parse(picked)
-                        let buyIdJson = localStorage.getItem("buyId")
-                        if (buyIdJson) {
-                            buyId = JSON.parse(buyIdJson)
-                        }
-                    }
                     for (let i = 0; i < objArray.length; i += 4) {
                         let item = nodePool.get()
                         const group = objArray.slice(i, i + 4);
@@ -180,20 +268,17 @@ export class ShopCtrl extends Component {
                                 aa.getChildByName("th").getComponent(Sprite).spriteFrame =
                                     await util.bundle.load(`game/texture/frames/hero/Header/${itemC.itemId}/spriteFrame`, SpriteFrame)
                             }
-
-                            if (buyId && buyId.length > 0) {
-                                let cc = buyId.filter(x => x == itemC.id)
-                                if (cc && cc.length > 0) {
-                                    console.log(999)
-                                    aa.getChildByName("sell").getChildByName("Background").getComponent(Button).interactable = false
-                                    aa.getChildByName("sell").getChildByName("Background")
-                                        .getChildByName("Label").getComponent(Label).string = "已购买"
-                                    aa.getChildByName("sell").getChildByName("Background").getComponent(Sprite).spriteFrame =
-                                        await util.bundle.load(`image/store/store_12/spriteFrame`, SpriteFrame)
-                                }
+                            if (itemC.isBuy == 1) {
+                                aa.getChildByName("sell").getChildByName("Background").getComponent(Button).interactable = false
+                                aa.getChildByName("sell").getChildByName("Background")
+                                    .getChildByName("Label").getComponent(Label).string = "已购买"
+                                aa.getChildByName("sell").getChildByName("Background").getComponent(Sprite).spriteFrame =
+                                    await util.bundle.load(`image/store/store_12/spriteFrame`, SpriteFrame)
+                            } else {
+                                aa.getChildByName("sell").getChildByName("Background").getComponent(Button).interactable = true
+                                aa.getChildByName("sell").getChildByName("Background").on("click", () => { this.clickFun(itemC.id, aa) })
 
                             }
-                            aa.getChildByName("sell").getChildByName("Background").on("click", () => { this.clickFun(itemC.id, itemC.itemId, aa) })
                         }
                         this.ContentNode.addChild(item)
                         continue
@@ -247,7 +332,7 @@ export class ShopCtrl extends Component {
                     item.getChildByName("name").getComponent(Label).string = itemDetail.itemName
                     item.getChildByName("Count").getComponent(Label).string = itemDetail.description
                     item.getChildByName("price").getComponent(Label).string = itemDetail.gemPrice
-                    item.getChildByName("textbox_bg").getChildByName("num").getComponent(Label).string = "限购"+itemDetail.stock
+                    item.getChildByName("textbox_bg").getChildByName("num").getComponent(Label).string = "限购" + itemDetail.stock
                     item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
                         await util.bundle.load(itemDetail.icon, SpriteFrame)
                     this.ContentNode2.addChild(item)
@@ -328,20 +413,12 @@ export class ShopCtrl extends Component {
         this.byItemDetail = null
     }
 
-    clickFun(id, itemId: any, aa: Node) {
-        let buyId = []
-        let buyIdJson = localStorage.getItem("buyId")
-        if (buyIdJson) {
-            buyId = JSON.parse(buyIdJson)
-            console.log(buyId, 777)
-        }
-        buyId.push(id)
-        localStorage.setItem("buyId", JSON.stringify(buyId))
+    clickFun(id: any, aa: Node) {
         const config = getConfig()
         const token = getToken()
         const postData = {
             token: token,
-            id: itemId,
+            id: id,
             userId: config.userData.userId,
         };
         const options = {
@@ -379,8 +456,7 @@ export class ShopCtrl extends Component {
 
     openBag() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        this.node.active = false
-        this.node.parent.getChildByName("bagCrtl").active = true
+        director.loadScene("BagCrtl")
     }
 
     async zhanbao() {

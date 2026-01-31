@@ -43,6 +43,26 @@ export class EquipmentCtrl extends Component {
         this.node.parent.getChildByName("CardCrtl").active = false
         this.node.parent.getChildByName("synthesisCtrl").active = true
     }
+
+    public async xiLiang() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        return await util.message.prompt({ message: "暂未开放" })
+    }
+
+    public openSet() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("SetCtrl").active = true
+    }
+
+    public async opentianJian() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        return await util.message.prompt({ message: "暂未开放" })
+    }
+
+    public async qianghua() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        return await util.message.prompt({ message: "暂未开放" })
+    }
 }
 
 

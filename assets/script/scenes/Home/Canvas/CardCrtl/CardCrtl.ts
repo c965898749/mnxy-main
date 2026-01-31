@@ -1,4 +1,4 @@
-import { _decorator, Component, director, Node } from 'cc';
+import { _decorator, Button, Component, director, find, Label, Node, Prefab, Sprite, SpriteFrame } from 'cc';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 const { ccclass, property } = _decorator;
@@ -36,7 +36,20 @@ export class CardCrtl extends Component {
         this.node.parent.getChildByName("CardCrtl").active = false
         this.node.parent.getChildByName("synthesisCtrl").active = true
     }
+    async openHera() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("changheader").active = true
+    }
 
+    public async feisheng() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        return await util.message.prompt({ message: "暂未开放" })
+    }
+
+    public openSet() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("SetCtrl").active = true
+    }
 }
 
 

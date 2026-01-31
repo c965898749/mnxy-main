@@ -1,11 +1,11 @@
-import { _decorator, Component, director, Node } from 'cc';
+import { _decorator, Component, director, Label, Node, WebView } from 'cc';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
+import { util } from 'db://assets/script/util/util';
 const { ccclass, property } = _decorator;
 
 @ccclass('otherCtrl')
 export class otherCtrl extends Component {
-    @property(Node)
-    SetCtrl: Node
+
 
 
     start() {
@@ -28,7 +28,7 @@ export class otherCtrl extends Component {
     }
     public openSet() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        this.SetCtrl.active = true
+        this.node.parent.getChildByName("SetCtrl").active = true
     }
 
     public openfrom() {
@@ -39,9 +39,10 @@ export class otherCtrl extends Component {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.parent.getChildByName("MessageCrtl").active = true
     }
-    openHotEvents() {
+    public async WebViewManager() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        this.node.parent.getChildByName("HotEventsCtrl").active = true
+        return await util.message.prompt({ message: "暂未开放" })
+        // this.node.parent.getChildByName("WebViewManager").active = true
     }
     openBlessing() {
         AudioMgr.inst.playOneShot("sound/other/click");
@@ -49,7 +50,7 @@ export class otherCtrl extends Component {
     }
     openBag() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        this.node.parent.getChildByName("bagCrtl").active = true
+        director.loadScene("BagCrtl")
     }
 }
 

@@ -269,7 +269,7 @@ export class synthesisCtrl extends Component {
                             this.buttonOk.node.active = true;
                         });
                         config.userData.characters = dto.characters
-                        config.userData.gold = user.go
+                        config.userData.gold = user.gold
                         localStorage.setItem("UserConfigData", JSON.stringify(config))
                     }
 

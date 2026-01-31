@@ -16,7 +16,8 @@ const { ccclass, property } = _decorator;
 @ccclass('FightMap')
 export class FightMap extends Component {
 
-
+    @property(Node)
+    SkipFight:Node
     @property(Node)
     tiem
     @property(Node)
@@ -63,7 +64,7 @@ export class FightMap extends Component {
 
     L1 = null;
     R1 = null;
-
+    timer=0
     parseCharacterString(str: string): ParseResult {
         // 正则匹配：标识[A/B]、号位[1号位]、名称[牛魔王]、属性[HP=xxx,...]
         const regex = /([A-Z])\[([^:]+):([^:]+):([^\]]+)\]/g;
@@ -161,11 +162,12 @@ export class FightMap extends Component {
         audioSource.volume = config.volume * config.volumeDetail.home
         audioSource.play()
     }
-    onEnable() {
-
-
+    async update(deltaTime: number) {
+        if (this.timer >= 500) {
+            this.SkipFight.active=true
+        }
+        this.timer++
     }
-
 
     async render(fightId, rewards, levelUp) {
         this.rewards = rewards
@@ -880,7 +882,7 @@ export class FightMap extends Component {
                                 this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
                             }
                         } else {
-                            
+
                             if (targetIsGoON) {
 
                                 //伤害掉血动画
@@ -899,25 +901,179 @@ export class FightMap extends Component {
                                         selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
                                     })
                                     await new Promise(res => setTimeout(res, 200 / this.timeScale))
-                                } else if (eventType == "大地净化") {
-                                    AudioMgr.inst.playOneShot("sound/fight/skill/HOU_JH");
-                                    let selectSkeleton = this.Character.children[targetDirection].getChildByName("HOU_JH").getComponent(sp.Skeleton)
+                                } else if (eventType == "北极剑意") {
+                                    AudioMgr.inst.playOneShot("sound/fight/skill/DHSZ3");
+                                    let selectSkeleton = this.Character.children[targetDirection].getChildByName("DHSZ").getComponent(sp.Skeleton)
                                     selectSkeleton.node.active = true
                                     selectSkeleton.setAnimation(0, "animation", false)
-                                    selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                    selectSkeleton.setCompleteListener(() => {
+                                        selectSkeleton.node.active = false
+                                        AudioMgr.inst.playOneShot("sound/fight/skill/DHSZ");
+                                        let selectSkeleton2 = this.Character.children[targetDirection].getChildByName("DHSZ2").getComponent(sp.Skeleton)
+                                        selectSkeleton2.node.active = true
+                                        this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
+                                        selectSkeleton2.setAnimation(0, "animation", false)
+                                        selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
+                                    })
                                     await new Promise(res => setTimeout(res, 200 / this.timeScale))
-                                } else if (eventType == "满目桃花") {
-                                    AudioMgr.inst.playOneShot("sound/fight/skill/manmutaohua");
-                                    let selectSkeleton = this.Character.children[targetDirection].getChildByName("manmutaohua").getComponent(sp.Skeleton)
-                                    selectSkeleton.node.active = true
-                                    selectSkeleton.setAnimation(0, "animation", false)
-                                    selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
-                                    await new Promise(res => setTimeout(res, 200 / this.timeScale))
-                                } else if (effectType == 'HEAL' || effectType == 'HP_UP') {
-                                    this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], +value, new math.Color(82, 201, 25, 255), 40)
-                                } else {
-                                    this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
-                                }
+                                } else
+                                    //伤害掉血动画
+                                    if (eventType == "绝地反击") {
+                                        AudioMgr.inst.playOneShot("sound/fight/skill/JDFJ");
+                                        let sourceCamp = fightProcess.sourceCamp
+                                        let targetPosition = fightProcess.targetPosition - 1
+                                        let targetHpBefore = fightProcess.targetHpBefore
+                                        let targetHpAfter = fightProcess.targetHpAfter
+                                        let attack = fightProcess.value
+                                        var directionFace = 0
+                                        var falg = 1
+                                        if (sourceCamp == "A") {
+                                            direction = 0
+                                            directionFace = 1
+                                            falg = -1
+                                        }
+                                        await util.sundry.moveNodeToPosition(
+
+                                            this.Character.children[direction],
+                                            {
+                                                targetPosition: { x: -90 * falg, y: 0 },
+                                                moveCurve: true,
+                                                moveTimeScale: 1
+                                            }
+                                        )
+                                        AudioMgr.inst.playOneShot("sound/fight/attack/attack");
+                                        let hut = this.Character.children[directionFace].getChildByName("hut").getComponent(sp.Skeleton)
+                                        hut.node.active = true
+                                        hut.setAnimation(0, "animation", false)
+                                        //伤害结算
+                                        this.showNumber(-falg, this.Character.children[directionFace], -attack, new math.Color(255, 176, 126, 255), 40)
+                                        this.Hp.children[directionFace].getChildByName("Bar").setScale(
+                                            targetHpAfter / targetHpBefore,
+                                            1,
+                                            1
+                                        )
+                                        this.Hp.children[directionFace].getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
+
+                                        // 更新场下生命值
+                                        this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("Bar").setScale(
+                                            targetHpAfter / targetHpBefore,
+                                            1,
+                                            1
+                                        )
+                                        this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
+                                        hut.setCompleteListener(() => hut.node.active = false)
+
+                                        //回到初始位置
+                                        await util.sundry.moveNodeToPosition(
+                                            this.Character.children[direction],
+                                            {
+                                                targetPosition: { x: 180 * falg, y: 0 },
+                                                moveCurve: true,
+                                                moveTimeScale: 1
+                                            }
+                                        )
+                                    } else
+                                    //伤害掉血动画
+                                    if (eventType == "新月反击") {
+                                        AudioMgr.inst.playOneShot("sound/fight/skill/chuanyun_grial");
+                                        let sourceCamp = fightProcess.sourceCamp
+                                        let targetPosition = fightProcess.targetPosition - 1
+                                        let targetHpBefore = fightProcess.targetHpBefore
+                                        let targetHpAfter = fightProcess.targetHpAfter
+                                        let attack = fightProcess.value
+                                        var directionFace = 0
+                                        var falg = 1
+                                        if (sourceCamp == "A") {
+                                            direction = 0
+                                            directionFace = 1
+                                            falg = -1
+                                        }
+                                        await util.sundry.moveNodeToPosition(
+
+                                            this.Character.children[direction],
+                                            {
+                                                targetPosition: { x: -90 * falg, y: 0 },
+                                                moveCurve: true,
+                                                moveTimeScale: 1
+                                            }
+                                        )
+                                        AudioMgr.inst.playOneShot("sound/fight/attack/attack");
+                                        let hut = this.Character.children[directionFace].getChildByName("hut").getComponent(sp.Skeleton)
+                                        hut.node.active = true
+                                        hut.setAnimation(0, "animation", false)
+                                        //伤害结算
+                                        this.showNumber(-falg, this.Character.children[directionFace], -attack, new math.Color(255, 176, 126, 255), 40)
+                                        this.Hp.children[directionFace].getChildByName("Bar").setScale(
+                                            targetHpAfter / targetHpBefore,
+                                            1,
+                                            1
+                                        )
+                                        this.Hp.children[directionFace].getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
+
+                                        // 更新场下生命值
+                                        this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("Bar").setScale(
+                                            targetHpAfter / targetHpBefore,
+                                            1,
+                                            1
+                                        )
+                                        this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
+                                        hut.setCompleteListener(() => hut.node.active = false)
+
+                                        //回到初始位置
+                                        await util.sundry.moveNodeToPosition(
+                                            this.Character.children[direction],
+                                            {
+                                                targetPosition: { x: 180 * falg, y: 0 },
+                                                moveCurve: true,
+                                                moveTimeScale: 1
+                                            }
+                                        )
+                                    }  else if (eventType.includes("白天君蓄力")) {
+                                        let selectSkeleton
+                                        AudioMgr.inst.playOneShot("sound/fight/skill/XULI");
+                                        if (eventType == "白天君蓄力·一") {
+                                            this.Character.children[targetDirection].getChildByName("xuli1").active = true
+                                            this.Character.children[targetDirection].getChildByName("xuli2").active = false
+                                            this.Character.children[targetDirection].getChildByName("xuli3").active = false
+                                            selectSkeleton = this.Character.children[targetDirection].getChildByName("xuli1").getComponent(sp.Skeleton)
+                                        } else if (eventType == "白天君蓄力·二") {
+                                            this.Character.children[targetDirection].getChildByName("xuli1").active = false
+                                            this.Character.children[targetDirection].getChildByName("xuli2").active = true
+                                            this.Character.children[targetDirection].getChildByName("xuli3").active = false
+                                            selectSkeleton = this.Character.children[targetDirection].getChildByName("xuli2").getComponent(sp.Skeleton)
+                                        } else if (eventType == "白天君蓄力·三") {
+                                            this.Character.children[targetDirection].getChildByName("xuli1").active = false
+                                            this.Character.children[targetDirection].getChildByName("xuli2").active = false
+                                            this.Character.children[targetDirection].getChildByName("xuli3").active = true
+                                            selectSkeleton = this.Character.children[targetDirection].getChildByName("xuli3").getComponent(sp.Skeleton)
+                                        }
+                                        selectSkeleton.node.active = true
+                                        selectSkeleton.setAnimation(0, "animation", true)
+                                        // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                        await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                                    } else if (eventType == "三火齐飞") {
+                                        this.Character.children[targetDirection].getChildByName("xuli1").active = false
+                                        this.Character.children[targetDirection].getChildByName("xuli2").active = false
+                                        this.Character.children[targetDirection].getChildByName("xuli3").active = false
+                                    } else if (eventType == "大地净化") {
+                                        AudioMgr.inst.playOneShot("sound/fight/skill/HOU_JH");
+                                        let selectSkeleton = this.Character.children[targetDirection].getChildByName("HOU_JH").getComponent(sp.Skeleton)
+                                        selectSkeleton.node.active = true
+                                        selectSkeleton.setAnimation(0, "animation", false)
+                                        selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                        await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                                    } else if (eventType == "满目桃花") {
+                                        AudioMgr.inst.playOneShot("sound/fight/skill/manmutaohua");
+                                        let selectSkeleton = this.Character.children[targetDirection].getChildByName("manmutaohua").getComponent(sp.Skeleton)
+                                        selectSkeleton.node.active = true
+                                        selectSkeleton.setAnimation(0, "animation", false)
+                                        selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                        await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                                    } else if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                        this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], +value, new math.Color(82, 201, 25, 255), 40)
+                                    } else {
+                                        this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
+                                    }
 
 
                                 //                 // 更新场上生命值
@@ -931,7 +1087,7 @@ export class FightMap extends Component {
 
                             //伤害动画
                             //伤害掉血动画
-                            if (eventType == "穿云斩"||eventType == "穿云剑") {
+                            if (eventType == "穿云斩" || eventType == "穿云剑") {
                                 AudioMgr.inst.playOneShot("sound/fight/skill/chuanyun_grial");
                                 let selectSkeleton = this.Character.children[direction].getChildByName("chuanyun").getComponent(sp.Skeleton)
                                 selectSkeleton.node.active = true
@@ -946,7 +1102,7 @@ export class FightMap extends Component {
                                     selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
                                 })
                                 await new Promise(res => setTimeout(res, 200 / this.timeScale))
-                            } else if (eventType == "穿云长枪"||eventType == "圣灵斩") {
+                            } else if (eventType == "穿云长枪" || eventType == "圣灵斩") {
                                 AudioMgr.inst.playOneShot("sound/fight/skill/chuanyun_man");
                                 let selectSkeleton = this.Character.children[direction].getChildByName("chuanyun").getComponent(sp.Skeleton)
                                 selectSkeleton.node.active = true
@@ -964,7 +1120,7 @@ export class FightMap extends Component {
                             } else if (eventType == "大地净化") {
                                 let result = "驱散"
                                 await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
-                            } else  if (eventType == "满目桃花") {
+                            } else if (eventType == "满目桃花") {
                                 let result = "攻击降低50%，速度增加50%"
                                 await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
                             } else if (effectType == 'MAX_HP_DOWN') {
@@ -977,7 +1133,7 @@ export class FightMap extends Component {
                             } else if (effectType == 'HEAL') {
                                 await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), "+" + value)
                             } else if (effectType == "ATTACK_UP") {
-                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), "攻击+" +value)
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), "攻击+" + value)
                             } else {
                                 await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "-" + value)
                             }

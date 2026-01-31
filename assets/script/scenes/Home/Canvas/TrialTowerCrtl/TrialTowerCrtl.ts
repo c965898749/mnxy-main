@@ -1,4 +1,4 @@
-import { _decorator, Component, find, instantiate, Label, Node, Prefab, tween, v3 } from 'cc';
+import { _decorator, Component, find, instantiate, Label, Node, Prefab, Sprite, SpriteFrame, tween, v3 } from 'cc';
 import { getConfig, getToken } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
@@ -10,6 +10,8 @@ const { ccclass, property } = _decorator;
 
 @ccclass('TrialTowerCrtl')
 export class TrialTowerCrtl extends Component {
+    @property(Node)
+    nameNode: Node
     @property(Node)
     PvE_default: Node
     index: number = 0
@@ -61,12 +63,32 @@ export class TrialTowerCrtl extends Component {
 
     }
 
-    render(data) {
+    async render(data) {
         const config = getConfig()
         this.customEventData = data.customEventData
-        this.ceng = data.bronze1
-        this.myceng = data.bronze1
-        this.cailiao.getChildByName("num").getComponent(Label).string = config.userData.bronze.toString()
+        if (this.customEventData == 'bronzetower') {
+            this.nameNode.getComponent(Label).string = "青铜试炼塔"
+            this.ceng = data.bronze1
+            this.myceng = data.bronze1
+            this.cailiao.getChildByName("num").getComponent(Label).string = config.userData.bronze.toString()
+            this.cailiao.getComponent(Sprite).spriteFrame =
+                await util.bundle.load('image/bagCrtl/17000009/spriteFrame', SpriteFrame)
+        } else if (this.customEventData == 'silvertower') {
+            this.nameNode.getComponent(Label).string = "白银试炼塔"
+            this.ceng = data.silvertower
+            this.myceng = data.silvertower
+            this.cailiao.getChildByName("num").getComponent(Label).string = config.userData.darkSteel.toString()
+            this.cailiao.getComponent(Sprite).spriteFrame =
+                await util.bundle.load('image/bagCrtl/17000010/spriteFrame', SpriteFrame)
+        } else if (this.customEventData == 'goldentower') {
+            this.nameNode.getComponent(Label).string = "黄金试炼塔"
+            this.ceng = data.goldentower
+            this.myceng = data.goldentower
+            this.cailiao.getChildByName("num").getComponent(Label).string = config.userData.purpleGold.toString()
+            this.cailiao.getComponent(Sprite).spriteFrame =
+                await util.bundle.load('image/bagCrtl/17000011/spriteFrame', SpriteFrame)
+        }
+
         const coordinates = [
             [-290, -380], [230, -200], [-90, -50], [-200, 100], [250, 240], [-30, 350], [-290, 480]
         ];
@@ -117,7 +139,14 @@ export class TrialTowerCrtl extends Component {
                 if (data.success == '1') {
                     var map = data.data;
                     var user = map['user'];
-                    this.myceng = user.bronze1
+                    if (this.customEventData == 'bronzetower') {
+                        this.myceng = user.bronze1
+                    } else if (this.customEventData == 'silvertower') {
+                        this.myceng = user.silvertower
+                    } else if (this.customEventData == 'goldentower') {
+                        this.myceng = user.goldentower
+                    }
+                    console.log(this.myceng, 'myceng');
                     const battle = map['battle'];
                     const rewards = map["rewards"];
                     if (this.myceng >= 99) {
@@ -222,17 +251,35 @@ export class TrialTowerCrtl extends Component {
                             })
                             .start();
                     }
-                    config.userData.bronze1 = user.bronze1
-                    this.myceng = battle.chapter
-                    if (battle.isWin != 0) {
-                        this.index2--;
-                    }
+
                     config.userData.gold = user.gold
                     config.userData.bronze = user.bronze
                     config.userData.darkSteel = user.darkSteel
                     config.userData.purpleGold = user.purpleGold
                     config.userData.crystal = user.crystal
-                    this.cailiao.getChildByName("num").getComponent(Label).string = user.bronze.toString()
+                    if (this.customEventData == 'bronzetower') {
+                        config.userData.bronze1 = user.bronze1
+                        this.myceng = battle.chapter
+                        if (battle.isWin != 0) {
+                            this.index2--;
+                        }
+                        this.cailiao.getChildByName("num").getComponent(Label).string = user.bronze.toString()
+                    } else if (this.customEventData == 'silvertower') {
+                        config.userData.silvertower = user.silvertower
+                        this.myceng = battle.chapter
+                        if (battle.isWin != 0) {
+                            this.index2--;
+                        }
+                        this.cailiao.getChildByName("num").getComponent(Label).string = user.darkSteel.toString()
+                    } else if (this.customEventData == 'goldentower') {
+                        config.userData.silvertower = user.silvertower
+                        this.myceng = battle.chapter
+                        if (battle.isWin != 0) {
+                            this.index2--;
+                        }
+                        this.cailiao.getChildByName("num").getComponent(Label).string = user.purpleGold.toString()
+                    }
+
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
 
                 } else {
@@ -289,12 +336,12 @@ export class TrialTowerCrtl extends Component {
                     //     .read(rewards, null)
                     // this.node.getChildByName("FightSuccess").active = true
                     const FightSuccessfab = await util.bundle.load("prefab/FightSuccess", Prefab)
-                    const FightSuccess= instantiate(FightSuccessfab)
+                    const FightSuccess = instantiate(FightSuccessfab)
                     this.node.parent.addChild(FightSuccess)
                     await FightSuccess
                         .getComponent(FightSuccessRewds)
                         .read(rewards, null)
-                        this.node.active = false
+                    this.node.active = false
                     // find('Canvas').getComponent(HomeCanvas).audioSource.pause()
                     this.node.parent.getChildByName("FightSuccess").active = true
                 } else {

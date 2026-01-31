@@ -219,7 +219,10 @@ export class RankingCrtl extends Component {
     }
 
 
-
+    public async friendRanking() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        return await util.message.prompt({ message: "暂未开放" })
+    }
 
 }
 

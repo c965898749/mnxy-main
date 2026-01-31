@@ -1,5 +1,6 @@
-import { _decorator, Component, Label, Node, Prefab, Sprite, SpriteFrame } from 'cc';
+import { _decorator, Component, director, Label, Node, Prefab, Sprite, SpriteFrame } from 'cc';
 import { getConfig, getToken } from 'db://assets/script/common/config/config';
+import { HolPreLoad } from 'db://assets/script/prefab/HolPreLoad';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 const { ccclass, property } = _decorator;
@@ -15,18 +16,33 @@ export class bagCrtl extends Component {
     @property(Node)
     rew: Node
     type = 1;
-    start() {
+    async start() {
+        // 第一次渲染所有角色
+        const holPreLoad = this.node.getChildByName("HolPreLoad").getComponent(HolPreLoad)
+        holPreLoad.node.active = true
+        holPreLoad.setTips([
+            "提示\n不同阵营之间相互克制，巧用阵营可以出奇制胜",
+        ])
+        holPreLoad.setProcess(20)
+        // const config = getConfig()
+        // 监听进度条完成函数
+        holPreLoad.listenComplete(async () => {
+             this.refresh()
+        })
+        // // 设置 100%
+        holPreLoad.setProcess(100)
+        const config = getConfig()
         this.refresh()
     }
-    onEnable() {
-        if (!this.initialized) {
-            // 初始化代码
-            this.initialized = true;
-        } else {
-            this.refresh()
-        }
+    // onEnable() {
+    //     if (!this.initialized) {
+    //         // 初始化代码
+    //         this.initialized = true;
+    //     } else {
+    //         this.refresh()
+    //     }
 
-    }
+    // }
 
     refresh() {
         const config = getConfig()
@@ -188,10 +204,11 @@ export class bagCrtl extends Component {
     update(deltaTime: number) {
 
     }
-    goBack() {
+    async goBack() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        this.node.active = false
-        this.node.parent.getChildByName("ShopCtrl").active = true
+        const close = await util.message.load()
+        director.preloadScene("Home", () => close())
+        director.loadScene("Home")
     }
 
     async zhanbao() {

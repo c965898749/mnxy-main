@@ -57,14 +57,14 @@ export class Character extends CharacterMetaState {
 
     SkillIntroduce: string = `
     
-    烛龙协同 Lv1
-    与烛龙在同一队伍时，增加自身453点生命上限，158点攻击，158点速度
+    玄冥协同 Lv1
+    与玄冥在同一队伍时，增加自身453点生命上限，158点攻击，158点速度
     `.replace(/ /ig, "")
 
 
     introduce: string = "我退的皮你们居然拿来泡酒？！"
 
-    skillValue: string = "苦痛箭  虹吸打击  烛龙协同"
+    skillValue: string = "苦痛箭  虹吸打击  玄冥协同"
 
 
     OnCreateState(self: CharacterState): void {

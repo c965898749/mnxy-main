@@ -57,14 +57,14 @@ export class Character extends CharacterMetaState {
 
     SkillIntroduce: string = `
     
-    冬天之神 Lv1
-    与将臣在同一队伍时，增加自身453点生命上限，158点攻击，158点速度
+    大鹏金翅雕协同 Lv1
+    与大鹏金翅雕在同一队伍时，增加自身453点生命上限，158点攻击，158点速度
     `.replace(/ /ig, "")
 
 
     introduce: string = "四时、四方之神之一的冬天之神——北方玄冥。"
 
-    skillValue: string = "毒入骨髓  疫病侵染  冬天之神"
+    skillValue: string = "毒入骨髓  疫病侵染  大鹏金翅雕协同"
 
     OnCreateState(self: CharacterState): void {
         if (self.star >= 2) {
