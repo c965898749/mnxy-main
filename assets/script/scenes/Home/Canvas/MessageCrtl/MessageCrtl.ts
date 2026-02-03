@@ -240,7 +240,7 @@ export class MessageCrtl extends Component {
         const postData = {
             token: token,
             str: giftCode,
-            userId:config.userData.userId
+            userId: config.userData.userId
         };
         const options = {
             method: 'POST',
@@ -261,6 +261,9 @@ export class MessageCrtl extends Component {
                     config.userData.diamond = userInfo.diamond
                     config.userData.soul = userInfo.soul
                     config.userData.characters = userInfo.characterList
+                    config.userData.bronze = userInfo.bronze
+                    config.userData.darkSteel = userInfo.darkSteel
+                    config.userData.purpleGold = userInfo.purpleGold
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                 } else {

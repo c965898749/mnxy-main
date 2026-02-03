@@ -68,7 +68,6 @@ export class TiemCtrl extends Component {
             this.Item.children[goIntoNum - 1].getChildByName("tiemHeader").children[0].getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`game/texture/frames/hero/Header/${create[i].id}/spriteFrame`, SpriteFrame)
             // 渲染星级
-            console.log(meta.name + "---" + goIntoNum)
             this.Item.children[goIntoNum - 1].children[4].active = true
             this.Item.children[goIntoNum - 1].children[3].active = true
             this.Item.children[goIntoNum - 1].children[2].active = true
@@ -79,7 +78,7 @@ export class TiemCtrl extends Component {
                     this.Item.children[goIntoNum - 1].children[4].children[j].children[0].active = true
                 }
             }
-            this.Item.children[goIntoNum - 1].children[2].getComponent(Label).string = meta.name + "  Lv" + create[i].lv + "/" + create[i].maxLv
+            this.Item.children[goIntoNum - 1].children[2].getComponent(Label).string = create[i].name + "  Lv" + create[i].lv + "/" + create[i].maxLv
             // 仙、佛、圣、魔、妖、兽
             const cmp = new Map([
                 ['sacred', '仙界'],
@@ -91,7 +90,7 @@ export class TiemCtrl extends Component {
             ]);
             this.power = this.power + parseInt(this.getZhanli(create[i]).toString())
             const position = ["仙灵", "神将", "武圣"]
-            this.Item.children[goIntoNum - 1].children[3].getComponent(Label).string = cmp.get(meta.CharacterCamp) + "." + position[meta.position]
+            this.Item.children[goIntoNum - 1].children[3].getComponent(Label).string = cmp.get(create[i].camp) + "." + create[i].profession
             // // 绑定事件
             // this.Item.children[goIntoNum - 1].on("click", () => { this.clickFun(create[i]) })
             continue

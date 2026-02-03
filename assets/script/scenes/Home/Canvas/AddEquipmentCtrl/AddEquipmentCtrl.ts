@@ -1,4 +1,4 @@
-import { _decorator, Component, sp, Node, Sprite, SpriteFrame, UIOpacity, Label, Button, Vec3, tween } from 'cc';
+import { _decorator, Component, sp, Node, Sprite, SpriteFrame, UIOpacity, Label, Button, Vec3, tween, RichText } from 'cc';
 import { getConfig, getToken } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
@@ -87,18 +87,60 @@ export class AddEquipmentCtrl extends Component {
     close: Node
     @property(Node)
     cailiaoNum
+    @property(Node)
+    RichTextNode: Node
+    initialized = false;
     start() {
         const config = getConfig()
         const token = getToken()
         this.jinbi.getChildByName("num2").getComponent(Label).string = "(已有" + config.userData.gold + ")"
         this.daNum.getComponent(Label).string = "(" + config.userData.diamond + ")"
         this.cailiaoNum.getComponent(Label).string = "(已有" + config.userData.bronze + ")"
-    }
-    //     public bronze: number = 0
-    // public darkSteel: number = 0
-    // public purpleGold: number = 0
-    // public crystal: number = 0
 
+        this.refresh()
+    }
+    onEnable() {
+        if (!this.initialized) {
+            // 初始化代码
+            this.initialized = true;
+        } else {
+            this.refresh()
+        }
+
+    }
+    refresh() {
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "/equipmentNew", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                let messageDetails = data.data
+                var content = `<color=#E5D75A>${messageDetails.userName}  <color=#E69A3A>${messageDetails.timeStr}打造了 </color><color=#E5D75A>${messageDetails.eqName}</color><color=#EEE365>(${messageDetails.star}星)</color></color></color>`
+                this.RichTextNode.getComponent(RichText).string = content
+            })
+            .catch(error => {
+                //console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+    }
+
+    openEqList() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("EquipmentMessageCrtl").active = true
+    }
     update(deltaTime: number) {
 
     }

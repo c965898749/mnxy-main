@@ -17,7 +17,7 @@ const { ccclass, property } = _decorator;
 export class FightMap extends Component {
 
     @property(Node)
-    SkipFight:Node
+    SkipFight: Node
     @property(Node)
     tiem
     @property(Node)
@@ -64,7 +64,7 @@ export class FightMap extends Component {
 
     L1 = null;
     R1 = null;
-    timer=0
+    timer = 0
     parseCharacterString(str: string): ParseResult {
         // 正则匹配：标识[A/B]、号位[1号位]、名称[牛魔王]、属性[HP=xxx,...]
         const regex = /([A-Z])\[([^:]+):([^:]+):([^\]]+)\]/g;
@@ -164,7 +164,7 @@ export class FightMap extends Component {
     }
     async update(deltaTime: number) {
         if (this.timer >= 500) {
-            this.SkipFight.active=true
+            this.SkipFight.active = true
         }
         this.timer++
     }
@@ -204,7 +204,7 @@ export class FightMap extends Component {
                 return response.json(); // 解析 JSON 响应
             })
             .then(async data => {
-                //console.log(data); // 处理响应数据
+                ////console.log(data); // 处理响应数据
                 if (data.success == '1') {
                     var map = data.data;
                     this.fightProcess = map['battleLogs'];
@@ -247,7 +247,7 @@ export class FightMap extends Component {
                 }
             })
             .catch(error => {
-                console.error('There was a problem with the fetch operation:', error);
+                //console.error('There was a problem with the fetch operation:', error);
             }
             );
 
@@ -337,38 +337,10 @@ export class FightMap extends Component {
             }
         });
     }
+
     // 战斗开始
     private async fightStart(): Promise<boolean> {
-        // // 升序取第一个
-        const character_0 = [...this.L1].sort((a, b) => a.goIntoNum - b.goIntoNum)[0];
-        const character_1 = [...this.R1].sort((a, b) => a.goIntoNum - b.goIntoNum)[0];
-        this.Character.children[0].setPosition(-180, 0, 0)
-        const meta2 = CharacterEnum[character_0.id]
-        this.Character.children[0].getComponent(Sprite).spriteFrame = await util.bundle.load(meta2.AvatarPath, SpriteFrame)
-        this.Character.children[0].setScale(
-            Math.abs(this.Character.children[0].scale.x) * -1,
-            this.Character.children[0].scale.y,
-            this.Character.children[0].scale.z,
-        )
-        // 更新生命值
-        this.Hp.children[0].getChildByName("Bar").setScale(
-            character_0.maxHp / character_0.maxHp,
-            1,
-            1
-        )
-        this.Hp.children[0].getChildByName("user_li_count").getComponent(Label).string = character_0.maxHp + "/" + character_0.maxHp
-        this.Character.children[1].setPosition(180, 0, 0)
-
-        const meta = CharacterEnum[character_1.id]
-        this.Character.children[1].getComponent(Sprite).spriteFrame = await util.bundle.load(meta.AvatarPath, SpriteFrame)
-        // 更新生命值
-        this.Hp.children[1].getChildByName("Bar").setScale(
-            character_1.maxHp / character_1.maxHp,
-            1,
-            1
-        )
-        this.Hp.children[1].getChildByName("user_li_count").getComponent(Label).string = character_1.maxHp + "/" + character_1.maxHp
-        await new Promise(res => setTimeout(res, 500 / this.timeScale))
+        // await new Promise(res => setTimeout(res, 500 / this.timeScale))
         for (var i = 0; i < this.fightProcess.length; i++) {
             if (this.isOverFight) {
                 break;
@@ -377,70 +349,63 @@ export class FightMap extends Component {
             let eventType = fightProcess.eventType
             let fieldUnitsStatus = fightProcess.fieldUnitsStatus
             this.currentRound = fightProcess.round
-            if (eventType == "UNIT_ENTER") {
-                let characters = this.parseCharacterString(fieldUnitsStatus)
-                let charactersA = characters.A
-                let charactersB = characters.B
-                let character_0 = this.L1.filter(x => x.goIntoNum - 1 == charactersA.position)[0];
-                let character_1 = this.R1.filter(x => x.goIntoNum - 1 == charactersB.position)[0];
-                this.Character.children[0].setPosition(-180, 0, 0)
-                const meta2 = CharacterEnum[character_0.id]
-                this.Character.children[0].getComponent(Sprite).spriteFrame = await util.bundle.load(meta2.AvatarPath, SpriteFrame)
-                this.Character.children[0].setScale(
-                    Math.abs(this.Character.children[0].scale.x) * -1,
-                    this.Character.children[0].scale.y,
-                    this.Character.children[0].scale.z,
-                )
-                // 更新生命值
-                this.Hp.children[0].getChildByName("Bar").setScale(
-                    charactersA.HP[0] / charactersA.HP[1],
-                    1,
-                    1
-                )
-                this.Hp.children[0].getChildByName("user_li_count").getComponent(Label).string = charactersA.HP[0] + "/" + charactersA.HP[1]
-                this.Character.children[1].setPosition(180, 0, 0)
+            if (eventType == "ROUND_START") {
+                // await new Promise(res => setTimeout(res, 500 / this.timeScale))
+            } else if (eventType == "UNIT_ENTER") {
+                // 等待行动队列清空
+                await Promise.all(this.actionAwaitQueue)
+                this.actionAwaitQueue = []
+                let sourcePosition = fightProcess.sourcePosition - 1
+                let sourceCamp = fightProcess.sourceCamp
+                let sourceMaxHp = fightProcess.sourceHpBefore
+                let sourceAfterHp = fightProcess.sourceHpAfter
+                console.log("--------", sourceMaxHp, sourceAfterHp)
+                if (sourceCamp == 'A') {
+                    let character_0 = this.L1.filter(x => x.goIntoNum - 1 == sourcePosition)[0];
+                    this.Character.children[0].setPosition(-180, 0, 0)
+                    let scaleNew = new Vec3(Math.abs(this.Character.children[0].scale.x) * -1, this.Character.children[0].scale.y, this.Character.children[0].scale.z)
+                    const meta2 = CharacterEnum[character_0.id]
+                    this.Character.children[0].scale = new Vec3(0, 0, 0)
+                    this.Character.children[0].getComponent(Sprite).spriteFrame = await util.bundle.load(meta2.AvatarPath, SpriteFrame)
+                    // tween(this.Character.children[0])
+                    //     .to(1, { scale: scaleNew }, { easing: 'elasticOut' })
+                    //     .start();
+                    // 更新生命值
+                    this.Hp.children[0].getChildByName("Bar").setScale(
+                        sourceAfterHp / sourceMaxHp,
+                        1,
+                        1
+                    )
+                    this.Hp.children[0].getChildByName("user_li_count").getComponent(Label).string = sourceAfterHp + "/" + sourceMaxHp
+                    const hurtPromise = this.tweenToPromise(this.Character.children[0], 1, { scale: scaleNew }, { easing: 'elasticOut' });
+                    this.actionAwaitQueue.push(hurtPromise)
+                    // this.Character.children[1].setPosition(180, 0, 0)
+                } else {
+                    let character_0 = this.R1.filter(x => x.goIntoNum - 1 == sourcePosition)[0];
+                    this.Character.children[1].setPosition(180, 0, 0)
+                    let scaleNew = new Vec3(this.Character.children[1].scale.x, this.Character.children[1].scale.y, this.Character.children[1].scale.z)
+                    const meta2 = CharacterEnum[character_0.id]
+                    this.Character.children[1].scale = new Vec3(0, 0, 0)
+                    this.Character.children[1].getComponent(Sprite).spriteFrame = await util.bundle.load(meta2.AvatarPath, SpriteFrame)
+                    // tween(this.Character.children[1])
+                    //     .to(1, { scale: scaleNew }, { easing: 'elasticOut' })
+                    //     .start();
+                    // 更新生命值
+                    this.Hp.children[1].getChildByName("Bar").setScale(
+                        sourceAfterHp / sourceMaxHp,
+                        1,
+                        1
+                    )
+                    this.Hp.children[1].getChildByName("user_li_count").getComponent(Label).string = sourceAfterHp + "/" + sourceMaxHp
+                    const hurtPromise = this.tweenToPromise(this.Character.children[1], 1, { scale: scaleNew }, { easing: 'elasticOut' });
+                    this.actionAwaitQueue.push(hurtPromise)
+                }
+                // await new Promise(res => setTimeout(res, 1000 / this.timeScale))
 
-                const meta = CharacterEnum[character_1.id]
-                this.Character.children[1].getComponent(Sprite).spriteFrame = await util.bundle.load(meta.AvatarPath, SpriteFrame)
-                // 更新生命值
-                this.Hp.children[1].getChildByName("Bar").setScale(
-                    charactersB.HP[0] / charactersB.HP[1],
-                    1,
-                    1
-                )
-                this.Hp.children[1].getChildByName("user_li_count").getComponent(Label).string = charactersB.HP[0] + "/" + charactersB.HP[1]
-
-            } else if (eventType == "ROUND_START") {
-                let characters = this.parseCharacterString(fieldUnitsStatus)
-                let charactersA = characters.A
-                let charactersB = characters.B
-                let character_0 = this.L1.filter(x => x.goIntoNum - 1 == charactersA.position)[0];
-                let character_1 = this.R1.filter(x => x.goIntoNum - 1 == charactersB.position)[0];
-                const meta2 = CharacterEnum[character_0.id]
-                this.Character.children[0].getComponent(Sprite).spriteFrame = await util.bundle.load(meta2.AvatarPath, SpriteFrame)
-                this.Character.children[0].setScale(
-                    Math.abs(this.Character.children[0].scale.x) * -1,
-                    this.Character.children[0].scale.y,
-                    this.Character.children[0].scale.z,
-                )
-                // 更新生命值
-                this.Hp.children[0].getChildByName("Bar").setScale(
-                    charactersA.HP[0] / charactersA.HP[1],
-                    1,
-                    1
-                )
-                this.Hp.children[0].getChildByName("user_li_count").getComponent(Label).string = charactersA.HP[0] + "/" + charactersA.HP[1]
-
-                const meta = CharacterEnum[character_1.id]
-                this.Character.children[1].getComponent(Sprite).spriteFrame = await util.bundle.load(meta.AvatarPath, SpriteFrame)
-                // 更新生命值
-                this.Hp.children[1].getChildByName("Bar").setScale(
-                    charactersB.HP[0] / charactersB.HP[1],
-                    1,
-                    1
-                )
-                this.Hp.children[1].getChildByName("user_li_count").getComponent(Label).string = charactersB.HP[0] + "/" + charactersB.HP[1]
             } else if (eventType == "POISON") {
+                // 等待行动队列清空
+                await Promise.all(this.actionAwaitQueue)
+                this.actionAwaitQueue = []
                 // AudioMgr.inst.playOneShot("sound/fight/skill/POISON");
                 let extraDesc = fightProcess.extraDesc
                 let eventData = this.parseEventString(extraDesc)
@@ -456,7 +421,7 @@ export class FightMap extends Component {
                         let selectSkeleton2 = this.tiem.children[0].children[j].getChildByName("buff").getChildByName("POISON2").getComponent(sp.Skeleton)
                         selectSkeleton2.node.active = true
                         selectSkeleton2.setAnimation(0, "animation", false)
-                        console.log(damages, 33)
+                        //console.log(damages, 33)
                         let damage = "中毒伤害"
                         await this.showString(1, this.tiem.children[0].children[j], new math.Color(255, 0, 0), damage)
                         //伤害计算
@@ -466,7 +431,9 @@ export class FightMap extends Component {
                             1
                         )
                         this.tiem.children[0].children[j].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = charA[0].hp.after + "/" + charA[0].hp.before
-                        selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
+                        // selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
+                        const hurtPromise = this.playAnimation(selectSkeleton2)
+                        this.actionAwaitQueue.push(hurtPromise)
                     } else {
                         eventSelectSkeleton1.active = false
                         if (j == charactersA.position) {
@@ -488,7 +455,9 @@ export class FightMap extends Component {
                             1
                         )
                         this.tiem.children[1].children[j].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = charB[0].hp.after + "/" + charB[0].hp.before
-                        selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
+                        // selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
+                        const hurtPromise = this.playAnimation(selectSkeleton2)
+                        this.actionAwaitQueue.push(hurtPromise)
                     } else {
                         eventSelectSkeleton2.active = false
                         if (j == charactersB.position) {
@@ -497,8 +466,11 @@ export class FightMap extends Component {
                         }
                     }
                 }
-                await new Promise(res => setTimeout(res, 1000 / this.timeScale))
+                // await new Promise(res => setTimeout(res, 1000 / this.timeScale))
             } else if (eventType == "NORMAL_ATTACK") {
+                // 等待行动队列清空
+                await Promise.all(this.actionAwaitQueue)
+                this.actionAwaitQueue = []
                 let sourceCamp = fightProcess.sourceCamp
                 let targetPosition = fightProcess.targetPosition - 1
                 let targetHpBefore = fightProcess.targetHpBefore
@@ -541,8 +513,9 @@ export class FightMap extends Component {
                     1
                 )
                 this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
-                hut.setCompleteListener(() => hut.node.active = false)
-
+                // hut.setCompleteListener(() => hut.node.active = false)
+                const hurtPromise = this.playAnimation(hut)
+                this.actionAwaitQueue.push(hurtPromise)
                 //回到初始位置
                 await util.sundry.moveNodeToPosition(
                     this.Character.children[direction],
@@ -554,6 +527,9 @@ export class FightMap extends Component {
                 )
                 // await new Promise(res => setTimeout(res, 200 / this.timeScale))
             } else if (eventType == "UNIT_DEATH") {
+                // 等待行动队列清空
+                await Promise.all(this.actionAwaitQueue)
+                this.actionAwaitQueue = []
                 let extraDesc = fightProcess.extraDesc
                 let eventData = this.parseEventString(extraDesc)
                 for (const event of eventData.units) {
@@ -587,7 +563,45 @@ export class FightMap extends Component {
                 // await new Promise(res => setTimeout(res, 200 / this.timeScale))
             } else if (eventType == "BATTLE_END") {
                 break;
+            } else if (eventType == "BUFF_END") {
+                // 等待行动队列清空
+                await Promise.all(this.actionAwaitQueue)
+                this.actionAwaitQueue = []
+                const guardianList = this.parseGuardianEffects(fightProcess.fieldUnitsStatus); // 解析后的对象数组
+                guardianList.forEach((guardian, index) => {
+                    //console.log(`【第${this.currentRound + 1}回合】`);
+                    //console.log(`【第${index + 1}个角色】`);
+                    //console.log(`阵营：${guardian.camp}，名称：${guardian.name}，位置：${guardian.position}`);
+                    // 可选：打印该角色的所有效果（前3个示例，避免输出过长）
+                    //console.log(`效果示例：${guardian.effects.slice(0, 3).map(e => `${e.type}=${e.value}`).join(', ')}...`);
+                    //console.log("------------------------");
+                    if (guardian.camp = "A") {
+                        guardian.effects.forEach((e, index) => {
+                            //console.log(e.type)
+                            if (e.value == 0 && (e.type == 'STUN')) {
+                                let eventSelectSkeleton = this.tiem.children[0].children[guardian.position - 1].getChildByName("buff").getChildByName(e.type)
+                                eventSelectSkeleton.active = false
+                                let selectSkeleton = this.tiem.children[0].children[guardian.position - 1].getChildByName("buff").getChildByName(e.type).getComponent(sp.Skeleton)
+                                selectSkeleton.active = false
+                            }
+                        })
+                    } else {
+                        guardian.effects.forEach((e, index) => {
+                            //console.log(e.type)
+                            if (e.value == 0 && (e.type == 'STUN')) {
+                                let eventSelectSkeleton = this.tiem.children[1].children[guardian.position - 1].getChildByName("buff").getChildByName(e.type)
+                                eventSelectSkeleton.active = false
+                                let selectSkeleton = this.tiem.children[1].children[guardian.position - 1].getChildByName("buff").getChildByName(e.type).getComponent(sp.Skeleton)
+                                selectSkeleton.active = false
+                            }
+                        })
+                    }
+                });
+                // await new Promise(res => setTimeout(res, 1000 / this.timeScale))
             } else {
+                // 等待行动队列清空
+                await Promise.all(this.actionAwaitQueue)
+                this.actionAwaitQueue = []
                 let characters = this.parseCharacterString(fieldUnitsStatus)
                 let charactersA = characters.A
                 let charactersB = characters.B
@@ -642,7 +656,7 @@ export class FightMap extends Component {
                     // await this.showString(falg, this.Character.children[direction], new math.Color(236, 163, 61, 255), eventType)
                     this.skillName.children[direction].active = true
                     this.skillName.children[direction].getChildByName("Label").getComponent(Label).string = eventType
-                    await new Promise(res => setTimeout(res, 500 / this.timeScale))
+                    await new Promise(res => setTimeout(res, 800 / this.timeScale))
                     if (effectType == "MAX_HP_DOWN" || effectType == "FIRE_DAMAGE" || effectType == "HEAL_DOWN" || effectType == "POISON" || effectType == "SILENCE" || effectType == 'MISSILE_DAMAGE' || effectType == 'STUN' || effectType == 'HEAL' || effectType == 'HP_UP') {
                         // if (this.Character.children[targetDirection].getComponent(Sprite).spriteFrame) {
 
@@ -674,7 +688,9 @@ export class FightMap extends Component {
                                     skeleton.setAnimation(0, "animation", true);
                                 } else {
                                     skeleton.setAnimation(0, "animation", false);
-                                    skeleton.setCompleteListener(() => skeleton.node.active = false)
+                                    // skeleton.setCompleteListener(() => skeleton.node.active = false)
+                                    const hurtPromise = this.playAnimation(skeleton)
+                                    this.actionAwaitQueue.push(hurtPromise)
                                 }
                             });
                             for (const event of eventData.units) {
@@ -755,7 +771,7 @@ export class FightMap extends Component {
                                 } else {
                                     selectSkeleton.setAnimation(0, "animation", false)
                                 }
-                                await new Promise(res => setTimeout(res, 500 / this.timeScale))
+                               
                                 //伤害掉血动画
 
                                 if (effectType == 'SILENCE_IMMUNE' || effectType == "POISON") {
@@ -765,7 +781,7 @@ export class FightMap extends Component {
                                 } else {
                                     this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
                                 }
-
+                                await new Promise(res => setTimeout(res, 500 / this.timeScale))
                                 //                 // 更新场上生命值
                                 this.Hp.children[targetDirection].getChildByName("Bar").setScale(
                                     targetAfterHp / targetMaxHp,
@@ -774,7 +790,9 @@ export class FightMap extends Component {
                                 )
                                 this.Hp.children[targetDirection].getChildByName("user_li_count").getComponent(Label).string = targetAfterHp + "/" + targetMaxHp
                                 if (effectType != "POISON" && effectType != "SILENCE" && effectType != "HEAL_DOWN") {
-                                    selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                    // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                    const hurtPromise = this.playAnimation(selectSkeleton)
+                                    this.actionAwaitQueue.push(hurtPromise)
                                 }
                             }
                             let eventSelectSkeleton = this.tiem.children[targetDirection].children[targetPosition].getChildByName("buff").getChildByName(effectType).getComponent(sp.Skeleton)
@@ -807,7 +825,9 @@ export class FightMap extends Component {
                             )
                             this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
                             if (effectType != "POISON" && effectType != "SILENCE") {
-                                eventSelectSkeleton.setCompleteListener(() => eventSelectSkeleton.node.active = false)
+                                // eventSelectSkeleton.setCompleteListener(() => eventSelectSkeleton.node.active = false)
+                                const hurtPromise = this.playAnimation(eventSelectSkeleton)
+                                this.actionAwaitQueue.push(hurtPromise)
                             }
                         }
                     } else {
@@ -818,11 +838,9 @@ export class FightMap extends Component {
                                 if ((event.position == charactersA.position + 1) && event.side == 'A') {
                                     //                 //伤害结算
                                     //伤害掉血动画
-                                    if (effectType == 'SILENCE_IMMUNE') {
-
-                                    } else if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                    if (effectType == 'HEAL' || effectType == 'HP_UP' || effectType == 'DRAIN') {
                                         this.showNumber(-1, this.Character.children[0], +value, new math.Color(82, 201, 25, 255), 40)
-                                    } else {
+                                    } else if (effectType == 'MAX_HP_DOWN' || effectType == 'DAMAGE' || effectType == 'TRUE_DAMAGE' || effectType == 'FIRE_DAMAGE' || effectType == 'MISSILE_DAMAGE') {
                                         this.showNumber(-1, this.Character.children[0], -value, new math.Color(255, 176, 126, 255), 40)
                                     }
 
@@ -837,11 +855,9 @@ export class FightMap extends Component {
                                 if ((event.position == charactersB.position + 1) && event.side == 'B') {
                                     //伤害掉血动画
                                     //                 //伤害结算
-                                    if (effectType == 'SILENCE_IMMUNE') {
-
-                                    } else if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                    if (effectType == 'HEAL' || effectType == 'HP_UP' || effectType == 'DRAIN') {
                                         this.showNumber(1, this.Character.children[1], +value, new math.Color(82, 201, 25, 255), 40)
-                                    } else {
+                                    } else if (effectType == 'HEMAX_HP_DOWNAL' || effectType == 'DAMAGE' || effectType == 'TRUE_DAMAGE' || effectType == 'FIRE_DAMAGE' || effectType == 'MISSILE_DAMAGE') {
                                         this.showNumber(1, this.Character.children[1], -value, new math.Color(255, 176, 126, 255), 40)
                                     }
                                     //                 // 更新场上生命值
@@ -900,7 +916,7 @@ export class FightMap extends Component {
                                         selectSkeleton2.setAnimation(0, "animation", false)
                                         selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
                                     })
-                                    await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                                    // await new Promise(res => setTimeout(res, 200 / this.timeScale))
                                 } else if (eventType == "北极剑意") {
                                     AudioMgr.inst.playOneShot("sound/fight/skill/DHSZ3");
                                     let selectSkeleton = this.Character.children[targetDirection].getChildByName("DHSZ").getComponent(sp.Skeleton)
@@ -915,7 +931,7 @@ export class FightMap extends Component {
                                         selectSkeleton2.setAnimation(0, "animation", false)
                                         selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
                                     })
-                                    await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                                    // await new Promise(res => setTimeout(res, 200 / this.timeScale))
                                 } else
                                     //伤害掉血动画
                                     if (eventType == "绝地反击") {
@@ -961,8 +977,9 @@ export class FightMap extends Component {
                                             1
                                         )
                                         this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
-                                        hut.setCompleteListener(() => hut.node.active = false)
-
+                                        // hut.setCompleteListener(() => hut.node.active = false)
+                                        const hurtPromise = this.playAnimation(hut)
+                                        this.actionAwaitQueue.push(hurtPromise)
                                         //回到初始位置
                                         await util.sundry.moveNodeToPosition(
                                             this.Character.children[direction],
@@ -973,107 +990,112 @@ export class FightMap extends Component {
                                             }
                                         )
                                     } else
-                                    //伤害掉血动画
-                                    if (eventType == "新月反击") {
-                                        AudioMgr.inst.playOneShot("sound/fight/skill/chuanyun_grial");
-                                        let sourceCamp = fightProcess.sourceCamp
-                                        let targetPosition = fightProcess.targetPosition - 1
-                                        let targetHpBefore = fightProcess.targetHpBefore
-                                        let targetHpAfter = fightProcess.targetHpAfter
-                                        let attack = fightProcess.value
-                                        var directionFace = 0
-                                        var falg = 1
-                                        if (sourceCamp == "A") {
-                                            direction = 0
-                                            directionFace = 1
-                                            falg = -1
-                                        }
-                                        await util.sundry.moveNodeToPosition(
-
-                                            this.Character.children[direction],
-                                            {
-                                                targetPosition: { x: -90 * falg, y: 0 },
-                                                moveCurve: true,
-                                                moveTimeScale: 1
+                                        //伤害掉血动画
+                                        if (eventType == "新月反击") {
+                                            AudioMgr.inst.playOneShot("sound/fight/skill/chuanyun_grial");
+                                            let sourceCamp = fightProcess.sourceCamp
+                                            let targetPosition = fightProcess.targetPosition - 1
+                                            let targetHpBefore = fightProcess.targetHpBefore
+                                            let targetHpAfter = fightProcess.targetHpAfter
+                                            let attack = fightProcess.value
+                                            var directionFace = 0
+                                            var falg = 1
+                                            if (sourceCamp == "A") {
+                                                direction = 0
+                                                directionFace = 1
+                                                falg = -1
                                             }
-                                        )
-                                        AudioMgr.inst.playOneShot("sound/fight/attack/attack");
-                                        let hut = this.Character.children[directionFace].getChildByName("hut").getComponent(sp.Skeleton)
-                                        hut.node.active = true
-                                        hut.setAnimation(0, "animation", false)
-                                        //伤害结算
-                                        this.showNumber(-falg, this.Character.children[directionFace], -attack, new math.Color(255, 176, 126, 255), 40)
-                                        this.Hp.children[directionFace].getChildByName("Bar").setScale(
-                                            targetHpAfter / targetHpBefore,
-                                            1,
-                                            1
-                                        )
-                                        this.Hp.children[directionFace].getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
+                                            await util.sundry.moveNodeToPosition(
 
-                                        // 更新场下生命值
-                                        this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("Bar").setScale(
-                                            targetHpAfter / targetHpBefore,
-                                            1,
-                                            1
-                                        )
-                                        this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
-                                        hut.setCompleteListener(() => hut.node.active = false)
+                                                this.Character.children[direction],
+                                                {
+                                                    targetPosition: { x: -90 * falg, y: 0 },
+                                                    moveCurve: true,
+                                                    moveTimeScale: 1
+                                                }
+                                            )
+                                            AudioMgr.inst.playOneShot("sound/fight/attack/attack");
+                                            let hut = this.Character.children[directionFace].getChildByName("hut").getComponent(sp.Skeleton)
+                                            hut.node.active = true
+                                            hut.setAnimation(0, "animation", false)
+                                            //伤害结算
+                                            this.showNumber(-falg, this.Character.children[directionFace], -attack, new math.Color(255, 176, 126, 255), 40)
+                                            this.Hp.children[directionFace].getChildByName("Bar").setScale(
+                                                targetHpAfter / targetHpBefore,
+                                                1,
+                                                1
+                                            )
+                                            this.Hp.children[directionFace].getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
 
-                                        //回到初始位置
-                                        await util.sundry.moveNodeToPosition(
-                                            this.Character.children[direction],
-                                            {
-                                                targetPosition: { x: 180 * falg, y: 0 },
-                                                moveCurve: true,
-                                                moveTimeScale: 1
+                                            // 更新场下生命值
+                                            this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("Bar").setScale(
+                                                targetHpAfter / targetHpBefore,
+                                                1,
+                                                1
+                                            )
+                                            this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
+                                            // hut.setCompleteListener(() => hut.node.active = false)
+                                            const hurtPromise = this.playAnimation(hut)
+                                            this.actionAwaitQueue.push(hurtPromise)
+                                            //回到初始位置
+                                            await util.sundry.moveNodeToPosition(
+                                                this.Character.children[direction],
+                                                {
+                                                    targetPosition: { x: 180 * falg, y: 0 },
+                                                    moveCurve: true,
+                                                    moveTimeScale: 1
+                                                }
+                                            )
+                                        } else if (eventType.includes("白天君蓄力")) {
+                                            let selectSkeleton
+                                            AudioMgr.inst.playOneShot("sound/fight/skill/XULI");
+                                            if (eventType == "白天君蓄力·一") {
+                                                this.Character.children[targetDirection].getChildByName("xuli1").active = true
+                                                this.Character.children[targetDirection].getChildByName("xuli2").active = false
+                                                this.Character.children[targetDirection].getChildByName("xuli3").active = false
+                                                selectSkeleton = this.Character.children[targetDirection].getChildByName("xuli1").getComponent(sp.Skeleton)
+                                            } else if (eventType == "白天君蓄力·二") {
+                                                this.Character.children[targetDirection].getChildByName("xuli1").active = false
+                                                this.Character.children[targetDirection].getChildByName("xuli2").active = true
+                                                this.Character.children[targetDirection].getChildByName("xuli3").active = false
+                                                selectSkeleton = this.Character.children[targetDirection].getChildByName("xuli2").getComponent(sp.Skeleton)
+                                            } else if (eventType == "白天君蓄力·三") {
+                                                this.Character.children[targetDirection].getChildByName("xuli1").active = false
+                                                this.Character.children[targetDirection].getChildByName("xuli2").active = false
+                                                this.Character.children[targetDirection].getChildByName("xuli3").active = true
+                                                selectSkeleton = this.Character.children[targetDirection].getChildByName("xuli3").getComponent(sp.Skeleton)
                                             }
-                                        )
-                                    }  else if (eventType.includes("白天君蓄力")) {
-                                        let selectSkeleton
-                                        AudioMgr.inst.playOneShot("sound/fight/skill/XULI");
-                                        if (eventType == "白天君蓄力·一") {
-                                            this.Character.children[targetDirection].getChildByName("xuli1").active = true
+                                            selectSkeleton.node.active = true
+                                            selectSkeleton.setAnimation(0, "animation", true)
+                                            // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                            // await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                                        } else if (eventType == "三火齐飞") {
+                                            this.Character.children[targetDirection].getChildByName("xuli1").active = false
                                             this.Character.children[targetDirection].getChildByName("xuli2").active = false
                                             this.Character.children[targetDirection].getChildByName("xuli3").active = false
-                                            selectSkeleton = this.Character.children[targetDirection].getChildByName("xuli1").getComponent(sp.Skeleton)
-                                        } else if (eventType == "白天君蓄力·二") {
-                                            this.Character.children[targetDirection].getChildByName("xuli1").active = false
-                                            this.Character.children[targetDirection].getChildByName("xuli2").active = true
-                                            this.Character.children[targetDirection].getChildByName("xuli3").active = false
-                                            selectSkeleton = this.Character.children[targetDirection].getChildByName("xuli2").getComponent(sp.Skeleton)
-                                        } else if (eventType == "白天君蓄力·三") {
-                                            this.Character.children[targetDirection].getChildByName("xuli1").active = false
-                                            this.Character.children[targetDirection].getChildByName("xuli2").active = false
-                                            this.Character.children[targetDirection].getChildByName("xuli3").active = true
-                                            selectSkeleton = this.Character.children[targetDirection].getChildByName("xuli3").getComponent(sp.Skeleton)
+                                        } else if (eventType == "大地净化") {
+                                            AudioMgr.inst.playOneShot("sound/fight/skill/HOU_JH");
+                                            let selectSkeleton = this.Character.children[targetDirection].getChildByName("HOU_JH").getComponent(sp.Skeleton)
+                                            selectSkeleton.node.active = true
+                                            selectSkeleton.setAnimation(0, "animation", false)
+                                            // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                            const hurtPromise = this.playAnimation(selectSkeleton)
+                                            this.actionAwaitQueue.push(hurtPromise)
+                                            // await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                                        } else if (eventType == "满目桃花") {
+                                            AudioMgr.inst.playOneShot("sound/fight/skill/manmutaohua");
+                                            let selectSkeleton = this.Character.children[targetDirection].getChildByName("manmutaohua").getComponent(sp.Skeleton)
+                                            selectSkeleton.node.active = true
+                                            selectSkeleton.setAnimation(0, "animation", false)
+                                            // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                            const hurtPromise = this.playAnimation(selectSkeleton)
+                                            this.actionAwaitQueue.push(hurtPromise)
+                                            // await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                                        } else if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                            this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], +value, new math.Color(82, 201, 25, 255), 40)
+                                        } else {
+                                            this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
                                         }
-                                        selectSkeleton.node.active = true
-                                        selectSkeleton.setAnimation(0, "animation", true)
-                                        // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
-                                        await new Promise(res => setTimeout(res, 200 / this.timeScale))
-                                    } else if (eventType == "三火齐飞") {
-                                        this.Character.children[targetDirection].getChildByName("xuli1").active = false
-                                        this.Character.children[targetDirection].getChildByName("xuli2").active = false
-                                        this.Character.children[targetDirection].getChildByName("xuli3").active = false
-                                    } else if (eventType == "大地净化") {
-                                        AudioMgr.inst.playOneShot("sound/fight/skill/HOU_JH");
-                                        let selectSkeleton = this.Character.children[targetDirection].getChildByName("HOU_JH").getComponent(sp.Skeleton)
-                                        selectSkeleton.node.active = true
-                                        selectSkeleton.setAnimation(0, "animation", false)
-                                        selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
-                                        await new Promise(res => setTimeout(res, 200 / this.timeScale))
-                                    } else if (eventType == "满目桃花") {
-                                        AudioMgr.inst.playOneShot("sound/fight/skill/manmutaohua");
-                                        let selectSkeleton = this.Character.children[targetDirection].getChildByName("manmutaohua").getComponent(sp.Skeleton)
-                                        selectSkeleton.node.active = true
-                                        selectSkeleton.setAnimation(0, "animation", false)
-                                        selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
-                                        await new Promise(res => setTimeout(res, 200 / this.timeScale))
-                                    } else if (effectType == 'HEAL' || effectType == 'HP_UP') {
-                                        this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], +value, new math.Color(82, 201, 25, 255), 40)
-                                    } else {
-                                        this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
-                                    }
 
 
                                 //                 // 更新场上生命值
@@ -1101,7 +1123,7 @@ export class FightMap extends Component {
                                     selectSkeleton2.setAnimation(0, "animation", false)
                                     selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
                                 })
-                                await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                                // await new Promise(res => setTimeout(res, 200 / this.timeScale))
                             } else if (eventType == "穿云长枪" || eventType == "圣灵斩") {
                                 AudioMgr.inst.playOneShot("sound/fight/skill/chuanyun_man");
                                 let selectSkeleton = this.Character.children[direction].getChildByName("chuanyun").getComponent(sp.Skeleton)
@@ -1116,7 +1138,7 @@ export class FightMap extends Component {
                                     selectSkeleton2.setAnimation(0, "animation", false)
                                     selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
                                 })
-                                await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                                // await new Promise(res => setTimeout(res, 200 / this.timeScale))
                             } else if (eventType == "大地净化") {
                                 let result = "驱散"
                                 await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
@@ -1150,7 +1172,6 @@ export class FightMap extends Component {
 
                 } else {
                     //技能区分全体和单体技能
-
                     let selectSkeleton = this.tiem.children[direction].children[sourcePosition].getChildByName("select").getComponent(sp.Skeleton)
                     selectSkeleton.node.active = true
                     selectSkeleton.setAnimation(0, "animation", false)
@@ -1253,7 +1274,9 @@ export class FightMap extends Component {
                                     this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
                                 }
                                 skeletons.forEach(skeleton => {
-                                    skeleton.setCompleteListener(() => skeleton.node.active = false)
+                                    // skeleton.setCompleteListener(() => skeleton.node.active = false)
+                                    const hurtPromise = this.playAnimation(skeleton)
+                                    this.actionAwaitQueue.push(hurtPromise)
                                 });
                             } else {
                                 if (targetIsGoON) {
@@ -1297,7 +1320,9 @@ export class FightMap extends Component {
                                     )
                                     this.Hp.children[targetDirection].getChildByName("user_li_count").getComponent(Label).string = targetAfterHp + "/" + targetMaxHp
                                     if (effectType != "POISON" && effectType != "SILENCE" && effectType != "HEAL_DOWN") {
-                                        selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                        // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                        const hurtPromise = this.playAnimation(selectSkeleton)
+                                        this.actionAwaitQueue.push(hurtPromise)
                                     }
                                 }
                                 let effectTypeName = effectType
@@ -1342,20 +1367,106 @@ export class FightMap extends Component {
                                 )
                                 this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
                                 if (effectType != "POISON" && effectType != "SILENCE") {
-                                    eventSelectSkeleton.setCompleteListener(() => eventSelectSkeleton.node.active = false)
+                                    // eventSelectSkeleton.setCompleteListener(() => eventSelectSkeleton.node.active = false)
+                                    const hurtPromise = this.playAnimation(eventSelectSkeleton)
+                                    this.actionAwaitQueue.push(hurtPromise)
                                 }
                             }
                         })
                         .by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
                         .start();
-                    selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                    // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                    const hurtPromise = this.playAnimation(selectSkeleton)
+                    this.actionAwaitQueue.push(hurtPromise)
                 }
                 this.skillName.children[direction].active = false
-                await new Promise(res => setTimeout(res, 1000 / this.timeScale))
+                await new Promise(res => setTimeout(res, 1500 / this.timeScale))
             }
 
         }
         return this.result
+    }
+
+
+    async playAnimation(Skeleton: any) {
+
+        return new Promise<void>(res => {
+            if (Skeleton instanceof sp.Skeleton) {
+                // let playTimes = 0
+                Skeleton.setCompleteListener(() => {
+                    Skeleton.node.active = false
+                    res()
+                })
+            }
+        })
+    }
+    async tweenToPromise(node: Node, duration: number, props: any, options?: { easing: string }) {
+        return new Promise<void>(res => {
+            tween(node)
+                .to(duration, props, { easing: 'elasticOut' })
+                .call(() => res()) // 动画完成后执行resolve
+                .start();
+        });
+    };
+    // tween(this.Character.children[0])
+    //     .to(1, { scale: scaleNew }, { easing: 'elasticOut' })
+    //     .start();
+    parseGuardianEffects(str) {
+        // 边界防护：空字符串直接返回空数组
+        if (!str || typeof str !== 'string') {
+            return [];
+        }
+
+        // 步骤1：正则匹配所有 [阵营+角色:效果列表] 块
+        // 正则说明：匹配 [A角色名_数字:效果1|值,效果2|值...] 格式的内容
+        const blockReg = /\[([^:\]]+):([^\]]+)\]/g;
+        const result = [];
+        let match;
+
+        // 步骤2：遍历每个匹配到的角色块
+        while ((match = blockReg.exec(str)) !== null) {
+            const [, roleInfo, effectStr] = match; // 解构：roleInfo=A白天君_1，effectStr=POISON|0,BURN|0...
+
+            // 步骤3：解析角色基础信息（阵营、名称、位置）
+            // 匹配 阵营+名称+位置（如 A白天君_1 → 阵营A，名称白天君，位置1）
+            const roleReg = /^([AB])(.+?)_(\d+)$/;
+            const roleMatch = roleInfo.match(roleReg);
+
+            if (!roleMatch) {
+                //console.warn(`角色信息格式错误，跳过：${roleInfo}`);
+                continue;
+            }
+
+            const [, camp, name, position] = roleMatch;
+
+            // 步骤4：解析效果列表（POISON|0 → {type: 'POISON', value: 0}）
+            const effects = [];
+            const effectMap = {}; // 额外生成key-value映射，方便快速查找
+            if (effectStr) {
+                effectStr.split(',').forEach(effectItem => {
+                    const [type, value] = effectItem.split('|');
+                    if (type && value !== undefined) {
+                        const effectObj = {
+                            type: type.trim(),
+                            value: parseInt(value.trim(), 10) || 0 // 转数字，非数字则默认0
+                        };
+                        effects.push(effectObj);
+                        effectMap[effectObj.type] = effectObj.value;
+                    }
+                });
+            }
+
+            // 步骤5：组装角色对象并加入结果数组
+            result.push({
+                camp,          // 阵营：A/B
+                name,          // 角色名：白天君、真武大帝等
+                position: parseInt(position, 10), // 位置：1/2/3/4/5
+                effects,       // 效果列表（数组）：[{type: 'POISON', value: 0}, ...]
+                effectMap      // 效果映射（对象）：{POISON: 0, BURN: 0, ...}
+            });
+        }
+
+        return result;
     }
     /** 
      * 显示数值

@@ -21,7 +21,7 @@ export class EqHeroCharacterDetail extends Component {
     async goBack() {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.active = false;
-        this.node.removeFromParent();
+        // this.node.removeFromParent();
         this.node.destroy();
         // const config = getConfig()
         // const close = await util.message.load()
