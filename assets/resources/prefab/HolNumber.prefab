@@ -3,6 +3,7 @@
     "__type__": "cc.Prefab",
     "_name": "HolNumber",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "_native": "",
     "data": {
       "__id__": 1
@@ -62,6 +63,7 @@
     "__type__": "cc.UITransform",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 1
     },
@@ -89,6 +91,7 @@
     "__type__": "90730rFfrBASI/TD6/96svv",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 1
     },

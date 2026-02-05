@@ -147,7 +147,7 @@ export class HomeBuildings extends Component {
 
     public getZhanli(create: CharacterStateCreate) {
         // let zhanli = propts[PART_PROPTS.GongJi] * 25 + propts[PART_PROPTS.FangYu] * 25 + propts[PART_PROPTS.XueLiang] + propts[PART_PROPTS.BaoJi] * 2 + 500 * propts[PART_PROPTS.ShanBi] + 300 * (propts[PART_PROPTS.HuoGong] + propts[PART_PROPTS.HuoKang] + propts[PART_PROPTS.BingGong] + propts[PART_PROPTS.BingKang])
-        let zhanli = create.attack * 25 + create.defence?create.defence * 25:0 + create.maxHp  + 300 * create.speed
+        let zhanli = create.attack * 25 + create.defence ? create.defence * 25 : 0 + create.maxHp + 300 * create.speed
         return zhanli;
     }
 
@@ -524,6 +524,7 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("MyFriendsCrtl").active = false
         this.node.parent.getChildByName("MessageCrtl").active = false
         this.node.parent.getChildByName("ArenaCrtl").active = false
+        this.node.parent.getChildByName("eqQianghuaCtrl").active = false
         this.node.parent.getChildByName("ArenaApplyCrtl").active = false
         this.node.parent.getChildByName("ArenaDetailCrtl").active = false
         this.node.parent.getChildByName("CardCrtl").active = true
@@ -559,6 +560,7 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("EquipmentCtrl").active = false
         this.node.parent.getChildByName("ShopCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
+        this.node.parent.getChildByName("eqQianghuaCtrl").active = false
         this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("MyFriendsCrtl").active = false
         this.node.parent.getChildByName("MessageCrtl").active = false
@@ -580,6 +582,7 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("MessageCrtl").active = false
         this.node.parent.getChildByName("qianghuaCtrl").active = false
+        this.node.parent.getChildByName("eqQianghuaCtrl").active = false
         this.node.parent.getChildByName("ArenaApplyCrtl").active = false
         this.node.parent.getChildByName("ArenaDetailCrtl").active = false
         this.node.parent.getChildByName("JinjiCtrl").active = true
@@ -602,6 +605,7 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("EquipmentCtrl").active = false
         this.node.parent.getChildByName("ShopCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
+        this.node.parent.getChildByName("eqQianghuaCtrl").active = false
         this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("MyFriendsCrtl").active = false
         this.node.parent.getChildByName("MessageCrtl").active = false
@@ -621,6 +625,7 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("otherCtrl").active = false
         this.node.parent.getChildByName("ShopCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
+        this.node.parent.getChildByName("eqQianghuaCtrl").active = false
         this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("MyFriendsCrtl").active = false
         this.node.parent.getChildByName("MessageCrtl").active = false
@@ -639,6 +644,7 @@ export class HomeBuildings extends Component {
         this.node.parent.getChildByName("otherCtrl").active = false
         this.node.parent.getChildByName("EquipmentCtrl").active = false
         this.node.parent.getChildByName("PveCtrl").active = false
+        this.node.parent.getChildByName("eqQianghuaCtrl").active = false
         this.node.parent.getChildByName("synthesisCtrl").active = false
         this.node.parent.getChildByName("MyFriendsCrtl").active = false
         this.node.parent.getChildByName("MessageCrtl").active = false

@@ -567,6 +567,8 @@ export class FightMap extends Component {
                 // 等待行动队列清空
                 await Promise.all(this.actionAwaitQueue)
                 this.actionAwaitQueue = []
+                let sourcePosition = fightProcess.sourcePosition - 1
+                let targetPosition = fightProcess.targetPosition - 1
                 const guardianList = this.parseGuardianEffects(fightProcess.fieldUnitsStatus); // 解析后的对象数组
                 guardianList.forEach((guardian, index) => {
                     //console.log(`【第${this.currentRound + 1}回合】`);
@@ -575,24 +577,38 @@ export class FightMap extends Component {
                     // 可选：打印该角色的所有效果（前3个示例，避免输出过长）
                     //console.log(`效果示例：${guardian.effects.slice(0, 3).map(e => `${e.type}=${e.value}`).join(', ')}...`);
                     //console.log("------------------------");
-                    if (guardian.camp = "A") {
+                    // console.log(guardian.camp,333)
+                    if (guardian.camp == "A") {
                         guardian.effects.forEach((e, index) => {
                             //console.log(e.type)
-                            if (e.value == 0 && (e.type == 'STUN')) {
+                            if (e.value == 0 && (e.type == 'STUN'||e.type=='SILENCE')) {
                                 let eventSelectSkeleton = this.tiem.children[0].children[guardian.position - 1].getChildByName("buff").getChildByName(e.type)
                                 eventSelectSkeleton.active = false
                                 let selectSkeleton = this.tiem.children[0].children[guardian.position - 1].getChildByName("buff").getChildByName(e.type).getComponent(sp.Skeleton)
                                 selectSkeleton.active = false
+                                if (sourcePosition == guardian.position - 1) {
+                                    let selectSkeletonON = this.Character.children[0].getChildByName(e.type)
+                                    selectSkeletonON.active = false
+                                    let selectSkeletonON2 = this.Character.children[0].getChildByName(e.type).getComponent(sp.Skeleton)
+                                    selectSkeletonON2.active = false
+                                }
                             }
                         })
                     } else {
                         guardian.effects.forEach((e, index) => {
                             //console.log(e.type)
-                            if (e.value == 0 && (e.type == 'STUN')) {
+                            if (e.value == 0 && (e.type == 'STUN'||e.type=='SILENCE')) {
                                 let eventSelectSkeleton = this.tiem.children[1].children[guardian.position - 1].getChildByName("buff").getChildByName(e.type)
                                 eventSelectSkeleton.active = false
                                 let selectSkeleton = this.tiem.children[1].children[guardian.position - 1].getChildByName("buff").getChildByName(e.type).getComponent(sp.Skeleton)
                                 selectSkeleton.active = false
+                                
+                                if (targetPosition == guardian.position - 1) {
+                                    let selectSkeletonON = this.Character.children[1].getChildByName(e.type)
+                                    selectSkeletonON.active = false
+                                    let selectSkeletonON2 = this.Character.children[1].getChildByName(e.type).getComponent(sp.Skeleton)
+                                    selectSkeletonON2.active = false
+                                }
                             }
                         })
                     }
@@ -684,7 +700,7 @@ export class FightMap extends Component {
                             }
                             skeletons.forEach(skeleton => {
                                 skeleton.node.active = true
-                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN") {
+                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
                                     skeleton.setAnimation(0, "animation", true);
                                 } else {
                                     skeleton.setAnimation(0, "animation", false);
@@ -735,7 +751,11 @@ export class FightMap extends Component {
                                     dir = 1
                                 }
                                 //伤害动画
-                                if (effectType == 'POISON') {
+                                if (effectType == 'STUN') {
+
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), "眩晕")
+
+                                } else if (effectType == 'POISON') {
 
                                     await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), "中毒")
 
@@ -766,15 +786,15 @@ export class FightMap extends Component {
                             if (targetIsGoON) {
                                 let selectSkeleton = this.Character.children[targetDirection].getChildByName(effectType).getComponent(sp.Skeleton)
                                 selectSkeleton.node.active = true
-                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN") {
+                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
                                     selectSkeleton.setAnimation(0, "animation", true)
                                 } else {
                                     selectSkeleton.setAnimation(0, "animation", false)
                                 }
-                               
+
                                 //伤害掉血动画
 
-                                if (effectType == 'SILENCE_IMMUNE' || effectType == "POISON") {
+                                if (effectType == 'SILENCE_IMMUNE' || effectType == "POISON" || effectType == "HEAL_DOWN" || effectType == "STUN") {
 
                                 } else if (effectType == 'HEAL' || effectType == 'HP_UP') {
                                     this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], +value, new math.Color(82, 201, 25, 255), 40)
@@ -789,7 +809,7 @@ export class FightMap extends Component {
                                     1
                                 )
                                 this.Hp.children[targetDirection].getChildByName("user_li_count").getComponent(Label).string = targetAfterHp + "/" + targetMaxHp
-                                if (effectType != "POISON" && effectType != "SILENCE" && effectType != "HEAL_DOWN") {
+                                if (effectType != "POISON" && effectType != "SILENCE" && effectType != "HEAL_DOWN" && effectType != "STUN") {
                                     // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
                                     const hurtPromise = this.playAnimation(selectSkeleton)
                                     this.actionAwaitQueue.push(hurtPromise)
@@ -797,7 +817,7 @@ export class FightMap extends Component {
                             }
                             let eventSelectSkeleton = this.tiem.children[targetDirection].children[targetPosition].getChildByName("buff").getChildByName(effectType).getComponent(sp.Skeleton)
                             eventSelectSkeleton.node.active = true
-                            if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN") {
+                            if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
                                 eventSelectSkeleton.setAnimation(0, "animation", true)
                             } else {
                                 eventSelectSkeleton.setAnimation(0, "animation", false)
@@ -824,7 +844,7 @@ export class FightMap extends Component {
                                 1
                             )
                             this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
-                            if (effectType != "POISON" && effectType != "SILENCE") {
+                            if (effectType != "POISON" && effectType != "SILENCE" && effectType != "HEAL_DOWN" && effectType != "STUN") {
                                 // eventSelectSkeleton.setCompleteListener(() => eventSelectSkeleton.node.active = false)
                                 const hurtPromise = this.playAnimation(eventSelectSkeleton)
                                 this.actionAwaitQueue.push(hurtPromise)
@@ -1109,7 +1129,13 @@ export class FightMap extends Component {
 
                             //伤害动画
                             //伤害掉血动画
-                            if (eventType == "穿云斩" || eventType == "穿云剑") {
+                            if (eventType == "毒伤迸发") {
+                                AudioMgr.inst.playOneShot("sound/fight/skill/1004");
+                                let hut = this.Character.children[directionFace].getChildByName("hut").getComponent(sp.Skeleton)
+                                hut.node.active = true
+                                hut.setAnimation(0, "animation", false)
+                                hut.setCompleteListener(() => { hut.node.active = false })
+                            } else if (eventType == "穿云斩" || eventType == "穿云剑") {
                                 AudioMgr.inst.playOneShot("sound/fight/skill/chuanyun_grial");
                                 let selectSkeleton = this.Character.children[direction].getChildByName("chuanyun").getComponent(sp.Skeleton)
                                 selectSkeleton.node.active = true
@@ -1142,7 +1168,11 @@ export class FightMap extends Component {
                             } else if (eventType == "大地净化") {
                                 let result = "驱散"
                                 await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
-                            } else if (eventType == "满目桃花") {
+                            }else if (eventType == "莲花圣体") {
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), extraDesc)
+                            }else if (eventType == "水漫金山") {
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), extraDesc)
+                            }else if (eventType == "满目桃花") {
                                 let result = "攻击降低50%，速度增加50%"
                                 await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
                             } else if (effectType == 'MAX_HP_DOWN') {
@@ -1295,14 +1325,14 @@ export class FightMap extends Component {
                                     }
                                     let selectSkeleton = this.Character.children[targetDirection].getChildByName(effectTypeName).getComponent(sp.Skeleton)
                                     selectSkeleton.node.active = true
-                                    if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN") {
+                                    if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
                                         selectSkeleton.setAnimation(0, "animation", true)
                                     } else {
                                         selectSkeleton.setAnimation(0, "animation", false)
                                     }
                                     await new Promise(res => setTimeout(res, 500 / this.timeScale))
                                     //伤害掉血动画
-                                    if (effectType == "POISON") {
+                                    if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
                                         //中毒无动画
                                     } else if (effectType == 'ATTACK_UP') {
                                         //暂无展示
@@ -1319,7 +1349,7 @@ export class FightMap extends Component {
                                         1
                                     )
                                     this.Hp.children[targetDirection].getChildByName("user_li_count").getComponent(Label).string = targetAfterHp + "/" + targetMaxHp
-                                    if (effectType != "POISON" && effectType != "SILENCE" && effectType != "HEAL_DOWN") {
+                                    if (effectType != "POISON" && effectType != "SILENCE" && effectType != "HEAL_DOWN" && effectType != "STUN") {
                                         // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
                                         const hurtPromise = this.playAnimation(selectSkeleton)
                                         this.actionAwaitQueue.push(hurtPromise)
@@ -1331,7 +1361,7 @@ export class FightMap extends Component {
                                 }
                                 let eventSelectSkeleton = this.tiem.children[targetDirection].children[targetPosition].getChildByName("buff").getChildByName(effectTypeName).getComponent(sp.Skeleton)
                                 eventSelectSkeleton.node.active = true
-                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN") {
+                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
                                     eventSelectSkeleton.setAnimation(0, "animation", true)
                                 } else {
                                     eventSelectSkeleton.setAnimation(0, "animation", false)
@@ -1340,9 +1370,11 @@ export class FightMap extends Component {
 
                                 if (effectType == "HEAL_DOWN") {
                                     await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "治疗减少" + value + "%")
-                                } else if (effectType == "POISON") {
+                                } else if (effectType == "STUN") {
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "眩晕")
+                                }else if (effectType == "POISON") {
                                     await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "中毒")
-                                } else if (effectType == 'ATTACK_UP') {
+                                }  else if (effectType == 'ATTACK_UP') {
                                     let result = "攻击提升 +" + value;
                                     await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
                                 } else if (effectType == 'MAX_HP_DOWN') {
@@ -1366,7 +1398,7 @@ export class FightMap extends Component {
                                     1
                                 )
                                 this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
-                                if (effectType != "POISON" && effectType != "SILENCE") {
+                                if (effectType != "POISON" && effectType != "SILENCE"  && effectType != "HEAL_DOWN"  && effectType != "STUN") {
                                     // eventSelectSkeleton.setCompleteListener(() => eventSelectSkeleton.node.active = false)
                                     const hurtPromise = this.playAnimation(eventSelectSkeleton)
                                     this.actionAwaitQueue.push(hurtPromise)
@@ -1491,6 +1523,7 @@ export class FightMap extends Component {
         if (this.isOverFight) {
             if (!numberNode || !numberNode.position || !numberNode.position.x || !numberNode.position.y || !numberNode.position.z) return
         }
+        numberNode.active = true
         character.addChild(numberNode)
 
         const ordinarySibling = numberNode.getSiblingIndex()

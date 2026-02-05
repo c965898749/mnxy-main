@@ -61,7 +61,8 @@ export class EquipmentCtrl extends Component {
 
     public async qianghua() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        return await util.message.prompt({ message: "暂未开放" })
+        this.node.parent.getChildByName("EquipmentCtrl").active = false
+        this.node.parent.getChildByName("eqQianghuaCtrl").active = true
     }
 }
 
