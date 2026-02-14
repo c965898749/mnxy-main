@@ -490,7 +490,7 @@ export class FightMap extends Component {
                     {
                         targetPosition: { x: -90 * falg, y: 0 },
                         moveCurve: true,
-                        moveTimeScale: 1
+                        moveTimeScale: this.timeScale
                     }
                 )
                 AudioMgr.inst.playOneShot("sound/fight/attack/attack");
@@ -522,7 +522,7 @@ export class FightMap extends Component {
                     {
                         targetPosition: { x: 180 * falg, y: 0 },
                         moveCurve: true,
-                        moveTimeScale: 1
+                        moveTimeScale: this.timeScale
                     }
                 )
                 // await new Promise(res => setTimeout(res, 200 / this.timeScale))
@@ -974,7 +974,7 @@ export class FightMap extends Component {
                                             {
                                                 targetPosition: { x: -90 * falg, y: 0 },
                                                 moveCurve: true,
-                                                moveTimeScale: 1
+                                                moveTimeScale: this.timeScale
                                             }
                                         )
                                         AudioMgr.inst.playOneShot("sound/fight/attack/attack");
@@ -1006,7 +1006,7 @@ export class FightMap extends Component {
                                             {
                                                 targetPosition: { x: 180 * falg, y: 0 },
                                                 moveCurve: true,
-                                                moveTimeScale: 1
+                                                moveTimeScale: this.timeScale
                                             }
                                         )
                                     } else
@@ -1031,7 +1031,7 @@ export class FightMap extends Component {
                                                 {
                                                     targetPosition: { x: -90 * falg, y: 0 },
                                                     moveCurve: true,
-                                                    moveTimeScale: 1
+                                                    moveTimeScale: this.timeScale
                                                 }
                                             )
                                             AudioMgr.inst.playOneShot("sound/fight/attack/attack");
@@ -1063,7 +1063,7 @@ export class FightMap extends Component {
                                                 {
                                                     targetPosition: { x: 180 * falg, y: 0 },
                                                     moveCurve: true,
-                                                    moveTimeScale: 1
+                                                    moveTimeScale: this.timeScale
                                                 }
                                             )
                                         } else if (eventType.includes("白天君蓄力")) {

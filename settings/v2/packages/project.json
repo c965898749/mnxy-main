@@ -4,11 +4,12 @@
     "designResolution": {
       "width": 640,
       "height": 1136,
-      "fitWidth": false,
+      "fitWidth": true,
       "fitHeight": true
     }
   },
   "script": {
     "preserveSymlinks": true
-  }
+  },
+  "custom_joint_texture_layouts": []
 }

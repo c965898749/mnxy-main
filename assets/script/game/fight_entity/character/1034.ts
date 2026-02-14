@@ -58,7 +58,7 @@ export class Character extends CharacterMetaState {
 
     SkillIntroduce: string = `
     
-    大帝协同 Lv8
+    大帝协同 Lv1
     与西岳大帝在同一队伍时，增加自身604点生命上限，158点攻击，211点速度
     `.replace(/ /ig, "")
 

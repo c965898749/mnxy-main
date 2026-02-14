@@ -63,27 +63,31 @@ export class TrialTowerCrtl extends Component {
 
     }
 
-    async render(data) {
+    async render(map) {
+        let userInfo = map["userInfo"]
+        let positionInImage = map["positionInImage"]
+        let currentImageNumbers = map["currentImageNumbers"]
+        let nextImageNumbers = map["nextImageNumbers"]
         const config = getConfig()
-        this.customEventData = data.customEventData
+        this.customEventData = map["customEventData"]
         if (this.customEventData == 'bronzetower') {
             this.nameNode.getComponent(Label).string = "青铜试炼塔"
-            this.ceng = data.bronze1
-            this.myceng = data.bronze1
+            this.ceng = userInfo.bronze1
+            this.myceng = userInfo.bronze1
             this.cailiao.getChildByName("num").getComponent(Label).string = config.userData.bronze.toString()
             this.cailiao.getComponent(Sprite).spriteFrame =
                 await util.bundle.load('image/bagCrtl/17000009/spriteFrame', SpriteFrame)
         } else if (this.customEventData == 'silvertower') {
             this.nameNode.getComponent(Label).string = "白银试炼塔"
-            this.ceng = data.silvertower
-            this.myceng = data.silvertower
+            this.ceng = userInfo.silvertower
+            this.myceng = userInfo.silvertower
             this.cailiao.getChildByName("num").getComponent(Label).string = config.userData.darkSteel.toString()
             this.cailiao.getComponent(Sprite).spriteFrame =
                 await util.bundle.load('image/bagCrtl/17000010/spriteFrame', SpriteFrame)
         } else if (this.customEventData == 'goldentower') {
             this.nameNode.getComponent(Label).string = "黄金试炼塔"
-            this.ceng = data.goldentower
-            this.myceng = data.goldentower
+            this.ceng = userInfo.goldentower
+            this.myceng = userInfo.goldentower
             this.cailiao.getChildByName("num").getComponent(Label).string = config.userData.purpleGold.toString()
             this.cailiao.getComponent(Sprite).spriteFrame =
                 await util.bundle.load('image/bagCrtl/17000011/spriteFrame', SpriteFrame)
@@ -92,22 +96,23 @@ export class TrialTowerCrtl extends Component {
         const coordinates = [
             [-290, -380], [230, -200], [-90, -50], [-200, 100], [250, 240], [-30, 350], [-290, 480]
         ];
-        const totalCount = coordinates.length;
-        if (!Number.isInteger(this.ceng) || this.ceng < 1) {
-            throw new Error('传入的层数必须是大于等于1的正整数！');
-        }
-        const index = (this.ceng - 1) % totalCount;
+        console.log(currentImageNumbers)
+        // const totalCount = coordinates.length;
+        // if (!Number.isInteger(this.ceng) || this.ceng < 1) {
+        //     throw new Error('传入的层数必须是大于等于1的正整数！');
+        // }
+        // const index = (this.ceng - 1) % totalCount;
 
-        this.PvE_default.children[0].getChildByName("ceng").children.forEach((item) => {
-            item.getChildByName("num").getComponent(Label).string = "第" + this.ceng + "层"
-            this.ceng++
-        })
-        this.PvE_default.children[1].getChildByName("ceng").children.forEach((item) => {
-            item.getChildByName("num").getComponent(Label).string = "第" + this.ceng + "层"
-            this.ceng++
-        })
-        this.node.active = true
-        this.myNode.setPosition(this.points[index][0], this.points[index][1], 0)
+        // this.PvE_default.children[0].getChildByName("ceng").children.forEach((item) => {
+        //     item.getChildByName("num").getComponent(Label).string = "第" + this.ceng + "层"
+        //     this.ceng++
+        // })
+        // this.PvE_default.children[1].getChildByName("ceng").children.forEach((item) => {
+        //     item.getChildByName("num").getComponent(Label).string = "第" + this.ceng + "层"
+        //     this.ceng++
+        // })
+        // this.node.active = true
+        // this.myNode.setPosition(this.points[index][0], this.points[index][1], 0)
         // for (let i = 0; i < index; i++) {
 
         // }

@@ -88,6 +88,6 @@ export async function moveNodeToPosition(node: Node, option: MoveNodeToPositionO
                 targtePosition: option.targetPosition ,
                 currentPosition: {x: node.position.x , y: node.position.y} ,
             })
-        } , 16 / option.moveTimeScale)
+        } , 14 / option.moveTimeScale)
     })
 }
