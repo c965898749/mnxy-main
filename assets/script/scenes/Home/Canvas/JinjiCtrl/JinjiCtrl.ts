@@ -42,7 +42,7 @@ export class JinjiCtrl extends Component {
 
     public async duofeisheng() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        return await util.message.prompt({ message: "暂未开放" })
+        this.node.parent.getChildByName("AscensionPillCtrl").active = true
     }
 }
 

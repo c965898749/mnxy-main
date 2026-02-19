@@ -43,7 +43,7 @@ export class CardCrtl extends Component {
 
     public async feisheng() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        return await util.message.prompt({ message: "暂未开放" })
+        this.node.parent.getChildByName("AscensionPillDetail").active = true
     }
 
     public openSet() {

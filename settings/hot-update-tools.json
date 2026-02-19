@@ -1,0 +1,23 @@
+{
+    "version": "1.0.0",
+    "serverUrl": "http://192.168.0.121:5520",
+    "resourceRootDir": "D:\\workspace\\mnxy-main\\build\\android2\\data",
+    "genManifestDir": "D:\\workspace\\mnxy-main\\hot-update-tools\\manifest",
+    "localServerPath": "",
+    "supportVersionDirectory": false,
+    "minManifest": false,
+    "modifyMainJS": false,
+    "showExt": false,
+    "packZipChunk": false,
+    "packZipChunkSize": 2097152,
+    "diff": false,
+    "hotAddressArray": [
+        {
+            "label": "http://192.168.0.121:5520",
+            "value": "http://192.168.0.121:5520"
+        }
+    ],
+    "buildTime": 0,
+    "genTime": 0,
+    "genVersion": ""
+}

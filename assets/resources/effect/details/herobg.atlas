@@ -1,0 +1,187 @@
+
+herobg.png
+size: 954, 927
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+1
+  rotate: false
+  xy: 478, 4
+  size: 285, 274
+  orig: 299, 293
+  offset: 8, 10
+  index: -1
+2green
+  rotate: false
+  xy: 2, 412
+  size: 236, 231
+  orig: 245, 246
+  offset: 5, 7
+  index: -1
+2purple
+  rotate: false
+  xy: 240, 280
+  size: 236, 231
+  orig: 245, 246
+  offset: 5, 7
+  index: -1
+2red
+  rotate: false
+  xy: 478, 280
+  size: 236, 231
+  orig: 245, 246
+  offset: 5, 7
+  index: -1
+2v
+  rotate: false
+  xy: 716, 280
+  size: 236, 231
+  orig: 245, 246
+  offset: 5, 7
+  index: -1
+2white
+  rotate: false
+  xy: 2, 179
+  size: 236, 231
+  orig: 245, 246
+  offset: 5, 7
+  index: -1
+2yellow
+  rotate: false
+  xy: 240, 47
+  size: 236, 231
+  orig: 245, 246
+  offset: 5, 7
+  index: -1
+Ggreen
+  rotate: false
+  xy: 458, 721
+  size: 207, 206
+  orig: 215, 214
+  offset: 4, 4
+  index: -1
+Gpurple
+  rotate: false
+  xy: 667, 721
+  size: 207, 206
+  orig: 215, 214
+  offset: 4, 4
+  index: -1
+Gred
+  rotate: false
+  xy: 2, 645
+  size: 207, 206
+  orig: 215, 214
+  offset: 4, 4
+  index: -1
+Gyellow
+  rotate: false
+  xy: 211, 645
+  size: 207, 206
+  orig: 215, 214
+  offset: 4, 4
+  index: -1
+guangdain
+  rotate: false
+  xy: 420, 513
+  size: 207, 206
+  orig: 215, 214
+  offset: 4, 4
+  index: -1
+guangdian6
+  rotate: false
+  xy: 629, 513
+  size: 207, 206
+  orig: 215, 214
+  offset: 4, 4
+  index: -1
+xx
+  rotate: false
+  xy: 2, 853
+  size: 74, 74
+  orig: 84, 84
+  offset: 5, 5
+  index: -1
+xx2
+  rotate: false
+  xy: 78, 853
+  size: 74, 74
+  orig: 84, 84
+  offset: 5, 5
+  index: -1
+xx6
+  rotate: false
+  xy: 78, 853
+  size: 74, 74
+  orig: 84, 84
+  offset: 5, 5
+  index: -1
+xxgreen
+  rotate: false
+  xy: 154, 853
+  size: 74, 74
+  orig: 84, 84
+  offset: 5, 5
+  index: -1
+xxpurple
+  rotate: false
+  xy: 230, 853
+  size: 74, 74
+  orig: 84, 84
+  offset: 5, 5
+  index: -1
+xxred
+  rotate: false
+  xy: 306, 853
+  size: 74, 74
+  orig: 84, 84
+  offset: 5, 5
+  index: -1
+xxyellow
+  rotate: false
+  xy: 382, 853
+  size: 74, 74
+  orig: 84, 84
+  offset: 5, 5
+  index: -1
+
+herobg_2.png
+size: 852, 554
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+1green
+  rotate: false
+  xy: 2, 280
+  size: 285, 274
+  orig: 299, 293
+  offset: 8, 10
+  index: -1
+1purple
+  rotate: false
+  xy: 2, 4
+  size: 285, 274
+  orig: 299, 293
+  offset: 8, 10
+  index: -1
+1red
+  rotate: false
+  xy: 289, 280
+  size: 285, 274
+  orig: 299, 293
+  offset: 8, 10
+  index: -1
+1white
+  rotate: false
+  xy: 289, 4
+  size: 285, 274
+  orig: 299, 293
+  offset: 8, 10
+  index: -1
+1yellow
+  rotate: true
+  xy: 576, 269
+  size: 285, 274
+  orig: 299, 293
+  offset: 8, 10
+  index: -1

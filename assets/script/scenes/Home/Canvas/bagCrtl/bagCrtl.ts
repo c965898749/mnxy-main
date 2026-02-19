@@ -182,6 +182,7 @@ export class bagCrtl extends Component {
                 if (data.success == '1') {
                     const userInfo = data.data;
                     config.userData.gold = userInfo.gold
+                    config.userData.characters = userInfo.characterList
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
                     localStorage.setItem('Leave_EnergyNumber2', userInfo.tiliCount + "");
                     localStorage.setItem('LastGetTime1', userInfo.tiliCountTime + "");

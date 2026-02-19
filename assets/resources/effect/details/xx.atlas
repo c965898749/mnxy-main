@@ -1,0 +1,13 @@
+
+xx.png
+size: 28, 30
+format: Alpha
+filter: Linear, Linear
+repeat: none
+xx
+  rotate: false
+  xy: 2, 2
+  size: 24, 26
+  orig: 29, 30
+  offset: 3, 2
+  index: -1

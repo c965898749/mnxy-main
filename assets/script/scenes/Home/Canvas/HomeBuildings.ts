@@ -1,11 +1,12 @@
-import { _decorator, AudioClip, AudioSource, Component, director, EventTouch, find, Label, math, Node, screen, Sprite, SpriteFrame, tween, UITransform, v3, Vec3 } from 'cc';
+import { _decorator, AudioClip, AudioSource, Component, director, EventTouch, find, instantiate, Label, math, Node, Prefab, screen, Sprite, SpriteFrame, tween, UITransform, v3, Vec3 } from 'cc';
 import { util } from '../../../util/util';
-import { getConfig, updateHuoliTime, updateTiliAndHuoLi, updateTiliTime } from '../../../common/config/config';
+import { getConfig, getToken, updateHuoliTime, updateTiliAndHuoLi, updateTiliTime } from '../../../common/config/config';
 import { AudioMgr } from "../../../util/resource/AudioMgr";
 import { CharacterState, CharacterStateCreate } from '../../../game/fight/character/CharacterState';
 import { LCoin } from '../../../common/common/Language';
 import { HolPreLoad } from '../../../prefab/HolPreLoad';
 import { HomeCanvas } from '../HomeCanvas';
+import { Rewards } from '../rewards/Rewards';
 const { ccclass, property } = _decorator;
 
 @ccclass('HomeBuildings')
@@ -37,7 +38,8 @@ export class HomeBuildings extends Component {
     initialized = false;
     /**跑马灯文本初始坐标 */
     private pmdOriginPos: Vec3 = null!
-
+    @property(Node)
+    btnDiaocan: Node = null;
     @property(Node)
     Tili: Node
     @property(Node)
@@ -163,7 +165,64 @@ export class HomeBuildings extends Component {
         }
 
     }
+
+
+    protected onDiaocanBtnClick() {
+        AudioMgr.inst.playOneShot("sound/other/hongb");
+        this.btnDiaocan.active = false
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "hongb", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+
+                    var map = data.data;
+                    var user = map['user'];
+                    const reward = map["rewards"];
+                    config.userData.bronze1 = user.bronze1
+                    config.userData.gold = user.gold
+                    config.userData.diamond = user.diamond
+                    config.userData.bronze = user.bronze
+                    config.userData.darkSteel = user.darkSteel
+                    config.userData.purpleGold = user.purpleGold
+                    config.userData.crystal = user.crystal
+                    localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    const rewardsFab = await util.bundle.load("prefab/rewards", Prefab)
+                    const rewards = instantiate(rewardsFab)
+                    this.node.parent.addChild(rewards)
+                    await rewards
+                        .getComponent(Rewards)
+                        .read(reward)
+                    // this.node.active = false
+                    // find('Canvas').getComponent(HomeCanvas).audioSource.pause()
+                    // this.node.parent.getChildByName("FightSuccess").active = true
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+    }
+
     async refresh() {
+        this.btnDiaocan.active = false
         // 你的刷新逻辑
         console.log('节点被激活，正在刷新状态');
         // 例如，重新加载数据，更新UI等
@@ -198,6 +257,38 @@ export class HomeBuildings extends Component {
             1
         )
         this.node.getChildByName("Top").getChildByName("Exp").getChildByName("ExpCount").getComponent(Label).string = config.userData.exp + "/1000"
+
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "isNewYear", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    if (data.data) {
+                        this.btnDiaocan.active = true
+                        tween(this.btnDiaocan).to(3, { x: 300, y: 220 }).to(3, { x: -300, y: 120 }).to(3, { x: 300, y: 20 }).to(3, { x: -300, y: -90 }).to(3, { x: 300, y: -80 }).to(3, { x: -300, y: -80 }).to(3, { x: 300, y: 20 }).to(3, { x: -300, y: 120 }).to(3, { x: 300, y: 220 }).to(3, { x: -300, y: 350 }).union().repeatForever().start()
+                    }
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
     }
 
     async update(deltaTime: number) {
@@ -673,6 +764,11 @@ export class HomeBuildings extends Component {
     openUserInfo() {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.parent.getChildByName("UserInfoCrtl").active = true
+    }
+
+    openCeremonialGiftView() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("CeremonialGiftView").active = true
     }
 }
 

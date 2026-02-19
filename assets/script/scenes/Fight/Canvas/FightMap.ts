@@ -170,6 +170,9 @@ export class FightMap extends Component {
     }
 
     async render(fightId, rewards, levelUp) {
+        this.actionAwaitQueue = []; // 新增：初始化清空队列
+        this.isOverFight = false;   // 重置战斗状态
+        // 原有逻辑...
         this.rewards = rewards
         this.levelUp = levelUp
         // HolPreLoad 预加载进度条
@@ -341,6 +344,8 @@ export class FightMap extends Component {
     // 战斗开始
     private async fightStart(): Promise<boolean> {
         // await new Promise(res => setTimeout(res, 500 / this.timeScale))
+
+        // try {
         for (var i = 0; i < this.fightProcess.length; i++) {
             if (this.isOverFight) {
                 break;
@@ -581,7 +586,7 @@ export class FightMap extends Component {
                     if (guardian.camp == "A") {
                         guardian.effects.forEach((e, index) => {
                             //console.log(e.type)
-                            if (e.value == 0 && (e.type == 'STUN'||e.type=='SILENCE')) {
+                            if (e.value == 0 && (e.type == 'STUN' || e.type == 'SILENCE')) {
                                 let eventSelectSkeleton = this.tiem.children[0].children[guardian.position - 1].getChildByName("buff").getChildByName(e.type)
                                 eventSelectSkeleton.active = false
                                 let selectSkeleton = this.tiem.children[0].children[guardian.position - 1].getChildByName("buff").getChildByName(e.type).getComponent(sp.Skeleton)
@@ -597,12 +602,12 @@ export class FightMap extends Component {
                     } else {
                         guardian.effects.forEach((e, index) => {
                             //console.log(e.type)
-                            if (e.value == 0 && (e.type == 'STUN'||e.type=='SILENCE')) {
+                            if (e.value == 0 && (e.type == 'STUN' || e.type == 'SILENCE')) {
                                 let eventSelectSkeleton = this.tiem.children[1].children[guardian.position - 1].getChildByName("buff").getChildByName(e.type)
                                 eventSelectSkeleton.active = false
                                 let selectSkeleton = this.tiem.children[1].children[guardian.position - 1].getChildByName("buff").getChildByName(e.type).getComponent(sp.Skeleton)
                                 selectSkeleton.active = false
-                                
+
                                 if (targetPosition == guardian.position - 1) {
                                     let selectSkeletonON = this.Character.children[1].getChildByName(e.type)
                                     selectSkeletonON.active = false
@@ -1111,7 +1116,11 @@ export class FightMap extends Component {
                                             const hurtPromise = this.playAnimation(selectSkeleton)
                                             this.actionAwaitQueue.push(hurtPromise)
                                             // await new Promise(res => setTimeout(res, 200 / this.timeScale))
-                                        } else if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                        } else if (effectType == 'HEAL' || effectType == 'HP_UP' || effectType == 'SPEED_UP'
+                                            || effectType == 'ATTACK_UP' || effectType == 'BLOODTHIRST' || effectType == 'FIRE_BOOST'
+                                            || effectType == 'HEAL_BOOST' || effectType == 'HEAL_BOOST' || effectType == 'POISON_BOOST'
+                                            || effectType == 'MISSILE_BOOST') {
+                                            AudioMgr.inst.playOneShot("sound/fight/skill/HP_UP");
                                             this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], +value, new math.Color(82, 201, 25, 255), 40)
                                         } else {
                                             this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
@@ -1168,11 +1177,11 @@ export class FightMap extends Component {
                             } else if (eventType == "大地净化") {
                                 let result = "驱散"
                                 await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
-                            }else if (eventType == "莲花圣体") {
+                            } else if (eventType == "莲花圣体") {
                                 await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), extraDesc)
-                            }else if (eventType == "水漫金山") {
+                            } else if (eventType == "水漫金山") {
                                 await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), extraDesc)
-                            }else if (eventType == "满目桃花") {
+                            } else if (eventType == "满目桃花") {
                                 let result = "攻击降低50%，速度增加50%"
                                 await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
                             } else if (effectType == 'MAX_HP_DOWN') {
@@ -1359,6 +1368,7 @@ export class FightMap extends Component {
                                 if (effectType == 'XU_HEAL') {
                                     effectTypeName = 'HEAL'
                                 }
+                                console.log("effectTypeName------", effectTypeName)
                                 let eventSelectSkeleton = this.tiem.children[targetDirection].children[targetPosition].getChildByName("buff").getChildByName(effectTypeName).getComponent(sp.Skeleton)
                                 eventSelectSkeleton.node.active = true
                                 if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
@@ -1372,9 +1382,12 @@ export class FightMap extends Component {
                                     await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "治疗减少" + value + "%")
                                 } else if (effectType == "STUN") {
                                     await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "眩晕")
-                                }else if (effectType == "POISON") {
+                                } else if (effectType == "POISON") {
                                     await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "中毒")
-                                }  else if (effectType == 'ATTACK_UP') {
+                                } else if (effectType == 'SPEED_UP') {
+                                    let result = "速度提升 +" + value;
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
+                                } else if (effectType == 'ATTACK_UP') {
                                     let result = "攻击提升 +" + value;
                                     await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
                                 } else if (effectType == 'MAX_HP_DOWN') {
@@ -1398,7 +1411,7 @@ export class FightMap extends Component {
                                     1
                                 )
                                 this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
-                                if (effectType != "POISON" && effectType != "SILENCE"  && effectType != "HEAL_DOWN"  && effectType != "STUN") {
+                                if (effectType != "POISON" && effectType != "SILENCE" && effectType != "HEAL_DOWN" && effectType != "STUN") {
                                     // eventSelectSkeleton.setCompleteListener(() => eventSelectSkeleton.node.active = false)
                                     const hurtPromise = this.playAnimation(eventSelectSkeleton)
                                     this.actionAwaitQueue.push(hurtPromise)
@@ -1416,21 +1429,37 @@ export class FightMap extends Component {
             }
 
         }
+        // } catch (e) {
+        //     console.error("战斗流程异常：", e);
+        //     this.isOverFight = true; // 异常时终止战斗
+        // }
+
+
         return this.result
     }
 
 
-    async playAnimation(Skeleton: any) {
-
+    // 1. 给 playAnimation 添加超时机制，防止动画不回调
+    async playAnimation(Skeleton: sp.Skeleton) {
         return new Promise<void>(res => {
-            if (Skeleton instanceof sp.Skeleton) {
-                // let playTimes = 0
-                Skeleton.setCompleteListener(() => {
-                    Skeleton.node.active = false
-                    res()
-                })
+            if (!(Skeleton instanceof sp.Skeleton)) {
+                res(); // 非骨骼组件直接完成
+                return;
             }
-        })
+
+            // 超时保护：5秒后强制完成
+            const timeout = setTimeout(() => {
+                console.warn("骨骼动画播放超时，强制完成", Skeleton.node.name);
+                Skeleton.node.active = false;
+                res();
+            }, 5000);
+
+            Skeleton.setCompleteListener(() => {
+                clearTimeout(timeout); // 清除超时
+                Skeleton.node.active = false;
+                res();
+            });
+        });
     }
     async tweenToPromise(node: Node, duration: number, props: any, options?: { easing: string }) {
         return new Promise<void>(res => {

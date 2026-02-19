@@ -1,0 +1,51 @@
+{
+    "package_version": 2,
+    "name": "gg-hot-update",
+    "version": "6.0.0",
+    "title": "i18n:gg-hot-update.title",
+    "description": "i18n:gg-hot-update.description",
+    "author": "天煞魔猎手(saisam)",
+    "creator": ">=3.6.0",
+    "editor": ">=3.6.0",
+    "main": "./dist/main.js",
+    "contributions": {
+        "builder": "./dist/builder/builder.js",
+        "asset-db": {
+            "mount": {
+                "path": "./assets",
+                "readonly": true
+            }
+        }
+    },
+    "scripts": {
+        "lint": "eslint \"src/**/*.ts\"",
+        "lint-staged": "lint-staged",
+        "prepare": "husky install",
+        "build": "tsc",
+        "watch": "tsc -w",
+        "package": "tsx ./package.ts"
+    },
+    "lint-staged": {
+        "src/**/*.ts": "eslint"
+    },
+    "dependencies": {
+        "adm-zip": "^0.5.10",
+        "fs-extra": "^10.0.0"
+    },
+    "devDependencies": {
+        "@cocos/creator-types": "^3.8.7",
+        "@types/adm-zip": "^0.5.6",
+        "@types/fs-extra": "^11.0.1",
+        "@types/node": "^18.17.1",
+        "@typescript-eslint/eslint-plugin": "^5.45.0",
+        "@typescript-eslint/parser": "^5.45.0",
+        "eslint": "^8.28.0",
+        "eslint-config-alloy": "^4.7.0",
+        "eslint-config-prettier": "^8.5.0",
+        "husky": "^8.0.2",
+        "lint-staged": "^13.0.4",
+        "prettier": "^2.8.0",
+        "tsx": "^4.21.0",
+        "typescript": "^4.9.4"
+    }
+}

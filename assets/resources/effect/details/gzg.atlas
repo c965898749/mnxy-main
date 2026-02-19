@@ -1,0 +1,370 @@
+
+gzg.png
+size: 582, 172
+format: Alpha
+filter: Linear, Linear
+repeat: none
+HD/图层 1
+  rotate: false
+  xy: 348, 5
+  size: 25, 20
+  orig: 121, 68
+  offset: 49, 16
+  index: -1
+HD/图层 10
+  rotate: true
+  xy: 526, 45
+  size: 19, 14
+  orig: 121, 68
+  offset: 49, 13
+  index: -1
+HD/图层 11
+  rotate: false
+  xy: 519, 66
+  size: 16, 17
+  orig: 121, 68
+  offset: 51, 13
+  index: -1
+HD/图层 12
+  rotate: false
+  xy: 183, 4
+  size: 21, 15
+  orig: 121, 68
+  offset: 51, 13
+  index: -1
+HD/图层 13
+  rotate: true
+  xy: 542, 48
+  size: 19, 13
+  orig: 121, 68
+  offset: 56, 12
+  index: -1
+HD/图层 14
+  rotate: false
+  xy: 504, 43
+  size: 20, 15
+  orig: 121, 68
+  offset: 61, 12
+  index: -1
+HD/图层 15
+  rotate: false
+  xy: 73, 2
+  size: 20, 17
+  orig: 121, 68
+  offset: 68, 12
+  index: -1
+HD/图层 16
+  rotate: false
+  xy: 161, 3
+  size: 20, 16
+  orig: 121, 68
+  offset: 75, 11
+  index: -1
+HD/图层 17
+  rotate: false
+  xy: 557, 70
+  size: 19, 13
+  orig: 121, 68
+  offset: 83, 11
+  index: -1
+HD/图层 18
+  rotate: false
+  xy: 541, 30
+  size: 20, 13
+  orig: 121, 68
+  offset: 89, 11
+  index: -1
+HD/图层 19
+  rotate: true
+  xy: 522, 3
+  size: 21, 14
+  orig: 121, 68
+  offset: 93, 11
+  index: -1
+HD/图层 2
+  rotate: false
+  xy: 206, 3
+  size: 24, 18
+  orig: 121, 68
+  offset: 53, 16
+  index: -1
+HD/图层 20
+  rotate: false
+  xy: 464, 42
+  size: 18, 19
+  orig: 121, 68
+  offset: 97, 9
+  index: -1
+HD/图层 21
+  rotate: false
+  xy: 557, 53
+  size: 15, 15
+  orig: 121, 68
+  offset: 98, 13
+  index: -1
+HD/图层 22
+  rotate: true
+  xy: 480, 21
+  size: 19, 18
+  orig: 121, 68
+  offset: 95, 15
+  index: -1
+HD/图层 23
+  rotate: true
+  xy: 304, 2
+  size: 19, 20
+  orig: 121, 68
+  offset: 91, 17
+  index: -1
+HD/图层 24
+  rotate: true
+  xy: 460, 13
+  size: 20, 18
+  orig: 121, 68
+  offset: 85, 19
+  index: -1
+HD/图层 25
+  rotate: false
+  xy: 563, 38
+  size: 16, 13
+  orig: 121, 68
+  offset: 80, 22
+  index: -1
+HD/图层 26
+  rotate: true
+  xy: 504, 2
+  size: 19, 16
+  orig: 121, 68
+  offset: 74, 25
+  index: -1
+HD/图层 27
+  rotate: false
+  xy: 484, 64
+  size: 18, 19
+  orig: 121, 68
+  offset: 69, 27
+  index: -1
+HD/图层 28
+  rotate: true
+  xy: 484, 43
+  size: 19, 18
+  orig: 121, 68
+  offset: 63, 29
+  index: -1
+HD/图层 29
+  rotate: true
+  xy: 553, 11
+  size: 17, 15
+  orig: 121, 68
+  offset: 59, 31
+  index: -1
+HD/图层 3
+  rotate: true
+  xy: 140, 2
+  size: 17, 19
+  orig: 121, 68
+  offset: 56, 14
+  index: -1
+HD/图层 30
+  rotate: false
+  xy: 439, 14
+  size: 19, 19
+  orig: 121, 68
+  offset: 56, 33
+  index: -1
+HD/图层 4
+  rotate: false
+  xy: 49, 3
+  size: 22, 16
+  orig: 121, 68
+  offset: 52, 13
+  index: -1
+HD/图层 5
+  rotate: true
+  xy: 504, 60
+  size: 23, 13
+  orig: 121, 68
+  offset: 51, 12
+  index: -1
+HD/图层 59
+  rotate: true
+  xy: 464, 63
+  size: 20, 18
+  orig: 121, 68
+  offset: 36, 36
+  index: -1
+HD/图层 6
+  rotate: false
+  xy: 480, 5
+  size: 22, 14
+  orig: 121, 68
+  offset: 50, 13
+  index: -1
+HD/图层 60
+  rotate: false
+  xy: 281, 2
+  size: 21, 19
+  orig: 121, 68
+  offset: 29, 38
+  index: -1
+HD/图层 61
+  rotate: false
+  xy: 537, 69
+  size: 18, 14
+  orig: 121, 68
+  offset: 24, 41
+  index: -1
+HD/图层 62
+  rotate: false
+  xy: 232, 2
+  size: 22, 19
+  orig: 121, 68
+  offset: 17, 43
+  index: -1
+HD/图层 63
+  rotate: false
+  xy: 397, 13
+  size: 20, 20
+  orig: 121, 68
+  offset: 15, 46
+  index: -1
+HD/图层 64
+  rotate: true
+  xy: 375, 5
+  size: 22, 20
+  orig: 121, 68
+  offset: 9, 47
+  index: -1
+HD/图层 65
+  rotate: false
+  xy: 256, 3
+  size: 23, 18
+  orig: 121, 68
+  offset: 4, 48
+  index: -1
+HD/图层 66
+  rotate: false
+  xy: 332, 23
+  size: 13, 10
+  orig: 121, 68
+  offset: 9, 55
+  index: -1
+HD/图层 67
+  rotate: false
+  xy: 326, 2
+  size: 20, 19
+  orig: 121, 73
+  offset: 4, 53
+  index: -1
+HD/图层 68
+  rotate: false
+  xy: 2, 2
+  size: 22, 17
+  orig: 121, 70
+  offset: 6, 53
+  index: -1
+HD/图层 69
+  rotate: false
+  xy: 519, 26
+  size: 20, 15
+  orig: 121, 68
+  offset: 10, 51
+  index: -1
+HD/图层 7
+  rotate: false
+  xy: 500, 23
+  size: 17, 18
+  orig: 121, 68
+  offset: 52, 12
+  index: -1
+HD/图层 70
+  rotate: false
+  xy: 26, 2
+  size: 21, 17
+  orig: 121, 69
+  offset: 13, 52
+  index: -1
+HD/图层 71
+  rotate: true
+  xy: 419, 12
+  size: 21, 18
+  orig: 121, 69
+  offset: 17, 51
+  index: -1
+HD/图层 72
+  rotate: false
+  xy: 95, 2
+  size: 20, 17
+  orig: 121, 68
+  offset: 21, 49
+  index: -1
+HD/图层 73
+  rotate: false
+  xy: 117, 3
+  size: 21, 16
+  orig: 121, 68
+  offset: 24, 48
+  index: -1
+HD/图层 8
+  rotate: false
+  xy: 347, 27
+  size: 13, 6
+  orig: 121, 68
+  offset: 52, 17
+  index: -1
+HD/图层 9
+  rotate: true
+  xy: 538, 3
+  size: 21, 13
+  orig: 121, 68
+  offset: 48, 12
+  index: -1
+aa1
+  rotate: false
+  xy: 189, 23
+  size: 141, 147
+  orig: 143, 153
+  offset: 0, 4
+  index: -1
+aa2
+  rotate: true
+  xy: 464, 85
+  size: 85, 116
+  orig: 87, 123
+  offset: 0, 5
+  index: -1
+aa3
+  rotate: false
+  xy: 2, 21
+  size: 185, 149
+  orig: 187, 158
+  offset: 0, 9
+  index: -1
+aa4
+  rotate: true
+  xy: 332, 35
+  size: 135, 130
+  orig: 136, 140
+  offset: 0, 9
+  index: -1
+xx2
+  rotate: false
+  xy: 362, 27
+  size: 6, 6
+  orig: 8, 8
+  offset: 1, 1
+  index: -1
+xx4
+  rotate: false
+  xy: 370, 29
+  size: 4, 4
+  orig: 5, 5
+  offset: 0, 0
+  index: -1
+xx5
+  rotate: false
+  xy: 376, 30
+  size: 3, 3
+  orig: 4, 4
+  offset: 1, 1
+  index: -1

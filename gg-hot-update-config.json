@@ -1,0 +1,12 @@
+{
+  "local_bundles": {
+    "build-in": {
+      "files": ["src/", "jsb-adapter/", "assets/"]
+    }
+  },
+  "remote_bundles": {
+    "build-in": {
+      "files": ["src/", "jsb-adapter/", "assets/"]
+    }
+  }
+}

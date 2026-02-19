@@ -214,6 +214,10 @@ export class blessingCrtl extends Component {
         this.node.parent.getChildByName("otherCtrl").active = false
         this.node.parent.getChildByName("JinjiCtrl").active = true
     }
+    addfriends() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("addFriendCtrl").active = true
+    }
 }
 
 

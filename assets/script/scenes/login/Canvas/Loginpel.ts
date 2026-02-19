@@ -1,12 +1,14 @@
-import { _decorator, Component, director, EditBox, error, Label, sys } from 'cc';
+import { _decorator, Component, director, EditBox, instantiate, Label, Prefab, ProgressBar, sys } from 'cc';
 const { ccclass, property } = _decorator;
 import { util } from '../../../util/util';
 import { AudioMgr } from "../../../util/resource/AudioMgr";
 import { getConfig, getToken } from '../../../common/config/config';
+import { DEBUG, JSB } from "cc/env";
+import { GGHotUpdateInstance } from "../../../../../extensions/gg-hot-update/assets/scripts/hotupdate/GGHotUpdateInstance";
+import { ggHotUpdateManager } from "../../../../../extensions/gg-hot-update/assets/scripts/hotupdate/GGHotUpdateManager";
+import { GGHotUpdateInstanceEnum, GGHotUpdateInstanceState } from "../../../../../extensions/gg-hot-update/assets/scripts/hotupdate/GGHotUpdateType";
 @ccclass('Loginpel')
 export class Loginpel extends Component {
-
-
 
     @property(EditBox)
     Username: EditBox;
@@ -15,125 +17,261 @@ export class Loginpel extends Component {
     // redis-server.exe redis.windows.conf
     // url = "http://192.168.0.104:8080/"
     // url = "http://127.0.0.1:8080/"
-    url="http://czx.yimem.com:3000/"
+    url = "http://czx.yimem.com:3000/"
 
-
-    // 绑定到界面的版本显示标签（可选）
     @property(Label)
-    public versionLabel: Label | null = null;
+    messageLabel: Label = null!;
 
-    // 服务器版本接口地址（替换为你的实际接口）
-    // 本地游戏业务版本（建议在 package.json 中配置，这里先硬编码示例）
-    private readonly LOCAL_GAME_VERSION = '1.0.0';
+    @property(ProgressBar)
+    progressBar: ProgressBar = null!;
 
-    onLoad() {
-        // 初始化显示本地版本
-        this.showLocalVersion();
-        // 启动版本校验
-        this.checkVersion();
-    }
+    @property(Label)
+    progressLabel: Label = null!;
 
-    /**
-     * 显示本地版本信息
-     */
-    private showLocalVersion() {
-        // const engineVersion = sys.engineVersion; // 引擎版本
-        const gameVersion = this.LOCAL_GAME_VERSION; // 游戏版本
+    @property(Label)
+    downloadSpeedLabel: Label = null!;
 
-        if (this.versionLabel) {
-            this.versionLabel.string = `本地版本：游戏${gameVersion} `;
-        }
-        console.log(`本地版本 - 游戏：${gameVersion}`);
-    }
+    @property(Label)
+    downloadSizeLabel: Label = null!;
 
-    /**
-     * 核心逻辑：校验版本
-     */
-    private async checkVersion() {
-        // try {
-        //     // 1. 请求服务器版本信息
-        //     let serverVersion = await this.getServerVersion();
-        //     if(serverVersion){
-        //     console.log('服务器最新版本：', serverVersion);
-
-        //     // 2. 对比游戏业务版本（重点）
-        //     if (this.LOCAL_GAME_VERSION!= serverVersion.version) {
-        //         // 版本不一致，触发更新
-        //         this.triggerUpdate(serverVersion.pkgUrl);
-        //     } else {
-        //         // 版本一致，进入游戏
-        //         console.log('版本最新，进入游戏');
-        //         this.enterGame();
-        //     }
-        //     }else{
-        //          this.enterGame();
-        //     }
-
-        // } catch (err) {
-        //     error('版本校验失败：', err);
-        //     // 网络失败时的兜底逻辑（可选：提示重试/直接进入游戏）
-        //     this.handleCheckFailed();
-        // }
-        this.enterGame();
-    }
-
-    /**
-     * 请求服务器版本接口
-     * @returns 服务器版本信息（包含game版本和下载地址）
-     */
-    private async getServerVersion(): Promise<{ version: string; description?: string; pkgUrl: string }> {
-        return new Promise((resolve, reject) => {
-            const config = getConfig()
-            const token = getToken()
-            const postData = {
-                token: token,
-            };
-            const options = {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(postData),
-            };
-            fetch(config.ServerUrl.url + "/gameVersion", options)
-                .then(response => {
-
-                    return response.json(); // 解析 JSON 响应
-                })
-                .then(async data => {
-                    if (data.success == '0') {
-                        resolve(data.data);
-                    }
-                })
-                .catch(error => {
-                    console.error('There was a problem with the fetch operation:', error);
-                }
-                );
-        });
-    }
+    @property(Label)
+    downloadRemainTimeLabel: Label = null!;
 
 
-    /**
-     * 触发更新流程
-     * @param downloadUrl 新版本下载地址
-     */
-    private triggerUpdate(downloadUrl: string) {
-        console.log('检测到新版本，即将更新');
-        // 1. 弹出更新提示（这里用 alert 示例，实际项目替换为自定义弹窗）
-        if (confirm('检测到新版本，是否立即更新？')) {
-            // 2. 跳转下载链接（不同平台处理方式不同）
-            if (sys.isBrowser) {
-                // 浏览器端：打开新标签页
-                window.open(downloadUrl, '_blank');
-            } else if (sys.isNative) {
-                // 原生端（安卓/iOS）：调用原生方法打开下载链接
-                // 需结合原生插件，示例伪代码：
-                // jsb.reflection.callStaticMethod('org/cocos2dx/javascript/UpdateUtil', 'openDownloadUrl', '(Ljava/lang/String;)V', downloadUrl);
-                alert('请前往应用商店更新');
+    protected onLoad(): void {
+        if (JSB) {
+            this.node.getChildByName("update").active = true;
+            let packageUrl = "";
+            switch (sys.os) {
+                // case sys.OS.OPENHARMONY:
+                //     packageUrl = `https://raw.githubusercontent.com/zhitaocai/cocos-creator-gg-hot-update-demo/v6/build/harmonyos-next/data-gg-hot-update`;
+                //     break;
+                // case sys.OS.OHOS:
+                //     packageUrl = `https://raw.githubusercontent.com/zhitaocai/cocos-creator-gg-hot-update-demo/v6/build/ohos/data-gg-hot-update`;
+                //     break;
+                // case sys.OS.IOS:
+                //     packageUrl = `https://raw.githubusercontent.com/zhitaocai/cocos-creator-gg-hot-update-demo/v6/build/ios/data-gg-hot-update`;
+                //     break;
+                case sys.OS.ANDROID:
+                    // packageUrl = `https://raw.githubusercontent.com/zhitaocai/cocos-creator-gg-hot-update-demo/v6/build/android/data-gg-hot-update`;
+                    // packageUrl = `http://192.168.40.10:8082/gg-hot-update-demo/build/android/data-gg-hot-update`;
+                    packageUrl = `http://czx.yimem.com:5502/data-gg-hot-update`;
+                    break;
             }
-        } else {
-            // 用户取消更新：可选退出游戏/继续使用旧版本
-            director.end(); // 退出游戏（可替换为其他逻辑）
+            ggHotUpdateManager.init({
+                enableLog: DEBUG,
+                packageUrl: packageUrl,
+            });
         }
     }
+
+    protected onEnable(): void {
+        if (JSB) {
+            ggHotUpdateManager.getInstance(GGHotUpdateInstanceEnum.BuildIn).register(this);
+            ggHotUpdateManager.getInstance(GGHotUpdateInstanceEnum.BuildIn).checkUpdate();
+        } else {
+            this.scheduleOnce(() => {
+                this._enterLobbyScene();
+            }, 0.1);
+        }
+    }
+
+    protected onDisable(): void {
+        if (JSB) {
+            ggHotUpdateManager.getInstance(GGHotUpdateInstanceEnum.BuildIn).unregister(this);
+        }
+    }
+
+    // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 监听 GG 热更新回调
+
+    /**
+     * 检查更新失败后，最大重试次数
+     */
+    private _checkUpdateRetryMaxTimes = 3;
+    /**
+     * 检查更新失败后，累计重试次数
+     */
+    private _checkUpdateRetryCurTimes = 0;
+    /**
+     * 检查更新失败后，重试间隔(秒)
+     */
+    private _checkUpdateRetryIntervalInSecond = 5;
+    /**
+     * 热更新失败后，最大重试次数
+     */
+    private _hotUpdateRetryMaxTimes = 3;
+    /**
+     * 热更新失败后，累计重试次数
+     */
+    private _hotUpdateRetryCurTimes = 0;
+    /**
+     * 热更新失败后，重试间隔(秒)
+     */
+    private _hotUpdateRetryIntervalInSecond = 5;
+
+    async onGGHotUpdateInstanceCallBack(instance: GGHotUpdateInstance): Promise<void> {
+
+        if (instance == null) {
+            this.messageLabel.string = "";
+            this._setUpdateProgressVisability(false);
+            return;
+        }
+
+        switch (instance.state) {
+            case GGHotUpdateInstanceState.Idle:
+                this.messageLabel.string = "";
+                this._setUpdateProgressVisability(false);
+                break;
+            case GGHotUpdateInstanceState.CheckUpdateInProgress:
+                this.messageLabel.string = "检查更新中...";
+                this._setUpdateProgressVisability(false);
+                break;
+            case GGHotUpdateInstanceState.CheckUpdateFailedParseLocalProjectManifestError:
+            case GGHotUpdateInstanceState.CheckUpdateFailedParseRemoteVersionManifestError:
+            case GGHotUpdateInstanceState.CheckUpdateFailedDownloadRemoteProjectManifestError:
+            case GGHotUpdateInstanceState.CheckUpdateFailedParseRemoteProjectManifestError: {
+                // 检查更新失败
+                if (this._checkUpdateRetryCurTimes >= this._checkUpdateRetryMaxTimes) {
+                    this.messageLabel.string = `解析远程 project.manifest 失败`;
+                    // 如果是解析本地信息失败导致的检查更新失败，那么可以考虑清除本地的下载缓存目录，以清空所有缓存，提高下次能正确更新的概率
+                    if (instance.state == GGHotUpdateInstanceState.CheckUpdateFailedParseLocalProjectManifestError) {
+                        instance.clearDownloadCache();
+                    }
+                    // 弹窗提示检查失败以及提供重试机制
+                    // showAlertDialog({
+                    //     titleLabel: "Check for Updates Failed",
+                    //     msgLabel: "There seems to be a problem during the update check.\nPlease check if your network connection is active.",
+                    //     cancelBtnVisable: false,
+                    //     confirmBtnVisable: true,
+                    //     confirmBtnLabel: "Retry",
+                    //     onConfirmBtnClick: () => {
+                    //         this.checkUpdateRetryCurTimes = 0;
+                    //         instance.checkUpdate();
+                    //         hideAlertDialog();
+                    //     },
+                    // });
+                } else {
+                    this.messageLabel.string = `检查更新失败：${instance.state}，当前累计重试次数：${this._checkUpdateRetryCurTimes}，最大重试次数：${this._checkUpdateRetryMaxTimes}，还没达到最大重试次数，将在${this._checkUpdateRetryIntervalInSecond}s后重试`;
+                    this.scheduleOnce(() => {
+                        this._checkUpdateRetryCurTimes++;
+                        instance.checkUpdate();
+                    }, this._checkUpdateRetryIntervalInSecond);
+                }
+                break;
+            }
+            case GGHotUpdateInstanceState.CheckUpdateSucNewVersionFound:
+                this.messageLabel.string = `检查更新成功，并且发现现版本，开始热更新`;
+                // 检查更新成功，并且发现现版本，开始热更新
+                instance.hotUpdate();
+                break;
+            case GGHotUpdateInstanceState.CheckUpdateSucAlreadyUpToDate:
+                this.messageLabel.string = `检查更新成功，但没有发现新版本，跳过热更新`;
+                // 检查更新成功，但没有发现新版本，跳过热更新
+                this._enterLobbyScene();
+                break;
+            case GGHotUpdateInstanceState.HotUpdateDownloading:
+                this.messageLabel.string = "文件下载中";
+                this._setUpdateProgressVisability(true);
+                this._updateProgress(instance.totalBytes, instance.downloadedBytes, instance.downloadSpeedInSecond, instance.downloadRemainTimeInSecond);
+                break;
+            case GGHotUpdateInstanceState.HotUpdateExtracting:
+                let percent = 0;
+                if (instance.zipExtractTotalBytes > 0) {
+                    percent = instance.zipExtractedBytes / instance.zipExtractTotalBytes;
+                }
+                this.messageLabel.string = `${(percent * 100).toFixed(2)}%`;
+                this._setUpdateProgressVisability(false);
+                break;
+            case GGHotUpdateInstanceState.HotUpdateSuc: {
+                // 热更新：成功，重启游戏
+                // 等一小段时间在重启
+                this.messageLabel.string = "更新成功，即将重启游戏";
+                this.scheduleOnce(() => {
+                    ggHotUpdateManager.restartGame();
+                });
+                break;
+            }
+            case GGHotUpdateInstanceState.HotUpdateFailed: {
+                // 热更新：失败，尝试进行一定次数的重试
+                if (this._hotUpdateRetryCurTimes >= this._hotUpdateRetryMaxTimes) {
+                    this.messageLabel.string = "更新失败";
+                    // console.log(`热更新过程中出现下载失败的文件，当前累计重试次数：${this._hotUpdateRetryCurTimes}，最大重试次数：${this._hotUpdateRetryMaxTimes}，已达到最大重试次数，将弹出重试弹窗`);
+                    // 如果尝试一定次数之后，依旧失败，那么弹窗提示
+                    // showAlertDialog({
+                    //     titleLabel: "Update Resources Failed",
+                    //     msgLabel: "There seems to be a problem during the resources update process.\nPlease check if your network connection is active.",
+                    //     cancelBtnVisable: false,
+                    //     confirmBtnVisable: true,
+                    //     confirmBtnLabel: "Retry",
+                    //     onConfirmBtnClick: () => {
+                    //         this.hotUpdateRetryCurTimes = 0;
+                    //         instance.hotUpdate();
+                    //         hideAlertDialog();
+                    //     },
+                    // });
+                } else {
+                    this.messageLabel.string = `热更新过程中出现下载失败的文件，当前累计重试次数：${this._hotUpdateRetryCurTimes}，最大重试次数：${this._hotUpdateRetryMaxTimes}，还没有达到最大重试次数，将在${this._hotUpdateRetryIntervalInSecond}s后重试`;
+                    // console.log(
+                    //     `热更新过程中出现下载失败的文件，当前累计重试次数：${this._hotUpdateRetryCurTimes}，最大重试次数：${this._hotUpdateRetryMaxTimes}，还没有达到最大重试次数，将在${this._hotUpdateRetryIntervalInSecond}s后重试`
+                    // );
+                    this.scheduleOnce(() => {
+                        this._hotUpdateRetryCurTimes++;
+                        instance.hotUpdate();
+                    }, this._hotUpdateRetryIntervalInSecond);
+                }
+                break;
+            }
+        }
+    }
+
+    private _enterLobbyScene() {
+        this.node.getChildByName("update").active = false;
+        this.enterGame()
+    }
+
+
+
+    /**
+       * 设置下载进度可见性
+       */
+    private _setUpdateProgressVisability(visable: boolean) {
+        this.progressBar.node.active = visable;
+        this.progressLabel.node.active = visable;
+        this.downloadSpeedLabel.node.active = visable;
+        this.downloadSizeLabel.node.active = visable;
+        this.downloadRemainTimeLabel.node.active = visable;
+    }
+
+    /**
+     * 更新下载进度
+     *
+     * @param totalBytes 总下载字节数
+     * @param downloadedBytes 已下载字节数
+     * @param byteSpeedInSecond 下载速度（Bytes/s)
+     * @param remainTimeInScond 下载剩余时间(s)
+     */
+    private _updateProgress(totalBytes: number, downloadedBytes: number, byteSpeedInSecond: number, remainTimeInScond: number) {
+        let percent = 0;
+        if (totalBytes > 0) {
+            percent = downloadedBytes / totalBytes;
+        }
+        this.progressBar.progress = percent;
+        this.progressLabel.string = (percent * 100).toFixed(2) + "%";
+        this.downloadSizeLabel.string = `Size: ${this._byte2MB(downloadedBytes).toFixed(2)}MB/${this._byte2MB(totalBytes).toFixed(2)}MB`;
+        this.downloadSpeedLabel.string = `Speed: ${this._byte2MB(byteSpeedInSecond).toFixed(2)}MB/s`;
+        if (remainTimeInScond >= 0) {
+            this.downloadRemainTimeLabel.string = `Remaining Time: ${remainTimeInScond}s`;
+        } else {
+            this.downloadRemainTimeLabel.string = `Remaining Time: -- s`;
+        }
+    }
+
+    private _byte2MB(bytes: number): number {
+        return bytes / 1024 / 1024;
+    }
+
+
 
     /**
      * 版本一致，进入游戏主场景
@@ -156,7 +294,7 @@ export class Loginpel extends Component {
                 return response.json(); // 解析 JSON 响应
             })
             .then(data => {
-                console.log(data); // 处理响应数据
+                // console.log(data); // 处理响应数据
                 if (data.success == '1') {
                     localStorage.setItem("UserConfigData", null)
                     var userInfo = data.data;
@@ -297,7 +435,7 @@ export class Loginpel extends Component {
                     return response.json(); // 解析 JSON 响应
                 })
                 .then(data => {
-                    console.log(data); // 处理响应数据
+                    // console.log(data); // 处理响应数据
                     if (data.success == '1') {
                         const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                     } else {
@@ -358,7 +496,7 @@ export class Loginpel extends Component {
                     return response.json(); // 解析 JSON 响应
                 })
                 .then(data => {
-                    console.log(data); // 处理响应数据
+                    // console.log(data); // 处理响应数据
                     if (data.success == '1') {
                         localStorage.setItem("UserConfigData", null)
                         var userInfo = data.data;

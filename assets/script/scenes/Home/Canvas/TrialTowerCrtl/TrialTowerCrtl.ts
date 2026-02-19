@@ -15,15 +15,17 @@ export class TrialTowerCrtl extends Component {
     @property(Node)
     PvE_default: Node
     index: number = 0
-    index2: number = 0
+    index2: number = 1
+    index3: number = 2
     ceng: number = 2
-    myceng: number = 1
     @property(Node)
     myNode: Node
     @property(Node)
     bossNode: Node
     initialized = false;
     customEventData: string = ''
+    positionInImage = 0
+    nextImageNumbers = []
     @property(Node)
     cailiao: Node
     // 二维坐标数组 (x, y)，最常用、最简洁，强烈推荐
@@ -64,8 +66,15 @@ export class TrialTowerCrtl extends Component {
     }
 
     async render(map) {
+        console.log(4444);
+        this.index = 0
+        this.index2 = 1
+        this.bossNode.setPosition(0, 900, 0)
+        this.PvE_default.children[0].setPosition(0, 900, 0)
+        this.PvE_default.children[1].setPosition(0, 900, 0)
         let userInfo = map["userInfo"]
-        let positionInImage = map["positionInImage"]
+        console.log(userInfo, 444)
+        this.positionInImage = map["positionInImage"]
         let currentImageNumbers = map["currentImageNumbers"]
         let nextImageNumbers = map["nextImageNumbers"]
         const config = getConfig()
@@ -73,21 +82,18 @@ export class TrialTowerCrtl extends Component {
         if (this.customEventData == 'bronzetower') {
             this.nameNode.getComponent(Label).string = "青铜试炼塔"
             this.ceng = userInfo.bronze1
-            this.myceng = userInfo.bronze1
             this.cailiao.getChildByName("num").getComponent(Label).string = config.userData.bronze.toString()
             this.cailiao.getComponent(Sprite).spriteFrame =
                 await util.bundle.load('image/bagCrtl/17000009/spriteFrame', SpriteFrame)
         } else if (this.customEventData == 'silvertower') {
             this.nameNode.getComponent(Label).string = "白银试炼塔"
             this.ceng = userInfo.silvertower
-            this.myceng = userInfo.silvertower
             this.cailiao.getChildByName("num").getComponent(Label).string = config.userData.darkSteel.toString()
             this.cailiao.getComponent(Sprite).spriteFrame =
                 await util.bundle.load('image/bagCrtl/17000010/spriteFrame', SpriteFrame)
         } else if (this.customEventData == 'goldentower') {
             this.nameNode.getComponent(Label).string = "黄金试炼塔"
             this.ceng = userInfo.goldentower
-            this.myceng = userInfo.goldentower
             this.cailiao.getChildByName("num").getComponent(Label).string = config.userData.purpleGold.toString()
             this.cailiao.getComponent(Sprite).spriteFrame =
                 await util.bundle.load('image/bagCrtl/17000011/spriteFrame', SpriteFrame)
@@ -96,208 +102,162 @@ export class TrialTowerCrtl extends Component {
         const coordinates = [
             [-290, -380], [230, -200], [-90, -50], [-200, 100], [250, 240], [-30, 350], [-290, 480]
         ];
-        console.log(currentImageNumbers)
-        // const totalCount = coordinates.length;
-        // if (!Number.isInteger(this.ceng) || this.ceng < 1) {
-        //     throw new Error('传入的层数必须是大于等于1的正整数！');
-        // }
-        // const index = (this.ceng - 1) % totalCount;
+        if (nextImageNumbers.length <= 0) {
+            this.bossNode.setPosition(0, 0, 0)
+        } else {
+            this.PvE_default.children[0].getChildByName("ceng").children.forEach((item, index) => {
+                item.getChildByName("num").getComponent(Label).string = "第" + currentImageNumbers[index] + "层"
+            })
+            this.PvE_default.children[0].setPosition(0, 0, 0)
+            this.PvE_default.children[1].getChildByName("ceng").children.forEach((item, index) => {
+                item.getChildByName("num").getComponent(Label).string = "第" + nextImageNumbers[index] + "层"
+            })
+        }
 
-        // this.PvE_default.children[0].getChildByName("ceng").children.forEach((item) => {
-        //     item.getChildByName("num").getComponent(Label).string = "第" + this.ceng + "层"
-        //     this.ceng++
-        // })
-        // this.PvE_default.children[1].getChildByName("ceng").children.forEach((item) => {
-        //     item.getChildByName("num").getComponent(Label).string = "第" + this.ceng + "层"
-        //     this.ceng++
-        // })
-        // this.node.active = true
-        // this.myNode.setPosition(this.points[index][0], this.points[index][1], 0)
-        // for (let i = 0; i < index; i++) {
-
-        // }
+        this.nextImageNumbers = nextImageNumbers
+        this.node.active = true
+        this.myNode.setPosition(coordinates[this.positionInImage][0], coordinates[this.positionInImage][1], 0)
 
     }
     async tanSuo() {
-        this.index2++
-        const config = getConfig()
-        const token = getToken()
-        const postData = {
-            token: token,
-            str: this.customEventData,
-            finalLevel: this.myceng,
-            userId: config.userData.userId,
-        };
-        const options = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(postData),
-        };
-        fetch(config.ServerUrl.url + "battle5", options)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json(); // 解析 JSON 响应
-            })
-            .then(async data => {
-                if (data.success == '1') {
-                    var map = data.data;
-                    var user = map['user'];
-                    if (this.customEventData == 'bronzetower') {
-                        this.myceng = user.bronze1
-                    } else if (this.customEventData == 'silvertower') {
-                        this.myceng = user.silvertower
-                    } else if (this.customEventData == 'goldentower') {
-                        this.myceng = user.goldentower
+        const coordinates = [
+            [-290, -380], [230, -200], [-90, -50], [-200, 100], [250, 240], [-30, 350], [-290, 480]
+        ];
+        if (this.index == 0) {
+            this.index2 = 1
+        }
+        if (this.index == 1) {
+            this.index2 = 0
+        }
+        if (this.positionInImage > 5) {
+            this.positionInImage = 0
+            tween(this.myNode)
+                .to(2, { position: v3(coordinates[0][0], coordinates[0][1]) })
+                .start();
+            tween(this.PvE_default.children[this.index])
+                .to(2, { position: v3(0, -900) })
+                .start();
+            this.index++
+            if (this.index >= 2) {
+                this.index = 0
+            }
+            if (this.nextImageNumbers.length <= 5) {
+                tween(this.bossNode)
+                    .to(2, { position: v3(0, 0) })
+                    .call(async () => {
+                        this.bossNode.getChildByName("boss").children.forEach((item) => {
+                            item.active = true
+                        })
+                    })
+                    .start();
+            } else {
+                this.PvE_default.children[this.index].setPosition(0, 900, 0)
+                tween(this.PvE_default.children[this.index])
+                    .to(2, { position: v3(0, 0) })
+                    .call(async () => {
+                        this.PvE_default.children[this.index].getChildByName("boss").children.forEach((item) => {
+                            item.active = true
+                        })
+                    })
+                    .start();
+            }
+
+        } else {
+            const config = getConfig()
+            const token = getToken()
+            const postData = {
+                token: token,
+                str: this.customEventData,
+                userId: config.userData.userId,
+            };
+            const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(postData),
+            };
+            fetch(config.ServerUrl.url + "battle5", options)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
                     }
-                    console.log(this.myceng, 'myceng');
-                    const battle = map['battle'];
-                    const rewards = map["rewards"];
-                    if (this.myceng >= 99) {
-                        AudioMgr.inst.playOneShot("sound/other/haojiao");
-                        tween(this.myNode)
-                            .to(1, { position: v3(0, 100) })
-                            .call(async () => {
-                                const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
-                                const holAnimationNode = instantiate(holAnimationPrefab)
-                                this.node.parent.addChild(holAnimationNode)
-                                await holAnimationNode
-                                    .getComponent(FightMap)
-                                    .render(battle.id, rewards, null)
-                                find('Canvas').getComponent(HomeCanvas).audioSource.pause()
-                                this.node.parent.getChildByName("FightMap").active = true
-                                if (battle.isWin == 0) {
-                                    this.bossNode.getChildByName("boss").children[1].active = false
-                                }
+                    return response.json(); // 解析 JSON 响应
+                })
+                .then(async data => {
+                    if (data.success == '1') {
+                        var map = data.data;
+                        var user = map['user'];
+                        let gonum = map["positionInImage"]
+                        let currentImageNumbers = map["currentImageNumbers"]
+                        let nextImageNumbers = map["nextImageNumbers"]
+                        this.nextImageNumbers = nextImageNumbers
+                        this.PvE_default.children[this.index].getChildByName("ceng").children.forEach((item, index) => {
+                            item.getChildByName("num").getComponent(Label).string = "第" + currentImageNumbers[index] + "层"
+                        })
+                        if (nextImageNumbers.length > 0) {
+                            this.PvE_default.children[this.index2].getChildByName("ceng").children.forEach((item, index) => {
+                                item.getChildByName("num").getComponent(Label).string = "第" + nextImageNumbers[index] + "层"
                             })
-                            .start();
-                    } else if (this.myceng >= 98 && this.myceng < 99) {
-                        tween(this.myNode)
-                            .to(2, { position: v3(-290, -380) })
-                            .start();
-                        tween(this.PvE_default.children[this.index])
-                            .to(2, { position: v3(0, -900) })
-                            .start();
-                        tween(this.bossNode)
-                            .to(2, { position: v3(0, 0) })
-                            .call(async () => {
-                                tween(this.myNode)
-                                    .to(1, { position: v3(-90, -290) })
-                                    .call(async () => {
-                                        const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
-                                        const holAnimationNode = instantiate(holAnimationPrefab)
-                                        this.node.parent.addChild(holAnimationNode)
-                                        await holAnimationNode
-                                            .getComponent(FightMap)
-                                            .render(battle.id, rewards, null)
-                                        find('Canvas').getComponent(HomeCanvas).audioSource.pause()
-                                        this.node.parent.getChildByName("FightMap").active = true
-                                        if (battle.isWin == 0) {
-                                            this.bossNode.getChildByName("boss").children[0].active = false
-                                        }
-                                    })
-                                    .start();
-                            })
-                            .start();
-                    } else if (this.index2 <= 6) {
-                        if (battle.isWin == 0) {
-                            tween(this.myNode)
-                                .to(1, { position: v3(this.points[this.index2][0], this.points[this.index2][1]) })
-                                .call(async () => {
-                                    const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
-                                    const holAnimationNode = instantiate(holAnimationPrefab)
-                                    this.node.parent.addChild(holAnimationNode)
-                                    AudioMgr.inst.playOneShot("sound/other/daojian");
-                                    await holAnimationNode
-                                        .getComponent(FightMap)
-                                        .render(battle.id, rewards, null)
-                                    find('Canvas').getComponent(HomeCanvas).audioSource.pause()
-                                    this.node.parent.getChildByName("FightMap").active = true
-                                    if (battle.isWin == 0) {
-                                        this.PvE_default.children[this.index].getChildByName("boss").children[this.index2 - 1].active = false;
-                                    }
-                                })
-                                .start();
-                        } else {
-                            const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
-                            const holAnimationNode = instantiate(holAnimationPrefab)
-                            this.node.parent.addChild(holAnimationNode)
-                            await holAnimationNode
-                                .getComponent(FightMap)
-                                .render(battle.id, rewards, null)
-                            find('Canvas').getComponent(HomeCanvas).audioSource.pause()
-                            this.node.parent.getChildByName("FightMap").active = true
                         }
+                        const battle = map['battle'];
+                        const rewards = map["rewards"];
+                        const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
+                        const holAnimationNode = instantiate(holAnimationPrefab)
+                        this.node.parent.addChild(holAnimationNode)
+                        await holAnimationNode
+                            .getComponent(FightMap)
+                            .render(battle.id, rewards, null)
+                        find('Canvas').getComponent(HomeCanvas).audioSource.pause()
+                        this.node.parent.getChildByName("FightMap").active = true
+
+
+                        config.userData.gold = user.gold
+                        config.userData.bronze = user.bronze
+                        config.userData.darkSteel = user.darkSteel
+                        config.userData.purpleGold = user.purpleGold
+                        config.userData.crystal = user.crystal
+                        if (this.customEventData == 'bronzetower') {
+                            config.userData.bronze1 = user.bronze1
+                            this.cailiao.getChildByName("num").getComponent(Label).string = user.bronze.toString()
+                        } else if (this.customEventData == 'silvertower') {
+                            config.userData.silvertower = user.silvertower
+                            this.cailiao.getChildByName("num").getComponent(Label).string = user.darkSteel.toString()
+                        } else if (this.customEventData == 'goldentower') {
+                            config.userData.silvertower = user.silvertower
+                            this.cailiao.getChildByName("num").getComponent(Label).string = user.purpleGold.toString()
+                        }
+
+                        localStorage.setItem("UserConfigData", JSON.stringify(config))
+
+                        // 定义监听回调函数（抽离出来方便移除）
+                        const onFightMapActiveChanged = () => {
+                            holAnimationNode.off(Node.EventType.ACTIVE_IN_HIERARCHY_CHANGED, onFightMapActiveChanged);
+
+                            // 执行原本在 if (battle.isWin == 0) 里的逻辑
+                            if (battle.isWin == 0) {
+                                this.positionInImage = gonum
+                                if (nextImageNumbers.length > 0) {
+                                    this.PvE_default.children[this.index].getChildByName("boss").children[gonum > 0 ? gonum - 1 : gonum].active = false;
+                                } else {
+                                    this.bossNode.children[gonum > 0 ? gonum - 1 : gonum].active = false;
+                                }
+                                tween(this.myNode)
+                                    .to(1, { position: v3(coordinates[gonum][0], coordinates[gonum][1]) })
+                                    .start();
+                            }
+                        };
+
+                        // 给 FightMap 节点添加激活状态变化监听
+                        holAnimationNode.on(Node.EventType.ACTIVE_IN_HIERARCHY_CHANGED, onFightMapActiveChanged, this);
 
                     } else {
-                        this.index2 = 0
-                        tween(this.myNode)
-                            .to(2, { position: v3(this.points[this.index2][0], this.points[this.index2][1]) })
-                            .start();
-                        tween(this.PvE_default.children[this.index])
-                            .to(2, { position: v3(0, -900) })
-                            .start();
-                        this.index++
-                        if (this.index >= 2) {
-                            this.index = 0
-                        }
-                        this.PvE_default.children[this.index].getChildByName("ceng").children.forEach((item) => {
-                            item.getChildByName("num").getComponent(Label).string = "第" + this.ceng + "层"
-                            this.ceng++
-                        })
-                        this.PvE_default.children[this.index].setPosition(0, 900, 0)
-                        tween(this.PvE_default.children[this.index])
-                            .to(2, { position: v3(0, 0) })
-                            .call(async () => {
-                                this.PvE_default.children[this.index].getChildByName("boss").children.forEach((item) => {
-                                    item.active = true
-                                })
-                            })
-                            .start();
+                        const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                     }
-
-                    config.userData.gold = user.gold
-                    config.userData.bronze = user.bronze
-                    config.userData.darkSteel = user.darkSteel
-                    config.userData.purpleGold = user.purpleGold
-                    config.userData.crystal = user.crystal
-                    if (this.customEventData == 'bronzetower') {
-                        config.userData.bronze1 = user.bronze1
-                        this.myceng = battle.chapter
-                        if (battle.isWin != 0) {
-                            this.index2--;
-                        }
-                        this.cailiao.getChildByName("num").getComponent(Label).string = user.bronze.toString()
-                    } else if (this.customEventData == 'silvertower') {
-                        config.userData.silvertower = user.silvertower
-                        this.myceng = battle.chapter
-                        if (battle.isWin != 0) {
-                            this.index2--;
-                        }
-                        this.cailiao.getChildByName("num").getComponent(Label).string = user.darkSteel.toString()
-                    } else if (this.customEventData == 'goldentower') {
-                        config.userData.silvertower = user.silvertower
-                        this.myceng = battle.chapter
-                        if (battle.isWin != 0) {
-                            this.index2--;
-                        }
-                        this.cailiao.getChildByName("num").getComponent(Label).string = user.purpleGold.toString()
-                    }
-
-                    localStorage.setItem("UserConfigData", JSON.stringify(config))
-
-                } else {
-                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
                 }
-            })
-            .catch(error => {
-                console.error('There was a problem with the fetch operation:', error);
-            }
-            );
-
-
-
+                );
+        }
     }
 
     yijiantansuo() {
@@ -326,7 +286,6 @@ export class TrialTowerCrtl extends Component {
 
                     var map = data.data;
                     var user = map['user'];
-                    this.myceng = user.bronze1
                     const rewards = map["rewards"];
                     config.userData.bronze1 = user.bronze1
                     config.userData.gold = user.gold
@@ -336,10 +295,6 @@ export class TrialTowerCrtl extends Component {
                     config.userData.crystal = user.crystal
                     this.cailiao.getChildByName("num").getComponent(Label).string = user.bronze.toString()
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
-                    // await this.node.parent.getChildByName("FightSuccess")
-                    //     .getComponent(FightSuccess)
-                    //     .read(rewards, null)
-                    // this.node.getChildByName("FightSuccess").active = true
                     const FightSuccessfab = await util.bundle.load("prefab/FightSuccess", Prefab)
                     const FightSuccess = instantiate(FightSuccessfab)
                     this.node.parent.addChild(FightSuccess)

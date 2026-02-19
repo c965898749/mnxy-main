@@ -1,0 +1,48 @@
+
+hongb.png
+size: 390, 100
+format: Alpha
+filter: Linear, Linear
+repeat: none
+cy
+  rotate: false
+  xy: 340, 54
+  size: 48, 44
+  orig: 50, 46
+  offset: 1, 1
+  index: -1
+cz
+  rotate: false
+  xy: 340, 8
+  size: 48, 44
+  orig: 50, 46
+  offset: 1, 1
+  index: -1
+g1
+  rotate: true
+  xy: 192, 22
+  size: 76, 72
+  orig: 81, 78
+  offset: 2, 3
+  index: -1
+g2
+  rotate: true
+  xy: 2, 2
+  size: 96, 102
+  orig: 98, 106
+  offset: 1, 2
+  index: -1
+g3
+  rotate: true
+  xy: 266, 22
+  size: 76, 72
+  orig: 81, 78
+  offset: 3, 3
+  index: -1
+hb
+  rotate: true
+  xy: 106, 2
+  size: 96, 84
+  orig: 98, 86
+  offset: 1, 1
+  index: -1

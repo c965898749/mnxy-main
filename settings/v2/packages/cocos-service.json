@@ -1,20 +1,31 @@
 {
   "__version__": "3.0.9",
   "game": {
-    "name": "未知游戏",
-    "app_id": "UNKNOW",
-    "c_id": "0"
+    "app_id": "613326156",
+    "c_id": "0",
+    "name": "HeroOfLegend"
   },
   "appConfigMaps": [
     {
       "app_id": "UNKNOW",
       "config_id": "fc0929"
+    },
+    {
+      "app_id": "613326156",
+      "config_id": "ee97dc"
     }
   ],
   "configs": [
     {
       "app_id": "UNKNOW",
       "config_id": "fc0929",
+      "config_name": "Default",
+      "config_remarks": "",
+      "services": []
+    },
+    {
+      "app_id": "613326156",
+      "config_id": "ee97dc",
       "config_name": "Default",
       "config_remarks": "",
       "services": []
