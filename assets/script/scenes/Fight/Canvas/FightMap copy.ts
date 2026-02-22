@@ -1,0 +1,1630 @@
+import { _decorator, Component, director, Font, instantiate, Label, math, Node, NodeEventType, Event, sp, Prefab, Sprite, SpriteFrame, tween, Vec3, AudioClip, AudioSource } from 'cc';
+import { util } from '../../../util/util';
+import { HolCharacter } from '../../../prefab/HolCharacter';
+import { CharacterStateCreate } from '../../../game/fight/character/CharacterState';
+import { HolNumber } from '../../../prefab/HolNumber';
+import { RoundState } from '../../../game/fight/RoundState';
+import { common } from '../../../common/common/common';
+import { HolPreLoad } from '../../../prefab/HolPreLoad';
+import { getConfig, getToken } from '../../../common/config/config';
+import { CharacterEnum } from '../../../game/fight/character/CharacterEnum';
+import { AudioMgr } from '../../../util/resource/AudioMgr';
+import { FightSuccess } from './FightSuccess';
+import { ItemCtrl } from '../../Home/Canvas/Tiem/ItemCtrl';
+const { ccclass, property } = _decorator;
+
+@ccclass('FightMap')
+export class FightMap extends Component {
+
+    @property(Node)
+    SkipFight: Node
+    @property(Node)
+    tiem
+    @property(Node)
+    Character
+    @property(Node)
+    Hp
+    @property(Node)
+    name0
+    @property(Node)
+    name1
+    @property(Node)
+    skillName
+    // 当前回合数
+    currentRound: number = 1
+
+    // // 是否播放动画
+    isPlayAnimation: boolean = true
+
+    // // 所有回合任务
+    allRoundQueue: Map<number, Function[]> = new Map
+
+    // // // 所有存活的角色
+    allLiveCharacter: HolCharacter[] = []
+    // leftCharacter = []
+    // rightCharacter = []
+    // // // 所有死亡的角色
+    allDeadCharacter: HolCharacter[] = []
+
+    // // 行动等待队列，若队列有未完成任务则等待完成后进入下一个角色行动
+    actionAwaitQueue: Promise<any>[] = []
+
+    fightProcess = []
+    //是否结束
+    isOverFight: boolean = false
+    //
+    result: boolean
+
+    rewards = []
+
+    levelUp = 0
+    // 当前倍速
+    private timeScale: number = 1
+    initialized = false;
+
+    L1 = null;
+    R1 = null;
+    timer = 0
+    parseCharacterString(str: string): ParseResult {
+        // 正则匹配：标识[A/B]、号位[1号位]、名称[牛魔王]、属性[HP=xxx,...]
+        const regex = /([A-Z])\[([^:]+):([^:]+):([^\]]+)\]/g;
+        const result: ParseResult = {};
+        let match: RegExpExecArray | null;
+
+        while ((match = regex.exec(str)) !== null) {
+            const [, key, positionText, name, attrsStr] = match;
+
+            // 提取号位数字并减1（如"1号位"→1→0）
+            const positionNum = parseInt(positionText.replace(/[^\d]/g, ''), 10) - 1 || 0;
+
+            // 解析属性
+            const attrs: CharacterAttributes = { HP: [0, 0], ATK: 0, SPEED: 0 };
+            attrsStr.split(',').forEach(attr => {
+                const [k, v] = attr.split('=');
+                if (!k || !v) return;
+
+                switch (k) {
+                    case 'HP':
+                        const hpParts = v.split('/').map(Number);
+                        attrs.HP = [hpParts[0] || 0, hpParts[1] || 0];
+                        break;
+                    case 'ATK':
+                        attrs.ATK = Number(v) || 0;
+                        break;
+                    case 'SPEED':
+                        attrs.SPEED = Number(v) || 0;
+                        break;
+                }
+            });
+
+            // 构建角色对象（存储处理后的号位数字）
+            result[key] = {
+                position: positionNum,
+                name,
+                ...attrs
+            };
+        }
+
+        return result;
+    }
+    filterArray(arrA, arrB, side) {
+        return arrA.filter(itemA =>
+            !arrB.some(itemB =>
+                itemB.side === side && itemB.position === itemA
+            )
+        );
+    }
+
+    parseEventString(str: string): EventData {
+        // 分离事件描述和单位数据部分
+        const [eventDesc, unitsStr] = str.split(' - ');
+        const units: Unit[] = [];
+
+        // 分割每个单位的数据
+        if (unitsStr) {
+            const unitEntries = unitsStr.split(',');
+
+            // 正则表达式匹配单位信息：/([AB])\s*([^[]+)\[\s*(\d+)号位:\s*HP:(\d+)→(\d+)\s*\]/
+            const unitRegex = /([AB])\s*([^[]+)\[\s*(\d+)号位:\s*HP:(\d+)→(\d+)\s*\]/;
+
+            unitEntries.forEach(entry => {
+                const match = entry.match(unitRegex);
+                if (match) {
+                    const [, side, name, positionStr, beforeHpStr, afterHpStr] = match;
+                    units.push({
+                        side,
+                        name: name.trim(),
+                        position: parseInt(positionStr, 10),
+                        hp: {
+                            before: parseInt(beforeHpStr, 10),
+                            after: parseInt(afterHpStr, 10)
+                        }
+                    });
+                }
+            });
+
+
+        }
+        return {
+            event: eventDesc.trim(),
+            units
+        };
+    }
+
+    async start() {
+        // 初始化音乐
+        const config = getConfig()
+        // 音乐们
+        const musics = await util.bundle.loadDir<AudioClip>("sound/fight/back", AudioClip)
+        const music = musics[Math.floor(musics.length * Math.random())]
+        const audioSource = this.node.getComponent(AudioSource)
+        audioSource.clip = music
+        audioSource.volume = config.volume * config.volumeDetail.home
+        audioSource.play()
+    }
+    async update(deltaTime: number) {
+        if (this.timer >= 500) {
+            this.SkipFight.active = true
+        }
+        this.timer++
+    }
+
+    async render(fightId, rewards, levelUp) {
+        this.actionAwaitQueue = []; // 新增：初始化清空队列
+        this.isOverFight = false;   // 重置战斗状态
+        // 原有逻辑...
+        this.rewards = rewards
+        this.levelUp = levelUp
+        // HolPreLoad 预加载进度条
+        // const holPreLoad = this.node.parent.getChildByName("HolPreLoad").getComponent(HolPreLoad)
+        const holPreLoad = this.node.getChildByName("HolPreLoad").getComponent(HolPreLoad)
+        holPreLoad.setTips([
+            "提示\n不同阵营之间相互克制，巧用阵营可以出奇制胜",
+        ])
+        holPreLoad.setProcess(20)
+        // 随机地图
+        const images = await util.bundle.loadDir("image/fightMap", SpriteFrame)
+        this.node.getComponent(Sprite).spriteFrame = images[Math.floor(math.randomRange(0, images.length))]
+        holPreLoad.setProcess(50)
+        // 当前进度
+        let process = 50
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            id: fightId
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "playBattle", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                ////console.log(data); // 处理响应数据
+                if (data.success == '1') {
+                    var map = data.data;
+                    this.fightProcess = map['battleLogs'];
+                    const campA = map['campA'];
+                    const campB = map['campB'];
+                    this.name0.getComponent(Label).string = map['name0'];
+                    this.name1.getComponent(Label).string = map['name1'];
+                    var isWin = map['isWin'];
+                    if (isWin == 1) {
+                        this.result = false
+                    } else {
+                        this.result = true
+                    }
+                    this.L1 = campA
+                    this.R1 = campB
+                    for (var i = 0; i < campA.length; i++) {
+                        this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("header").getComponent(Sprite).spriteFrame =
+                            await util.bundle.load(`game/texture/frames/hero/Header/${campA[i].id}/spriteFrame`, SpriteFrame)
+                        this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("my_hp").active = true
+                        this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("my_hp").getChildByName("Bar").setScale(
+                            campA[i].maxHp / campA[i].maxHp,
+                            1,
+                            1
+                        )
+                        this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = campA[i].maxHp + "/" + campA[i].maxHp
+                    }
+                    for (var i = 0; i < campB.length; i++) {
+                        this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("header").getComponent(Sprite).spriteFrame =
+                            await util.bundle.load(`game/texture/frames/hero/Header/${campB[i].id}/spriteFrame`, SpriteFrame)
+                        this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("my_hp").active = true
+                        this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("my_hp").getChildByName("Bar").setScale(
+                            campB[i].maxHp / campB[i].maxHp,
+                            1,
+                            1
+                        )
+                        this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = campB[i].maxHp + "/" + campB[i].maxHp
+                    }
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                //console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+
+        // 监听进度条完成函数
+        holPreLoad.listenComplete(async () => {
+            await new Promise(res => setTimeout(res, 500))
+            // 战斗开始
+            const result = await this.fightStart()
+            // 战斗胜利结算
+            if (result) this.fightSuccess()
+            // 战斗失败结算
+            else this.fightEnd()
+        })
+        // 设置 100%
+        holPreLoad.setProcess(100)
+    }
+
+    // 倍速
+    setTimeScale(e: Event) {
+        this.timeScale++
+        if (this.timeScale > 3) this.timeScale = 1
+        // for (const node of this.FightMapNode.children)
+        //     node.getComponent(HolCharacter).holAnimation.timeScale = this.timeScale
+        e.target.getChildByName("Value").getComponent(Label).string = "x" + this.timeScale
+        return
+    }
+
+    // 监听回合函数
+    public listenRoundEvent(round: number, call: Function) {
+        // let roundEvents = this.allRoundQueue.get(this.currentRound + round + 1)
+        // if (!roundEvents)
+        //     return this.allRoundQueue.set(this.currentRound + round + 1, roundEvents = [call])
+        // roundEvents.push(call)
+    }
+    // 跳过战斗
+    async skipFight() {
+
+        const result = await util.message.confirm({ message: "确定要跳过战斗吗?" })
+
+        if (result) {
+            // this.FightMapNode.getComponent(FightMap).unscheduleAllCallbacks(); // 停止所有调度函数
+            // this.FightMapNode.getComponent(FightMap).isPlayAnimation = false
+            this.isOverFight = true
+            await new Promise(res => setTimeout(res, 500))
+            // const close = await util.message.load()
+            // director.preloadScene("Home", () => close())
+            // director.loadScene("Home")
+        }
+
+    }
+    parseStrToArr(str) {
+        // 1. 先去除字符串两端的空白（避免横杠前后有空格）
+        const trimStr = str.trim();
+        // 2. 按横杠分割，取第一个部分（横杠前面的内容）
+        const beforeDash = trimStr.split('-')[0].trim();
+        // 3. 如果分割后为空，返回空数组，避免后续split得到[""]
+        if (!beforeDash) {
+            return [];
+        }
+        // 4. 按逗号分割成数组，并转换为数字类型（可选，根据你的需求）
+        const resultArr = beforeDash.split(',').map(item => {
+            // 去除每个元素的空白，再转数字
+            const num = Number(item.trim());
+            // 确保是有效数字，无效则过滤（可选）
+            return isNaN(num) ? null : num;
+        }).filter(item => item !== null); // 过滤无效值
+
+        return resultArr;
+    }
+
+    matchBArray(sourceArr, num1, num2) {
+
+
+        // 过滤数组，匹配符合条件的元素
+        return sourceArr.filter(item => {
+            // 拆分字符串，得到 ['B', '数字1', '数字2']
+            const parts = item.split('_');
+            const itemNum1 = parts[0]; // 提取第一个数字（字符串类型）
+            const itemNum2 = parts[1]; // 提取第二个数字（字符串类型）
+            const itemNum3 = parts[1];
+            // 根据传入的条件匹配：
+            // 1. 如果只传num1，匹配数字1
+            // 2. 如果只传num2，匹配数字2
+            // 3. 如果都传，同时匹配数字1和数字2
+            if (num1 == itemNum1 && num2 == itemNum2) {
+                return itemNum3
+            }
+        });
+    }
+
+    // 战斗开始
+    private async fightStart(): Promise<boolean> {
+        // await new Promise(res => setTimeout(res, 500 / this.timeScale))
+
+        // try {
+        for (var i = 0; i < this.fightProcess.length; i++) {
+            if (this.isOverFight) {
+                break;
+            }
+            let fightProcess = this.fightProcess[i]
+            let eventType = fightProcess.eventType
+            let fieldUnitsStatus = fightProcess.fieldUnitsStatus
+            this.currentRound = fightProcess.round
+            if (eventType == "ROUND_START") {
+                // await new Promise(res => setTimeout(res, 500 / this.timeScale))
+            } else if (eventType == "UNIT_ENTER") {
+                // 等待行动队列清空
+                await Promise.all(this.actionAwaitQueue)
+                this.actionAwaitQueue = []
+                let sourcePosition = fightProcess.sourcePosition - 1
+                let sourceCamp = fightProcess.sourceCamp
+                let sourceMaxHp = fightProcess.sourceHpBefore
+                let sourceAfterHp = fightProcess.sourceHpAfter
+                console.log("--------", sourceMaxHp, sourceAfterHp)
+                if (sourceCamp == 'A') {
+                    let character_0 = this.L1.filter(x => x.goIntoNum - 1 == sourcePosition)[0];
+                    this.Character.children[0].setPosition(-180, 0, 0)
+                    let scaleNew = new Vec3(Math.abs(this.Character.children[0].scale.x) * -1, this.Character.children[0].scale.y, this.Character.children[0].scale.z)
+                    const meta2 = CharacterEnum[character_0.id]
+                    this.Character.children[0].scale = new Vec3(0, 0, 0)
+                    this.Character.children[0].getComponent(Sprite).spriteFrame = await util.bundle.load(meta2.AvatarPath, SpriteFrame)
+                    // tween(this.Character.children[0])
+                    //     .to(1, { scale: scaleNew }, { easing: 'elasticOut' })
+                    //     .start();
+                    // 更新生命值
+                    this.Hp.children[0].getChildByName("Bar").setScale(
+                        sourceAfterHp / sourceMaxHp,
+                        1,
+                        1
+                    )
+                    this.Hp.children[0].getChildByName("user_li_count").getComponent(Label).string = sourceAfterHp + "/" + sourceMaxHp
+                    const hurtPromise = this.tweenToPromise(this.Character.children[0], 1, { scale: scaleNew }, { easing: 'elasticOut' });
+                    this.actionAwaitQueue.push(hurtPromise)
+                    // this.Character.children[1].setPosition(180, 0, 0)
+                } else {
+                    let character_0 = this.R1.filter(x => x.goIntoNum - 1 == sourcePosition)[0];
+                    this.Character.children[1].setPosition(180, 0, 0)
+                    let scaleNew = new Vec3(this.Character.children[1].scale.x, this.Character.children[1].scale.y, this.Character.children[1].scale.z)
+                    const meta2 = CharacterEnum[character_0.id]
+                    this.Character.children[1].scale = new Vec3(0, 0, 0)
+                    this.Character.children[1].getComponent(Sprite).spriteFrame = await util.bundle.load(meta2.AvatarPath, SpriteFrame)
+                    // tween(this.Character.children[1])
+                    //     .to(1, { scale: scaleNew }, { easing: 'elasticOut' })
+                    //     .start();
+                    // 更新生命值
+                    this.Hp.children[1].getChildByName("Bar").setScale(
+                        sourceAfterHp / sourceMaxHp,
+                        1,
+                        1
+                    )
+                    this.Hp.children[1].getChildByName("user_li_count").getComponent(Label).string = sourceAfterHp + "/" + sourceMaxHp
+                    const hurtPromise = this.tweenToPromise(this.Character.children[1], 1, { scale: scaleNew }, { easing: 'elasticOut' });
+                    this.actionAwaitQueue.push(hurtPromise)
+                }
+                // await new Promise(res => setTimeout(res, 1000 / this.timeScale))
+
+            } else if (eventType == "POISON") {
+                // 等待行动队列清空
+                await Promise.all(this.actionAwaitQueue)
+                this.actionAwaitQueue = []
+                // AudioMgr.inst.playOneShot("sound/fight/skill/POISON");
+                let extraDesc = fightProcess.extraDesc
+                let eventData = this.parseEventString(extraDesc)
+                let characters = this.parseCharacterString(fieldUnitsStatus)
+                let damages = this.parseStrToArr(extraDesc)
+                let charactersA = characters.A
+                let charactersB = characters.B
+                for (var j = 0; j < 5; j++) {
+                    let eventSelectSkeleton1 = this.tiem.children[0].children[j].getChildByName("buff").getChildByName("POISON")
+                    let eventSelectSkeleton2 = this.tiem.children[1].children[j].getChildByName("buff").getChildByName("POISON")
+                    let charA = eventData.units.filter(item => (item.position == j + 1) && item.side == 'A')
+                    if (charA && charA.length > 0) {
+                        let selectSkeleton2 = this.tiem.children[0].children[j].getChildByName("buff").getChildByName("POISON2").getComponent(sp.Skeleton)
+                        selectSkeleton2.node.active = true
+                        selectSkeleton2.setAnimation(0, "animation", false)
+                        //console.log(damages, 33)
+                        let damage = "中毒伤害"
+                        await this.showString(1, this.tiem.children[0].children[j], new math.Color(255, 0, 0), damage)
+                        //伤害计算
+                        this.tiem.children[0].children[j].getChildByName("my_hp").getChildByName("Bar").setScale(
+                            charA[0].hp.after / charA[0].hp.before,
+                            1,
+                            1
+                        )
+                        this.tiem.children[0].children[j].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = charA[0].hp.after + "/" + charA[0].hp.before
+                        // selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
+                        const hurtPromise = this.playAnimation(selectSkeleton2)
+                        this.actionAwaitQueue.push(hurtPromise)
+                    } else {
+                        eventSelectSkeleton1.active = false
+                        if (j == charactersA.position) {
+                            let selectSkeleton = this.Character.children[0].getChildByName("POISON")
+                            selectSkeleton.active = false
+                        }
+                    }
+                    let charB = eventData.units.filter(item => (item.position == j + 1) && item.side == 'B')
+                    if (charB && charB.length > 0) {
+                        //伤害计算
+                        let selectSkeleton2 = this.tiem.children[1].children[j].getChildByName("buff").getChildByName("POISON2").getComponent(sp.Skeleton)
+                        selectSkeleton2.node.active = true
+                        selectSkeleton2.setAnimation(0, "animation", false)
+                        let damage = "中毒伤害"
+                        await this.showString(1, this.tiem.children[1].children[j], new math.Color(255, 0, 0), damage)
+                        this.tiem.children[1].children[j].getChildByName("my_hp").getChildByName("Bar").setScale(
+                            charB[0].hp.after / charB[0].hp.before,
+                            1,
+                            1
+                        )
+                        this.tiem.children[1].children[j].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = charB[0].hp.after + "/" + charB[0].hp.before
+                        // selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
+                        const hurtPromise = this.playAnimation(selectSkeleton2)
+                        this.actionAwaitQueue.push(hurtPromise)
+                    } else {
+                        eventSelectSkeleton2.active = false
+                        if (j == charactersB.position) {
+                            let selectSkeleton = this.Character.children[1].getChildByName("POISON")
+                            selectSkeleton.active = false
+                        }
+                    }
+                }
+                // await new Promise(res => setTimeout(res, 1000 / this.timeScale))
+            } else if (eventType == "NORMAL_ATTACK") {
+                // 等待行动队列清空
+                await Promise.all(this.actionAwaitQueue)
+                this.actionAwaitQueue = []
+                let sourceCamp = fightProcess.sourceCamp
+                let targetPosition = fightProcess.targetPosition - 1
+                let targetHpBefore = fightProcess.targetHpBefore
+                let targetHpAfter = fightProcess.targetHpAfter
+                let attack = fightProcess.value
+                var direction = 1
+                var directionFace = 0
+                var falg = 1
+                if (sourceCamp == "A") {
+                    direction = 0
+                    directionFace = 1
+                    falg = -1
+                }
+                await util.sundry.moveNodeToPosition(
+
+                    this.Character.children[direction],
+                    {
+                        targetPosition: { x: -90 * falg, y: 0 },
+                        moveCurve: true,
+                        moveTimeScale: this.timeScale
+                    }
+                )
+                AudioMgr.inst.playOneShot("sound/fight/attack/attack");
+                let hut = this.Character.children[directionFace].getChildByName("hut").getComponent(sp.Skeleton)
+                hut.node.active = true
+                hut.setAnimation(0, "animation", false)
+                //伤害结算
+                this.showNumber(-falg, this.Character.children[directionFace], -attack, new math.Color(255, 176, 126, 255), 40)
+                this.Hp.children[directionFace].getChildByName("Bar").setScale(
+                    targetHpAfter / targetHpBefore,
+                    1,
+                    1
+                )
+                this.Hp.children[directionFace].getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
+
+                // 更新场下生命值
+                this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("Bar").setScale(
+                    targetHpAfter / targetHpBefore,
+                    1,
+                    1
+                )
+                this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
+                // hut.setCompleteListener(() => hut.node.active = false)
+                const hurtPromise = this.playAnimation(hut)
+                this.actionAwaitQueue.push(hurtPromise)
+                //回到初始位置
+                await util.sundry.moveNodeToPosition(
+                    this.Character.children[direction],
+                    {
+                        targetPosition: { x: 180 * falg, y: 0 },
+                        moveCurve: true,
+                        moveTimeScale: this.timeScale
+                    }
+                )
+                // await new Promise(res => setTimeout(res, 200 / this.timeScale))
+            } else if (eventType == "UNIT_DEATH") {
+                // 等待行动队列清空
+                await Promise.all(this.actionAwaitQueue)
+                this.actionAwaitQueue = []
+                let extraDesc = fightProcess.extraDesc
+                let eventData = this.parseEventString(extraDesc)
+                for (const event of eventData.units) {
+                    if (event.side == "A") {
+                        this.tiem.children[0].children[event.position - 1].getChildByName("dead").active = true
+                        //死亡移除所有动画
+                        this.tiem.children[0].children[event.position - 1].getChildByName("buff").children.forEach(buffNode => { buffNode.active = false; });
+                    } else {
+                        this.tiem.children[1].children[event.position - 1].getChildByName("dead").active = true
+                        //死亡移除所有动画
+                        this.tiem.children[1].children[event.position - 1].getChildByName("buff").children.forEach(buffNode => { buffNode.active = false; });
+                    }
+                }
+                let characters = this.parseCharacterString(fieldUnitsStatus)
+                let charactersA = characters.A
+                if (charactersA.HP[0] <= 0) {
+                    this.Character.children[0].getComponent(Sprite).spriteFrame = null
+                    this.tiem.children[0].children[charactersA.position].getChildByName("dead").active = true
+                    //死亡移除所有动画
+                    this.Character.children[0].children.forEach(buffNode => { buffNode.active = false; });
+                    this.tiem.children[0].children[charactersA.position].getChildByName("buff").children.forEach(buffNode => { buffNode.active = false; });
+                }
+                let charactersB = characters.B
+                if (charactersB.HP[0] <= 0) {
+                    this.Character.children[1].getComponent(Sprite).spriteFrame = null
+                    this.tiem.children[1].children[charactersB.position].getChildByName("dead").active = true
+                    //死亡移除所有动画
+                    this.Character.children[1].children.forEach(buffNode => { buffNode.active = false; });
+                    this.tiem.children[1].children[charactersB.position].getChildByName("buff").children.forEach(buffNode => { buffNode.active = false; });
+                }
+                // await new Promise(res => setTimeout(res, 200 / this.timeScale))
+            } else if (eventType == "BATTLE_END") {
+                break;
+            } else if (eventType == "BUFF_END") {
+                // 等待行动队列清空
+                await Promise.all(this.actionAwaitQueue)
+                this.actionAwaitQueue = []
+                let sourcePosition = fightProcess.sourcePosition - 1
+                let targetPosition = fightProcess.targetPosition - 1
+                const guardianList = this.parseGuardianEffects(fightProcess.fieldUnitsStatus); // 解析后的对象数组
+                guardianList.forEach((guardian, index) => {
+                    //console.log(`【第${this.currentRound + 1}回合】`);
+                    //console.log(`【第${index + 1}个角色】`);
+                    //console.log(`阵营：${guardian.camp}，名称：${guardian.name}，位置：${guardian.position}`);
+                    // 可选：打印该角色的所有效果（前3个示例，避免输出过长）
+                    //console.log(`效果示例：${guardian.effects.slice(0, 3).map(e => `${e.type}=${e.value}`).join(', ')}...`);
+                    //console.log("------------------------");
+                    // console.log(guardian.camp,333)
+                    if (guardian.camp == "A") {
+                        guardian.effects.forEach((e, index) => {
+                            //console.log(e.type)
+                            if (e.value == 0 && (e.type == 'STUN' || e.type == 'SILENCE')) {
+                                let eventSelectSkeleton = this.tiem.children[0].children[guardian.position - 1].getChildByName("buff").getChildByName(e.type)
+                                eventSelectSkeleton.active = false
+                                let selectSkeleton = this.tiem.children[0].children[guardian.position - 1].getChildByName("buff").getChildByName(e.type).getComponent(sp.Skeleton)
+                                selectSkeleton.active = false
+                                if (sourcePosition == guardian.position - 1) {
+                                    let selectSkeletonON = this.Character.children[0].getChildByName(e.type)
+                                    selectSkeletonON.active = false
+                                    let selectSkeletonON2 = this.Character.children[0].getChildByName(e.type).getComponent(sp.Skeleton)
+                                    selectSkeletonON2.active = false
+                                }
+                            }
+                        })
+                    } else {
+                        guardian.effects.forEach((e, index) => {
+                            //console.log(e.type)
+                            if (e.value == 0 && (e.type == 'STUN' || e.type == 'SILENCE')) {
+                                let eventSelectSkeleton = this.tiem.children[1].children[guardian.position - 1].getChildByName("buff").getChildByName(e.type)
+                                eventSelectSkeleton.active = false
+                                let selectSkeleton = this.tiem.children[1].children[guardian.position - 1].getChildByName("buff").getChildByName(e.type).getComponent(sp.Skeleton)
+                                selectSkeleton.active = false
+
+                                if (targetPosition == guardian.position - 1) {
+                                    let selectSkeletonON = this.Character.children[1].getChildByName(e.type)
+                                    selectSkeletonON.active = false
+                                    let selectSkeletonON2 = this.Character.children[1].getChildByName(e.type).getComponent(sp.Skeleton)
+                                    selectSkeletonON2.active = false
+                                }
+                            }
+                        })
+                    }
+                });
+                // await new Promise(res => setTimeout(res, 1000 / this.timeScale))
+            } else {
+                // 等待行动队列清空
+                await Promise.all(this.actionAwaitQueue)
+                this.actionAwaitQueue = []
+                let characters = this.parseCharacterString(fieldUnitsStatus)
+                let charactersA = characters.A
+                let charactersB = characters.B
+                let sourceMaxHp = fightProcess.sourceHpBefore
+                let sourceAfterHp = fightProcess.sourceHpAfter
+                let sourceCamp = fightProcess.sourceCamp
+                let aoe = fightProcess.aoe
+                let sourcePosition = fightProcess.sourcePosition - 1
+                let targetCamp = fightProcess.targetCamp
+                let effectType = fightProcess.effectType
+                let targetHpBefore = fightProcess.targetHpBefore
+                let targetPosition = fightProcess.targetPosition - 1
+                let targetHpAfter = fightProcess.targetHpAfter
+                let extraDesc = fightProcess.extraDesc
+                let value = fightProcess.value
+                let targetMaxHp = charactersB.HP[1]
+                let targetAfterHp = charactersB.HP[0]
+                let isGoON = false;
+                let targetIsGoON = false;
+                let direction = 0
+                let targetDirection = 1
+                var falg = -1
+                if (sourceCamp == "B") {
+                    direction = 1
+                    falg = 1
+                    if (charactersB.position == sourcePosition) {
+                        isGoON = true;
+                    }
+                } else {
+                    if (charactersA.position == sourcePosition) {
+                        isGoON = true;
+                    }
+                }
+
+                if (targetCamp == "A") {
+                    targetMaxHp = charactersA.HP[1]
+                    targetAfterHp = charactersA.HP[0]
+                    targetDirection = 0
+                    if (charactersA.position == targetPosition) {
+                        targetIsGoON = true;
+                    }
+                } else {
+                    targetMaxHp = charactersB.HP[1]
+                    targetAfterHp = charactersB.HP[0]
+                    targetDirection = 1
+                    if (charactersB.position == targetPosition) {
+                        targetIsGoON = true;
+                    }
+                }
+                //判断技能是否场上释放还是场下释放
+                if (isGoON) {
+                    // await this.showString(falg, this.Character.children[direction], new math.Color(236, 163, 61, 255), eventType)
+                    this.skillName.children[direction].active = true
+                    this.skillName.children[direction].getChildByName("Label").getComponent(Label).string = eventType
+                    await new Promise(res => setTimeout(res, 800 / this.timeScale))
+                    if (effectType == "MAX_HP_DOWN" || effectType == "FIRE_DAMAGE" || effectType == "HEAL_DOWN" || effectType == "POISON" || effectType == "SILENCE" || effectType == 'MISSILE_DAMAGE' || effectType == 'STUN' || effectType == 'HEAL' || effectType == 'HP_UP') {
+                        // if (this.Character.children[targetDirection].getComponent(Sprite).spriteFrame) {
+
+                        // }
+                        AudioMgr.inst.playOneShot("sound/fight/skill/" + effectType);
+                        //判断技能是否是aoe
+                        if (aoe == '1') {
+                            let eventData = this.parseEventString(extraDesc)
+                            let skeletons: sp.Skeleton[] = []
+                            for (const event of eventData.units) {
+                                if ((event.position == charactersA.position + 1) && event.side == 'A') {
+                                    let selectSkeleton = this.Character.children[0].getChildByName(effectType).getComponent(sp.Skeleton)
+                                    skeletons.push(selectSkeleton)
+                                }
+                                if ((event.position == charactersB.position + 1) && event.side == 'B') {
+                                    let selectSkeleton = this.Character.children[1].getChildByName(effectType).getComponent(sp.Skeleton)
+                                    skeletons.push(selectSkeleton)
+                                }
+                                var dir = 0
+                                if (event.side == "B") {
+                                    dir = 1
+                                }
+                                let eventSelectSkeleton = this.tiem.children[dir].children[event.position - 1].getChildByName("buff").getChildByName(effectType).getComponent(sp.Skeleton)
+                                skeletons.push(eventSelectSkeleton)
+                            }
+                            skeletons.forEach(skeleton => {
+                                skeleton.node.active = true
+                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
+                                    skeleton.setAnimation(0, "animation", true);
+                                } else {
+                                    skeleton.setAnimation(0, "animation", false);
+                                    // skeleton.setCompleteListener(() => skeleton.node.active = false)
+                                    const hurtPromise = this.playAnimation(skeleton)
+                                    this.actionAwaitQueue.push(hurtPromise)
+                                }
+                            });
+                            for (const event of eventData.units) {
+                                if ((event.position == charactersA.position + 1) && event.side == 'A') {
+                                    //                 //伤害结算
+                                    //伤害掉血动画
+                                    if (effectType == 'POISON') {
+                                        //中毒无动画
+                                    } else if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                        this.showNumber(-1, this.Character.children[0], +value, new math.Color(82, 201, 25, 255), 40)
+                                    } else {
+                                        this.showNumber(-1, this.Character.children[0], -value, new math.Color(255, 176, 126, 255), 40)
+                                    }
+                                    //                 // 更新场上生命值
+                                    this.Hp.children[0].getChildByName("Bar").setScale(
+                                        event.hp.after / event.hp.before,
+                                        1,
+                                        1
+                                    )
+                                    this.Hp.children[0].getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
+                                }
+                                if ((event.position == charactersB.position + 1) && event.side == 'B') {
+                                    //伤害掉血动画
+                                    //                 //伤害结算
+                                    if (effectType == 'POISON') {
+                                        //中毒无动画
+                                    } else if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                        this.showNumber(1, this.Character.children[1], +value, new math.Color(82, 201, 25, 255), 40)
+                                    } else {
+                                        this.showNumber(1, this.Character.children[1], -value, new math.Color(255, 176, 126, 255), 40)
+                                    }
+                                    //                 // 更新场上生命值
+                                    this.Hp.children[1].getChildByName("Bar").setScale(
+                                        event.hp.after / event.hp.before,
+                                        1,
+                                        1
+                                    )
+                                    this.Hp.children[1].getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
+                                }
+                                var dir = 0
+                                if (event.side == "B") {
+                                    dir = 1
+                                }
+                                //伤害动画
+                                if (effectType == 'STUN') {
+
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), "眩晕")
+
+                                } else if (effectType == 'POISON') {
+
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), "中毒")
+
+                                } else if (effectType == 'MAX_HP_DOWN') {
+                                    let result = "生命上限 -" + value;
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), result)
+
+                                } else if (effectType == 'HP_UP') {
+                                    let index = extraDesc.indexOf("，"); // 找到第一个空格的位置
+                                    let result = extraDesc.substring(index + 1); // 截取第一个空格后面的所有字符
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(0, 255, 0), result)
+
+                                } else if (effectType == 'HEAL') {
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(0, 255, 0), "+" + value)
+
+                                } else {
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), "-" + value)
+                                }
+                                // 更新场下生命值
+                                this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("Bar").setScale(
+                                    event.hp.after / event.hp.before,
+                                    1,
+                                    1
+                                )
+                                this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
+                            }
+                        } else {
+                            if (targetIsGoON) {
+                                let selectSkeleton = this.Character.children[targetDirection].getChildByName(effectType).getComponent(sp.Skeleton)
+                                selectSkeleton.node.active = true
+                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
+                                    selectSkeleton.setAnimation(0, "animation", true)
+                                } else {
+                                    selectSkeleton.setAnimation(0, "animation", false)
+                                }
+
+                                //伤害掉血动画
+
+                                if (effectType == 'SILENCE_IMMUNE' || effectType == "POISON" || effectType == "HEAL_DOWN" || effectType == "STUN") {
+
+                                } else if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                    this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], +value, new math.Color(82, 201, 25, 255), 40)
+                                } else {
+                                    this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
+                                }
+                                await new Promise(res => setTimeout(res, 500 / this.timeScale))
+                                //                 // 更新场上生命值
+                                this.Hp.children[targetDirection].getChildByName("Bar").setScale(
+                                    targetAfterHp / targetMaxHp,
+                                    1,
+                                    1
+                                )
+                                this.Hp.children[targetDirection].getChildByName("user_li_count").getComponent(Label).string = targetAfterHp + "/" + targetMaxHp
+                                if (effectType != "POISON" && effectType != "SILENCE" && effectType != "HEAL_DOWN" && effectType != "STUN") {
+                                    // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                    const hurtPromise = this.playAnimation(selectSkeleton)
+                                    this.actionAwaitQueue.push(hurtPromise)
+                                }
+                            }
+                            let eventSelectSkeleton = this.tiem.children[targetDirection].children[targetPosition].getChildByName("buff").getChildByName(effectType).getComponent(sp.Skeleton)
+                            eventSelectSkeleton.node.active = true
+                            if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
+                                eventSelectSkeleton.setAnimation(0, "animation", true)
+                            } else {
+                                eventSelectSkeleton.setAnimation(0, "animation", false)
+                            }
+                            //伤害动画
+                            if (effectType == 'POISON') {
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "中毒")
+                            } else if (effectType == 'MAX_HP_DOWN') {
+                                let result = "生命上限 -" + value;
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), result)
+                            } else if (effectType == 'HP_UP') {
+                                let index = extraDesc.indexOf("，"); // 找到第一个空格的位置
+                                let result = extraDesc.substring(index + 1); // 截取第一个空格后面的所有字符
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
+                            } else if (effectType == 'HEAL') {
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), "+" + value)
+                            } else {
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "-" + value)
+                            }
+                            // 更新场下生命值
+                            this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("Bar").setScale(
+                                targetHpAfter / targetHpBefore,
+                                1,
+                                1
+                            )
+                            this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
+                            if (effectType != "POISON" && effectType != "SILENCE" && effectType != "HEAL_DOWN" && effectType != "STUN") {
+                                // eventSelectSkeleton.setCompleteListener(() => eventSelectSkeleton.node.active = false)
+                                const hurtPromise = this.playAnimation(eventSelectSkeleton)
+                                this.actionAwaitQueue.push(hurtPromise)
+                            }
+                        }
+                    } else {
+                        //判断技能是否是aoe
+                        if (aoe == '1') {
+                            let eventData = this.parseEventString(extraDesc)
+                            for (const event of eventData.units) {
+                                if ((event.position == charactersA.position + 1) && event.side == 'A') {
+                                    //                 //伤害结算
+                                    //伤害掉血动画
+                                    if (effectType == 'HEAL' || effectType == 'HP_UP' || effectType == 'DRAIN') {
+                                        this.showNumber(-1, this.Character.children[0], +value, new math.Color(82, 201, 25, 255), 40)
+                                    } else if (effectType == 'MAX_HP_DOWN' || effectType == 'DAMAGE' || effectType == 'TRUE_DAMAGE' || effectType == 'FIRE_DAMAGE' || effectType == 'MISSILE_DAMAGE') {
+                                        this.showNumber(-1, this.Character.children[0], -value, new math.Color(255, 176, 126, 255), 40)
+                                    }
+
+                                    //                 // 更新场上生命值
+                                    this.Hp.children[0].getChildByName("Bar").setScale(
+                                        event.hp.after / event.hp.before,
+                                        1,
+                                        1
+                                    )
+                                    this.Hp.children[0].getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
+                                }
+                                if ((event.position == charactersB.position + 1) && event.side == 'B') {
+                                    //伤害掉血动画
+                                    //                 //伤害结算
+                                    if (effectType == 'HEAL' || effectType == 'HP_UP' || effectType == 'DRAIN') {
+                                        this.showNumber(1, this.Character.children[1], +value, new math.Color(82, 201, 25, 255), 40)
+                                    } else if (effectType == 'HEMAX_HP_DOWNAL' || effectType == 'DAMAGE' || effectType == 'TRUE_DAMAGE' || effectType == 'FIRE_DAMAGE' || effectType == 'MISSILE_DAMAGE') {
+                                        this.showNumber(1, this.Character.children[1], -value, new math.Color(255, 176, 126, 255), 40)
+                                    }
+                                    //                 // 更新场上生命值
+                                    this.Hp.children[1].getChildByName("Bar").setScale(
+                                        event.hp.after / event.hp.before,
+                                        1,
+                                        1
+                                    )
+                                    this.Hp.children[1].getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
+                                }
+                                var dir = 0
+                                if (event.side == "B") {
+                                    dir = 1
+                                }
+                                //伤害动画
+                                if (effectType == 'SPEED_UP') {
+                                    let result = "速度 +" + value;
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(0, 255, 0), result)
+                                } else if (effectType == 'MAX_HP_DOWN') {
+                                    let result = "生命上限 -" + value;
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), result)
+                                } else if (effectType == 'HP_UP') {
+                                    let index = extraDesc.indexOf("，"); // 找到第一个空格的位置
+                                    let result = extraDesc.substring(index + 1); // 截取第一个空格后面的所有字符
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(0, 255, 0), result)
+                                } else if (effectType == 'HEAL') {
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(0, 255, 0), "+" + value)
+
+                                } else {
+                                    await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), "-" + value)
+                                }
+                                // 更新场下生命值
+                                this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("Bar").setScale(
+                                    event.hp.after / event.hp.before,
+                                    1,
+                                    1
+                                )
+                                this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
+                            }
+                        } else {
+
+                            if (targetIsGoON) {
+
+                                //伤害掉血动画
+                                if (eventType == "定海神针") {
+                                    AudioMgr.inst.playOneShot("sound/fight/skill/DHSZ3");
+                                    let selectSkeleton = this.Character.children[targetDirection].getChildByName("DHSZ").getComponent(sp.Skeleton)
+                                    selectSkeleton.node.active = true
+                                    selectSkeleton.setAnimation(0, "animation", false)
+                                    selectSkeleton.setCompleteListener(() => {
+                                        selectSkeleton.node.active = false
+                                        AudioMgr.inst.playOneShot("sound/fight/skill/DHSZ");
+                                        let selectSkeleton2 = this.Character.children[targetDirection].getChildByName("DHSZ2").getComponent(sp.Skeleton)
+                                        selectSkeleton2.node.active = true
+                                        this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
+                                        selectSkeleton2.setAnimation(0, "animation", false)
+                                        selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
+                                    })
+                                    // await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                                } else if (eventType == "北极剑意") {
+                                    AudioMgr.inst.playOneShot("sound/fight/skill/DHSZ3");
+                                    let selectSkeleton = this.Character.children[targetDirection].getChildByName("DHSZ").getComponent(sp.Skeleton)
+                                    selectSkeleton.node.active = true
+                                    selectSkeleton.setAnimation(0, "animation", false)
+                                    selectSkeleton.setCompleteListener(() => {
+                                        selectSkeleton.node.active = false
+                                        AudioMgr.inst.playOneShot("sound/fight/skill/DHSZ");
+                                        let selectSkeleton2 = this.Character.children[targetDirection].getChildByName("DHSZ2").getComponent(sp.Skeleton)
+                                        selectSkeleton2.node.active = true
+                                        this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
+                                        selectSkeleton2.setAnimation(0, "animation", false)
+                                        selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
+                                    })
+                                    // await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                                } else
+                                    //伤害掉血动画
+                                    if (eventType == "绝地反击") {
+                                        AudioMgr.inst.playOneShot("sound/fight/skill/JDFJ");
+                                        let sourceCamp = fightProcess.sourceCamp
+                                        let targetPosition = fightProcess.targetPosition - 1
+                                        let targetHpBefore = fightProcess.targetHpBefore
+                                        let targetHpAfter = fightProcess.targetHpAfter
+                                        let attack = fightProcess.value
+                                        var directionFace = 0
+                                        var falg = 1
+                                        if (sourceCamp == "A") {
+                                            direction = 0
+                                            directionFace = 1
+                                            falg = -1
+                                        }
+                                        await util.sundry.moveNodeToPosition(
+
+                                            this.Character.children[direction],
+                                            {
+                                                targetPosition: { x: -90 * falg, y: 0 },
+                                                moveCurve: true,
+                                                moveTimeScale: this.timeScale
+                                            }
+                                        )
+                                        AudioMgr.inst.playOneShot("sound/fight/attack/attack");
+                                        let hut = this.Character.children[directionFace].getChildByName("hut").getComponent(sp.Skeleton)
+                                        hut.node.active = true
+                                        hut.setAnimation(0, "animation", false)
+                                        //伤害结算
+                                        this.showNumber(-falg, this.Character.children[directionFace], -attack, new math.Color(255, 176, 126, 255), 40)
+                                        this.Hp.children[directionFace].getChildByName("Bar").setScale(
+                                            targetHpAfter / targetHpBefore,
+                                            1,
+                                            1
+                                        )
+                                        this.Hp.children[directionFace].getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
+
+                                        // 更新场下生命值
+                                        this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("Bar").setScale(
+                                            targetHpAfter / targetHpBefore,
+                                            1,
+                                            1
+                                        )
+                                        this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
+                                        // hut.setCompleteListener(() => hut.node.active = false)
+                                        const hurtPromise = this.playAnimation(hut)
+                                        this.actionAwaitQueue.push(hurtPromise)
+                                        //回到初始位置
+                                        await util.sundry.moveNodeToPosition(
+                                            this.Character.children[direction],
+                                            {
+                                                targetPosition: { x: 180 * falg, y: 0 },
+                                                moveCurve: true,
+                                                moveTimeScale: this.timeScale
+                                            }
+                                        )
+                                    } else
+                                        //伤害掉血动画
+                                        if (eventType == "新月反击") {
+                                            AudioMgr.inst.playOneShot("sound/fight/skill/chuanyun_grial");
+                                            let sourceCamp = fightProcess.sourceCamp
+                                            let targetPosition = fightProcess.targetPosition - 1
+                                            let targetHpBefore = fightProcess.targetHpBefore
+                                            let targetHpAfter = fightProcess.targetHpAfter
+                                            let attack = fightProcess.value
+                                            var directionFace = 0
+                                            var falg = 1
+                                            if (sourceCamp == "A") {
+                                                direction = 0
+                                                directionFace = 1
+                                                falg = -1
+                                            }
+                                            await util.sundry.moveNodeToPosition(
+
+                                                this.Character.children[direction],
+                                                {
+                                                    targetPosition: { x: -90 * falg, y: 0 },
+                                                    moveCurve: true,
+                                                    moveTimeScale: this.timeScale
+                                                }
+                                            )
+                                            AudioMgr.inst.playOneShot("sound/fight/attack/attack");
+                                            let hut = this.Character.children[directionFace].getChildByName("hut").getComponent(sp.Skeleton)
+                                            hut.node.active = true
+                                            hut.setAnimation(0, "animation", false)
+                                            //伤害结算
+                                            this.showNumber(-falg, this.Character.children[directionFace], -attack, new math.Color(255, 176, 126, 255), 40)
+                                            this.Hp.children[directionFace].getChildByName("Bar").setScale(
+                                                targetHpAfter / targetHpBefore,
+                                                1,
+                                                1
+                                            )
+                                            this.Hp.children[directionFace].getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
+
+                                            // 更新场下生命值
+                                            this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("Bar").setScale(
+                                                targetHpAfter / targetHpBefore,
+                                                1,
+                                                1
+                                            )
+                                            this.tiem.children[directionFace].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
+                                            // hut.setCompleteListener(() => hut.node.active = false)
+                                            const hurtPromise = this.playAnimation(hut)
+                                            this.actionAwaitQueue.push(hurtPromise)
+                                            //回到初始位置
+                                            await util.sundry.moveNodeToPosition(
+                                                this.Character.children[direction],
+                                                {
+                                                    targetPosition: { x: 180 * falg, y: 0 },
+                                                    moveCurve: true,
+                                                    moveTimeScale: this.timeScale
+                                                }
+                                            )
+                                        } else if (eventType.includes("白天君蓄力")) {
+                                            let selectSkeleton
+                                            AudioMgr.inst.playOneShot("sound/fight/skill/XULI");
+                                            if (eventType == "白天君蓄力·一") {
+                                                this.Character.children[targetDirection].getChildByName("xuli1").active = true
+                                                this.Character.children[targetDirection].getChildByName("xuli2").active = false
+                                                this.Character.children[targetDirection].getChildByName("xuli3").active = false
+                                                selectSkeleton = this.Character.children[targetDirection].getChildByName("xuli1").getComponent(sp.Skeleton)
+                                            } else if (eventType == "白天君蓄力·二") {
+                                                this.Character.children[targetDirection].getChildByName("xuli1").active = false
+                                                this.Character.children[targetDirection].getChildByName("xuli2").active = true
+                                                this.Character.children[targetDirection].getChildByName("xuli3").active = false
+                                                selectSkeleton = this.Character.children[targetDirection].getChildByName("xuli2").getComponent(sp.Skeleton)
+                                            } else if (eventType == "白天君蓄力·三") {
+                                                this.Character.children[targetDirection].getChildByName("xuli1").active = false
+                                                this.Character.children[targetDirection].getChildByName("xuli2").active = false
+                                                this.Character.children[targetDirection].getChildByName("xuli3").active = true
+                                                selectSkeleton = this.Character.children[targetDirection].getChildByName("xuli3").getComponent(sp.Skeleton)
+                                            }
+                                            selectSkeleton.node.active = true
+                                            selectSkeleton.setAnimation(0, "animation", true)
+                                            // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                            // await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                                        } else if (eventType == "三火齐飞") {
+                                            this.Character.children[targetDirection].getChildByName("xuli1").active = false
+                                            this.Character.children[targetDirection].getChildByName("xuli2").active = false
+                                            this.Character.children[targetDirection].getChildByName("xuli3").active = false
+                                        } else if (eventType == "大地净化") {
+                                            AudioMgr.inst.playOneShot("sound/fight/skill/HOU_JH");
+                                            let selectSkeleton = this.Character.children[targetDirection].getChildByName("HOU_JH").getComponent(sp.Skeleton)
+                                            selectSkeleton.node.active = true
+                                            selectSkeleton.setAnimation(0, "animation", false)
+                                            // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                            const hurtPromise = this.playAnimation(selectSkeleton)
+                                            this.actionAwaitQueue.push(hurtPromise)
+                                            // await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                                        } else if (eventType == "满目桃花") {
+                                            AudioMgr.inst.playOneShot("sound/fight/skill/manmutaohua");
+                                            let selectSkeleton = this.Character.children[targetDirection].getChildByName("manmutaohua").getComponent(sp.Skeleton)
+                                            selectSkeleton.node.active = true
+                                            selectSkeleton.setAnimation(0, "animation", false)
+                                            // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                            const hurtPromise = this.playAnimation(selectSkeleton)
+                                            this.actionAwaitQueue.push(hurtPromise)
+                                            // await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                                        } else if (effectType == 'HEAL' || effectType == 'HP_UP' || effectType == 'SPEED_UP'
+                                            || effectType == 'ATTACK_UP' || effectType == 'BLOODTHIRST' || effectType == 'FIRE_BOOST'
+                                            || effectType == 'HEAL_BOOST' || effectType == 'HEAL_BOOST' || effectType == 'POISON_BOOST'
+                                            || effectType == 'MISSILE_BOOST') {
+                                            AudioMgr.inst.playOneShot("sound/fight/skill/HP_UP");
+                                            this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], +value, new math.Color(82, 201, 25, 255), 40)
+                                        } else {
+                                            this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
+                                        }
+
+
+                                //                 // 更新场上生命值
+                                this.Hp.children[targetDirection].getChildByName("Bar").setScale(
+                                    targetAfterHp / targetMaxHp,
+                                    1,
+                                    1
+                                )
+                                this.Hp.children[targetDirection].getChildByName("user_li_count").getComponent(Label).string = targetAfterHp + "/" + targetMaxHp
+                            }
+
+                            //伤害动画
+                            //伤害掉血动画
+                            if (eventType == "毒伤迸发") {
+                                AudioMgr.inst.playOneShot("sound/fight/skill/1004");
+                                let hut = this.Character.children[directionFace].getChildByName("hut").getComponent(sp.Skeleton)
+                                hut.node.active = true
+                                hut.setAnimation(0, "animation", false)
+                                hut.setCompleteListener(() => { hut.node.active = false })
+                            } else if (eventType == "穿云斩" || eventType == "穿云剑") {
+                                AudioMgr.inst.playOneShot("sound/fight/skill/chuanyun_grial");
+                                let selectSkeleton = this.Character.children[direction].getChildByName("chuanyun").getComponent(sp.Skeleton)
+                                selectSkeleton.node.active = true
+                                selectSkeleton.setAnimation(0, "animation", false)
+                                selectSkeleton.setCompleteListener(async () => {
+                                    selectSkeleton.node.active = false
+                                    AudioMgr.inst.playOneShot("sound/fight/skill/1004");
+                                    let selectSkeleton2 = this.tiem.children[targetDirection].children[targetPosition].getChildByName("buff").getChildByName("chuanyun").getComponent(sp.Skeleton)
+                                    selectSkeleton2.node.active = true
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "-" + value)
+                                    selectSkeleton2.setAnimation(0, "animation", false)
+                                    selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
+                                })
+                                // await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                            } else if (eventType == "穿云长枪" || eventType == "圣灵斩") {
+                                AudioMgr.inst.playOneShot("sound/fight/skill/chuanyun_man");
+                                let selectSkeleton = this.Character.children[direction].getChildByName("chuanyun").getComponent(sp.Skeleton)
+                                selectSkeleton.node.active = true
+                                selectSkeleton.setAnimation(0, "animation", false)
+                                selectSkeleton.setCompleteListener(async () => {
+                                    selectSkeleton.node.active = false
+                                    AudioMgr.inst.playOneShot("sound/fight/skill/1004");
+                                    let selectSkeleton2 = this.tiem.children[targetDirection].children[targetPosition].getChildByName("buff").getChildByName("chuanyun").getComponent(sp.Skeleton)
+                                    selectSkeleton2.node.active = true
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "-" + value)
+                                    selectSkeleton2.setAnimation(0, "animation", false)
+                                    selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
+                                })
+                                // await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                            } else if (eventType == "大地净化") {
+                                let result = "驱散"
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
+                            } else if (eventType == "莲花圣体") {
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), extraDesc)
+                            } else if (eventType == "水漫金山") {
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), extraDesc)
+                            } else if (eventType == "满目桃花") {
+                                let result = "攻击降低50%，速度增加50%"
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
+                            } else if (effectType == 'MAX_HP_DOWN') {
+                                let result = "生命上限 -" + value;
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), result)
+                            } else if (effectType == 'HP_UP') {
+                                let index = extraDesc.indexOf("，"); // 找到第一个空格的位置
+                                let result = extraDesc.substring(index + 1); // 截取第一个空格后面的所有字符
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
+                            } else if (effectType == 'HEAL') {
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), "+" + value)
+                            } else if (effectType == "ATTACK_UP") {
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), "攻击+" + value)
+                            } else {
+                                await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "-" + value)
+                            }
+                            // 更新场下生命值
+                            this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("Bar").setScale(
+                                targetHpAfter / targetHpBefore,
+                                1,
+                                1
+                            )
+                            this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
+                        }
+
+                    }
+
+                } else {
+                    //技能区分全体和单体技能
+                    let selectSkeleton = this.tiem.children[direction].children[sourcePosition].getChildByName("select").getComponent(sp.Skeleton)
+                    selectSkeleton.node.active = true
+                    selectSkeleton.setAnimation(0, "animation", false)
+                    tween(this.tiem.children[direction].children[sourcePosition])
+                        .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
+                        .call(async () => {
+                            if (effectType == 'HEAL' || effectType == 'XU_HEAL') {
+                                AudioMgr.inst.playOneShot("sound/fight/skill/HEAL");
+                            } else {
+                                AudioMgr.inst.playOneShot("sound/fight/skill/" + effectType);
+                            }
+                            await this.showString(1, this.tiem.children[direction].children[sourcePosition], new math.Color(236, 163, 61, 255), eventType)
+                            await new Promise(res => setTimeout(res, 300 / this.timeScale))
+                            if (aoe == '1') {
+                                let eventData = this.parseEventString(extraDesc)
+                                let skeletons: sp.Skeleton[] = []
+                                for (const event of eventData.units) {
+                                    if ((event.position == charactersA.position + 1) && event.side == 'A') {
+                                        let selectSkeleton = this.Character.children[0].getChildByName(effectType).getComponent(sp.Skeleton)
+                                        skeletons.push(selectSkeleton)
+                                    }
+                                    if ((event.position == charactersB.position + 1) && event.side == 'B') {
+                                        let selectSkeleton = this.Character.children[1].getChildByName(effectType).getComponent(sp.Skeleton)
+                                        skeletons.push(selectSkeleton)
+                                    }
+                                    var dir = 0
+                                    if (event.side == "B") {
+                                        dir = 1
+                                    }
+                                    let eventSelectSkeleton = this.tiem.children[dir].children[event.position - 1].getChildByName("buff").getChildByName(effectType).getComponent(sp.Skeleton)
+                                    skeletons.push(eventSelectSkeleton)
+                                }
+                                skeletons.forEach(skeleton => {
+                                    skeleton.node.active = true
+                                    skeleton.setAnimation(0, "animation", false);
+                                });
+                                for (const event of eventData.units) {
+                                    if ((event.position == charactersA.position + 1) && event.side == 'A') {
+                                        //                 //伤害结算
+                                        //伤害掉血动画
+                                        if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                            this.showNumber(-1, this.Character.children[0], +value, new math.Color(82, 201, 25, 255), 40)
+                                        } else {
+                                            this.showNumber(-1, this.Character.children[0], -value, new math.Color(255, 176, 126, 255), 40)
+                                        }
+
+
+                                        //                 // 更新场上生命值
+                                        this.Hp.children[0].getChildByName("Bar").setScale(
+                                            event.hp.after / event.hp.before,
+                                            1,
+                                            1
+                                        )
+                                        this.Hp.children[0].getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
+                                    }
+                                    if ((event.position == charactersB.position + 1) && event.side == 'B') {
+                                        //伤害掉血动画
+                                        //                 //伤害结算
+                                        // this.showNumber(1, this.Character.children[1], -value, new math.Color(255, 176, 126, 255), 40)
+                                        if (effectType == 'HEAL' || effectType == 'HP_UP') {
+                                            this.showNumber(1, this.Character.children[1], +value, new math.Color(82, 201, 25, 255), 40)
+                                        } else {
+                                            this.showNumber(1, this.Character.children[1], -value, new math.Color(255, 176, 126, 255), 40)
+                                        }
+
+
+                                        //                 // 更新场上生命值
+                                        this.Hp.children[1].getChildByName("Bar").setScale(
+                                            event.hp.after / event.hp.before,
+                                            1,
+                                            1
+                                        )
+                                        this.Hp.children[1].getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
+                                    }
+                                    var dir = 0
+                                    if (event.side == "B") {
+                                        dir = 1
+                                    }
+                                    //伤害动画
+                                    if (effectType == 'MAX_HP_DOWN') {
+                                        let result = "生命上限 -" + value;
+                                        await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), result)
+                                    } else if (effectType == 'HP_UP') {
+                                        let index = extraDesc.indexOf("，"); // 找到第一个空格的位置
+                                        let result = extraDesc.substring(index + 1); // 截取第一个空格后面的所有字符
+                                        await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(0, 255, 0), result)
+
+                                    } else if (effectType == 'HEAL') {
+                                        await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(0, 255, 0), "+" + value)
+
+                                    } else {
+                                        await this.showString(1, this.tiem.children[dir].children[event.position - 1], new math.Color(255, 0, 0), "-" + value)
+                                    }
+                                    // 更新场下生命值
+                                    this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("Bar").setScale(
+                                        event.hp.after / event.hp.before,
+                                        1,
+                                        1
+                                    )
+                                    this.tiem.children[dir].children[event.position - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = event.hp.after + "/" + event.hp.before
+                                }
+                                skeletons.forEach(skeleton => {
+                                    // skeleton.setCompleteListener(() => skeleton.node.active = false)
+                                    const hurtPromise = this.playAnimation(skeleton)
+                                    this.actionAwaitQueue.push(hurtPromise)
+                                });
+                            } else {
+                                if (targetIsGoON) {
+                                    let effectTypeName = effectType
+                                    if (effectType == 'XU_HEAL') {
+                                        effectTypeName = 'HEAL'
+                                        await this.showString(1, this.tiem.children[direction].children[sourcePosition], new math.Color(255, 0, 0), "-" + (sourceMaxHp - sourceAfterHp))
+                                        // 更新场下生命值
+                                        this.tiem.children[direction].children[sourcePosition].getChildByName("my_hp").getChildByName("Bar").setScale(
+                                            sourceAfterHp / sourceMaxHp,
+                                            1,
+                                            1
+                                        )
+                                        this.tiem.children[direction].children[sourcePosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = sourceAfterHp + "/" + sourceMaxHp
+
+                                    }
+                                    let selectSkeleton = this.Character.children[targetDirection].getChildByName(effectTypeName).getComponent(sp.Skeleton)
+                                    selectSkeleton.node.active = true
+                                    if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
+                                        selectSkeleton.setAnimation(0, "animation", true)
+                                    } else {
+                                        selectSkeleton.setAnimation(0, "animation", false)
+                                    }
+                                    await new Promise(res => setTimeout(res, 500 / this.timeScale))
+                                    //伤害掉血动画
+                                    if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
+                                        //中毒无动画
+                                    } else if (effectType == 'ATTACK_UP') {
+                                        //暂无展示
+                                    } else if (effectType == 'HEAL' || effectType == 'HP_UP' || effectType == 'XU_HEAL') {
+                                        this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], +value, new math.Color(82, 201, 25, 255), 40)
+                                    } else {
+                                        this.showNumber(targetDirection == 0 ? -1 : 1, this.Character.children[targetDirection], -value, new math.Color(255, 176, 126, 255), 40)
+                                    }
+
+                                    //                 // 更新场上生命值
+                                    this.Hp.children[targetDirection].getChildByName("Bar").setScale(
+                                        targetAfterHp / targetMaxHp,
+                                        1,
+                                        1
+                                    )
+                                    this.Hp.children[targetDirection].getChildByName("user_li_count").getComponent(Label).string = targetAfterHp + "/" + targetMaxHp
+                                    if (effectType != "POISON" && effectType != "SILENCE" && effectType != "HEAL_DOWN" && effectType != "STUN") {
+                                        // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                                        const hurtPromise = this.playAnimation(selectSkeleton)
+                                        this.actionAwaitQueue.push(hurtPromise)
+                                    }
+                                }
+                                let effectTypeName = effectType
+                                if (effectType == 'XU_HEAL') {
+                                    effectTypeName = 'HEAL'
+                                }
+                                console.log("effectTypeName------", effectTypeName)
+                                let eventSelectSkeleton = this.tiem.children[targetDirection].children[targetPosition].getChildByName("buff").getChildByName(effectTypeName).getComponent(sp.Skeleton)
+                                eventSelectSkeleton.node.active = true
+                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
+                                    eventSelectSkeleton.setAnimation(0, "animation", true)
+                                } else {
+                                    eventSelectSkeleton.setAnimation(0, "animation", false)
+                                }
+                                //伤害动画
+
+                                if (effectType == "HEAL_DOWN") {
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "治疗减少" + value + "%")
+                                } else if (effectType == "STUN") {
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "眩晕")
+                                } else if (effectType == "POISON") {
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "中毒")
+                                } else if (effectType == 'SPEED_UP') {
+                                    let result = "速度提升 +" + value;
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
+                                } else if (effectType == 'ATTACK_UP') {
+                                    let result = "攻击提升 +" + value;
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
+                                } else if (effectType == 'MAX_HP_DOWN') {
+                                    let result = "生命上限 -" + value;
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), result)
+                                } else if (effectType == 'XU_HEAL') {
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), "+" + value)
+                                } else if (effectType == 'HP_UP') {
+                                    let index = extraDesc.indexOf("，"); // 找到第一个空格的位置
+                                    let result = extraDesc.substring(index + 1); // 截取第一个空格后面的所有字符
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), result)
+                                } else if (effectType == 'HEAL') {
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(0, 255, 0), "+" + value)
+                                } else {
+                                    await this.showString(1, this.tiem.children[targetDirection].children[targetPosition], new math.Color(255, 0, 0), "-" + value)
+                                }
+                                // 更新场下生命值
+                                this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("Bar").setScale(
+                                    targetHpAfter / targetHpBefore,
+                                    1,
+                                    1
+                                )
+                                this.tiem.children[targetDirection].children[targetPosition].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = targetHpAfter + "/" + targetHpBefore
+                                if (effectType != "POISON" && effectType != "SILENCE" && effectType != "HEAL_DOWN" && effectType != "STUN") {
+                                    // eventSelectSkeleton.setCompleteListener(() => eventSelectSkeleton.node.active = false)
+                                    const hurtPromise = this.playAnimation(eventSelectSkeleton)
+                                    this.actionAwaitQueue.push(hurtPromise)
+                                }
+                            }
+                        })
+                        .by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
+                        .start();
+                    // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
+                    const hurtPromise = this.playAnimation(selectSkeleton)
+                    this.actionAwaitQueue.push(hurtPromise)
+                }
+                this.skillName.children[direction].active = false
+                await new Promise(res => setTimeout(res, 1500 / this.timeScale))
+            }
+
+        }
+        // } catch (e) {
+        //     console.error("战斗流程异常：", e);
+        //     this.isOverFight = true; // 异常时终止战斗
+        // }
+
+
+        return this.result
+    }
+
+
+    // 1. 给 playAnimation 添加超时机制，防止动画不回调
+    async playAnimation(Skeleton: sp.Skeleton) {
+        return new Promise<void>(res => {
+            if (!(Skeleton instanceof sp.Skeleton)) {
+                res(); // 非骨骼组件直接完成
+                return;
+            }
+
+            // 超时保护：5秒后强制完成
+            const timeout = setTimeout(() => {
+                console.warn("骨骼动画播放超时，强制完成", Skeleton.node.name);
+                Skeleton.node.active = false;
+                res();
+            }, 5000);
+
+            Skeleton.setCompleteListener(() => {
+                clearTimeout(timeout); // 清除超时
+                Skeleton.node.active = false;
+                res();
+            });
+        });
+    }
+    async tweenToPromise(node: Node, duration: number, props: any, options?: { easing: string }) {
+        return new Promise<void>(res => {
+            tween(node)
+                .to(duration, props, { easing: 'elasticOut' })
+                .call(() => res()) // 动画完成后执行resolve
+                .start();
+        });
+    };
+    // tween(this.Character.children[0])
+    //     .to(1, { scale: scaleNew }, { easing: 'elasticOut' })
+    //     .start();
+    parseGuardianEffects(str) {
+        // 边界防护：空字符串直接返回空数组
+        if (!str || typeof str !== 'string') {
+            return [];
+        }
+
+        // 步骤1：正则匹配所有 [阵营+角色:效果列表] 块
+        // 正则说明：匹配 [A角色名_数字:效果1|值,效果2|值...] 格式的内容
+        const blockReg = /\[([^:\]]+):([^\]]+)\]/g;
+        const result = [];
+        let match;
+
+        // 步骤2：遍历每个匹配到的角色块
+        while ((match = blockReg.exec(str)) !== null) {
+            const [, roleInfo, effectStr] = match; // 解构：roleInfo=A白天君_1，effectStr=POISON|0,BURN|0...
+
+            // 步骤3：解析角色基础信息（阵营、名称、位置）
+            // 匹配 阵营+名称+位置（如 A白天君_1 → 阵营A，名称白天君，位置1）
+            const roleReg = /^([AB])(.+?)_(\d+)$/;
+            const roleMatch = roleInfo.match(roleReg);
+
+            if (!roleMatch) {
+                //console.warn(`角色信息格式错误，跳过：${roleInfo}`);
+                continue;
+            }
+
+            const [, camp, name, position] = roleMatch;
+
+            // 步骤4：解析效果列表（POISON|0 → {type: 'POISON', value: 0}）
+            const effects = [];
+            const effectMap = {}; // 额外生成key-value映射，方便快速查找
+            if (effectStr) {
+                effectStr.split(',').forEach(effectItem => {
+                    const [type, value] = effectItem.split('|');
+                    if (type && value !== undefined) {
+                        const effectObj = {
+                            type: type.trim(),
+                            value: parseInt(value.trim(), 10) || 0 // 转数字，非数字则默认0
+                        };
+                        effects.push(effectObj);
+                        effectMap[effectObj.type] = effectObj.value;
+                    }
+                });
+            }
+
+            // 步骤5：组装角色对象并加入结果数组
+            result.push({
+                camp,          // 阵营：A/B
+                name,          // 角色名：白天君、真武大帝等
+                position: parseInt(position, 10), // 位置：1/2/3/4/5
+                effects,       // 效果列表（数组）：[{type: 'POISON', value: 0}, ...]
+                effectMap      // 效果映射（对象）：{POISON: 0, BURN: 0, ...}
+            });
+        }
+
+        return result;
+    }
+    /** 
+     * 显示数值
+     * num 为数值
+     * color 是颜色
+     */
+    async showNumber(i, character: Node, num: number, color: math.Color, size: number = 28) {
+
+        const holNumberNodePool = util.resource.getNodePool(
+            await util.bundle.load("prefab/HolNumber", Prefab)
+        )
+        const numberNode = holNumberNodePool.get()
+        numberNode.setScale(
+            Math.abs(numberNode.scale.x) * i,
+            numberNode.scale.y,
+            numberNode.scale.z,
+        )
+        const holNumber = numberNode.getComponent(HolNumber)
+        holNumber.color = color
+        holNumber.frontSize = size
+        holNumber.number = num
+        if (this.isOverFight) {
+            if (!numberNode || !numberNode.position || !numberNode.position.x || !numberNode.position.y || !numberNode.position.z) return
+        }
+        numberNode.active = true
+        character.addChild(numberNode)
+
+        const ordinarySibling = numberNode.getSiblingIndex()
+        numberNode.setSiblingIndex(9999)
+
+        return new Promise<void>(res => {
+            let i = 0
+            const inter = setInterval(() => {
+                if (++i > 45) {
+                    res()
+                    holNumberNodePool.put(numberNode)
+                    numberNode.setSiblingIndex(ordinarySibling)
+                    numberNode.setPosition(0, 0, numberNode.position.z)
+                    return clearInterval(inter)
+                }
+                numberNode.setPosition(
+                    numberNode.position.x,
+                    numberNode.position.y + 3,
+                    numberNode.position.z,
+                )
+            }, 20 / 1.3)
+            // }, 20 / this.$holAnimation.timeScale)
+        })
+
+    }
+
+    /** 
+ * 显示文字
+ * str 是显示文件
+ */
+    async showString(i, character: Node, color: math.Color, str: string) {
+        const node = new Node
+        node.setScale(
+            Math.abs(node.scale.x) * i,
+            node.scale.y,
+            node.scale.z,
+        )
+        const label = node.addComponent(Label)
+        label.font = await util.bundle.load("font/fzcy", Font)
+        label.string = str
+        label.fontSize = 30
+        label.color = color
+        // label.color = new math.Color(236, 163, 61, 255)
+        if (this.isOverFight) {
+            if (!node || !node.position || !node.position.x || !node.position.y || !node.position.z) return
+        }
+        character.addChild(node)
+        let index = 0
+        const inter = setInterval(() => {
+            if (index++ > 45) {
+                clearInterval(inter)
+                character.removeChild(node)
+                return
+            }
+            node.setPosition(node.position.x, node.position.y + 2.5, node.position.z)
+        }, 20)
+    }
+
+
+    // 战斗胜利
+    private async fightSuccess() {
+        await this.node.getChildByName("FightSuccess")
+            .getComponent(FightSuccess)
+            .read(this.rewards, this.levelUp)
+        this.node.getChildByName("FightFailure").active = false
+        this.node.getChildByName("FightSuccess").active = true
+    }
+
+    // 战斗失败
+    private fightEnd() {
+        this.node.getChildByName("FightFailure").active = true
+        this.node.getChildByName("FightSuccess").active = false
+    }
+}
+
