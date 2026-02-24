@@ -37,6 +37,7 @@ export type CharacterStateCreate = {
     speed: number
     pierce: number
     name: string
+    flyup: number
 }
 
 export class CharacterState extends BasicState<CharacterMetaState> {
@@ -97,6 +98,8 @@ export class CharacterState extends BasicState<CharacterMetaState> {
 
     camp: string
 
+    flyup: number
+
     /** 
      * 构造器
      * component 是所属组件
@@ -120,6 +123,7 @@ export class CharacterState extends BasicState<CharacterMetaState> {
         this.pierce = create.pierce
         this.critical = meta.Critical
         this.block = meta.Block
+        this.flyup = create.flyup
 
         this.profession = create.profession
 

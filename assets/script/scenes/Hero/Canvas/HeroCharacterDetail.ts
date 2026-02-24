@@ -52,32 +52,32 @@ export class HeroCharacterDetail extends Component {
     // 设置角色
     async setCharacter(create: CharacterStateCreate) {
         const propertyNode = this.node.getChildByName("Property")
-        const close = await util.message.load()
-        const characterAnimationNode = this.node.getChildByName("CharacterAnimation")
-        if (this.$lastaNimation) characterAnimationNode.removeChild(this.$lastaNimation)
-        console.log(create.id)
-        const meta = CharacterEnum[create.id]
-        const holAnimationPrefab = await util.bundle.load("prefab/HolAnimation", Prefab)
-        const holAnimationNode = instantiate(holAnimationPrefab)
-        characterAnimationNode.addChild(holAnimationNode)
-        await holAnimationNode.getComponent(HolAnimation).initBones({
-            animationScale: meta.AnimationScale * 1.7,
-            animationDir: meta.AnimationDir,
-            animationType: meta.AnimationType,
-            animationPosition: meta.AnimationPosition,
-            avatarPath: meta.AvatarPath,
-        })
-        characterAnimationNode.addChild(holAnimationNode)
-        this.$lastaNimation = holAnimationNode
-        holAnimationNode.active = false
+        // const close = await util.message.load()
+        // const characterAnimationNode = this.node.getChildByName("CharacterAnimation")
+        // if (this.$lastaNimation) characterAnimationNode.removeChild(this.$lastaNimation)
+        // console.log(create.id)
+        // const meta = CharacterEnum[create.id]
+        // const holAnimationPrefab = await util.bundle.load("prefab/HolAnimation", Prefab)
+        // const holAnimationNode = instantiate(holAnimationPrefab)
+        // characterAnimationNode.addChild(holAnimationNode)
+        // await holAnimationNode.getComponent(HolAnimation).initBones({
+        //     animationScale: meta.AnimationScale * 1.7,
+        //     animationDir: meta.AnimationDir,
+        //     animationType: meta.AnimationType,
+        //     animationPosition: meta.AnimationPosition,
+        //     avatarPath: meta.AvatarPath,
+        // })
+        // characterAnimationNode.addChild(holAnimationNode)
+        // this.$lastaNimation = holAnimationNode
+        // holAnimationNode.active = false
         // 设置属性
         await propertyNode.getComponent(HeroCharacterDetailPorperty).renderProperty(create)
-        close()
-        setTimeout(async () => {
-            holAnimationNode.active = true
-            holAnimationNode.getComponent(HolAnimation).playAnimation("rebirth", 1, "rest")
-        }, 50
-        )
+        // close()
+        // setTimeout(async () => {
+        //     holAnimationNode.active = true
+        //     holAnimationNode.getComponent(HolAnimation).playAnimation("rebirth", 1, "rest")
+        // }, 50
+        // )
         return
     }
 

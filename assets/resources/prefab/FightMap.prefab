@@ -50277,7 +50277,10 @@
     "__prefab": {
       "__id__": 2126
     },
-    "_customMaterial": null,
+    "_customMaterial": {
+      "__uuid__": "3306321f-f6f3-4a39-a7c3-38a251cd6734",
+      "__expectedType__": "cc.Material"
+    },
     "_srcBlendFactor": 2,
     "_dstBlendFactor": 4,
     "_color": {
@@ -53653,7 +53656,10 @@
     "__prefab": {
       "__id__": 2272
     },
-    "_customMaterial": null,
+    "_customMaterial": {
+      "__uuid__": "3306321f-f6f3-4a39-a7c3-38a251cd6734",
+      "__expectedType__": "cc.Material"
+    },
     "_srcBlendFactor": 2,
     "_dstBlendFactor": 4,
     "_color": {

@@ -1,0 +1,90 @@
+
+animation.png
+size: 952,236
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+frame_0
+  rotate: false
+  xy: 2, 2
+  size: 93, 115
+  orig: 93, 115
+  offset: 0, 0
+  index: -1
+frame_1
+  rotate: false
+  xy: 97, 2
+  size: 93, 115
+  orig: 93, 115
+  offset: 0, 0
+  index: -1
+frame_2
+  rotate: false
+  xy: 192, 2
+  size: 93, 115
+  orig: 93, 115
+  offset: 0, 0
+  index: -1
+frame_3
+  rotate: false
+  xy: 287, 2
+  size: 93, 115
+  orig: 93, 115
+  offset: 0, 0
+  index: -1
+frame_4
+  rotate: false
+  xy: 382, 2
+  size: 93, 115
+  orig: 93, 115
+  offset: 0, 0
+  index: -1
+frame_5
+  rotate: false
+  xy: 477, 2
+  size: 93, 115
+  orig: 93, 115
+  offset: 0, 0
+  index: -1
+frame_6
+  rotate: false
+  xy: 572, 2
+  size: 93, 115
+  orig: 93, 115
+  offset: 0, 0
+  index: -1
+frame_7
+  rotate: false
+  xy: 667, 2
+  size: 93, 115
+  orig: 93, 115
+  offset: 0, 0
+  index: -1
+frame_8
+  rotate: false
+  xy: 762, 2
+  size: 93, 115
+  orig: 93, 115
+  offset: 0, 0
+  index: -1
+frame_9
+  rotate: false
+  xy: 857, 2
+  size: 93, 115
+  orig: 93, 115
+  offset: 0, 0
+  index: -1
+frame_10
+  rotate: false
+  xy: 2, 119
+  size: 93, 115
+  orig: 93, 115
+  offset: 0, 0
+  index: -1
+frame_11
+  rotate: false
+  xy: 97, 119
+  size: 93, 115
+  orig: 93, 115
+  offset: 0, 0
+  index: -1

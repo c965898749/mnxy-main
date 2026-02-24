@@ -1,4 +1,4 @@
-import { _decorator, AudioSource, Component, find, instantiate, Label, Node, Prefab, sp, Sprite, SpriteFrame } from 'cc';
+import { _decorator, AudioSource, Color, Component, find, instantiate, Label, Node, Prefab, sp, Sprite, SpriteFrame, UITransform, Vec2 } from 'cc';
 import { CharacterState, CharacterStateCreate } from '../../../../game/fight/character/CharacterState';
 import { util } from '../../../../util/util';
 import { getConfig, getToken, updateConfig } from '../../../../common/config/config';
@@ -9,7 +9,7 @@ import { EqHeroCharacterDetail } from '../../../Equipment/Canvas/EqHeroCharacter
 import { EquipmentStateCreate } from 'db://assets/script/game/fight/equipment/EquipmentState';
 import { SelectEqCardCtrl } from '../../../Home/Canvas/qianghua/SelectEqCardCtrl';
 const { ccclass, property } = _decorator;
-
+enum Style { 纯色描边, 透明衰减, 明暗衰减 }
 // 升级所需金币
 function levelUpNeedGold(create: CharacterStateCreate): number {
     return Math.ceil(
@@ -29,6 +29,8 @@ export class HeroCharacterDetailPorperty extends Component {
 
     @property(Node)
     empNode: Node
+    @property(Node)
+    heroNode: Node
     // 角色状态
     private $state: CharacterState
 
@@ -41,8 +43,48 @@ export class HeroCharacterDetailPorperty extends Component {
 
     // 渲染属性
     async renderProperty(create: CharacterStateCreate) {
-        console.log("渲染角色属性", create)
+        var cc = [
+            // 1. 普通（浅灰）- 与银白背景区分开，不泛白
+            new Color(200, 200, 200, 200),
+            // 2. 优秀（翠绿）- 高饱和绿，避开金/银色调
+            new Color(0, 230, 0, 200),
+            // 3. 稀有（宝蓝）- 深饱和蓝，对比金/银极强
+            new Color(0, 100, 255, 200),
+            // 4. 史诗（深紫）- 暗紫不反光，与金/银反差大
+            new Color(120, 0, 220, 200),
+            // 5. 传说（橙红）- 亮橙红，避开金色的黄调
+            new Color(255, 80, 0, 200),
+            // 6. 神器（正红）- 高饱和红，视觉冲击强
+            new Color(255, 0, 0, 200),
+            // 7. 传奇（亮金）- 比背景金更亮，加了红调区分
+            new Color(255, 220, 30, 200),
+            // 8. 幻彩（玫紫）- 高饱和玫红，不与金/银混淆
+            new Color(230, 0, 200, 200),
+            // 9. 暗金（古铜）- 深铜色，与亮金背景拉开层次
+            new Color(180, 100, 0, 200),
+            // 10. 神级（亮白）- 加了极浅蓝调，避开银白背景泛白
+            new Color(255, 255, 255, 200)
+        ];
         this.$state = new CharacterState(create, null)
+
+        this.heroNode.getComponent(Sprite).spriteFrame =
+            await util.bundle.load('game/texture/frames/hero/' + create.id + '/spriteFrame', SpriteFrame)
+        let material = this.heroNode.getComponent(Sprite).getMaterialInstance(0);
+        if (create.flyup == 0) {
+            material.setProperty('enable', 0);
+        } else {
+            material.setProperty('enable', 1);
+            material.setProperty('outerActive', 1);
+            material.setProperty('outerStyle', Style.透明衰减);
+            material.setProperty('outerColor', cc[create.flyup - 1]);
+            material?.setProperty('outerWidth', 0.5);
+            material.setProperty('innerActive', 0);
+            material.setProperty('brightness', 1);
+            let ut = this.heroNode.getComponent(UITransform);
+            material.setProperty('texSize', new Vec2(ut.width, ut.height));
+            material.setProperty('centerScale', 1);
+        }
+
         this.node.getChildByName("Name").getComponent(Label).string = "名称: " + create.name
         this.node.getChildByName("Lv").getComponent(Label).string = "Lv: " + this.$state.lv
         this.node.getChildByName("Hp").getChildByName("Value").getComponent(Label).string = Math.ceil(create.maxHp) + ''
@@ -166,7 +208,7 @@ export class HeroCharacterDetailPorperty extends Component {
             .then(async data => {
                 if (data.success == '1') {
                     var userInfo = data.data;
-                    const nameNode =["兵刃", "防具", "宝具", "法器"]
+                    const nameNode = ["兵刃", "防具", "宝具", "法器"]
                     config.userData.equipments = userInfo.eqCharactersList
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
                     this.empNode.children[empType].getChildByName("Label").getComponent(Label).string = nameNode[empType]
@@ -212,7 +254,7 @@ export class HeroCharacterDetailPorperty extends Component {
                     let cahracterQueue = userInfo.eqCharactersList.filter(x => x.goIntoNum == itemId && x.eqType == empType)
                     this.empNode.children[empType].getChildByName("Label").getComponent(Label).string = ""
                     this.empNode.children[empType].getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
-                          await util.bundle.load(`game/texture/frames/emp/${cahracterQueue[0].id.split('_')[0]}/spriteFrame`, SpriteFrame)
+                        await util.bundle.load(`game/texture/frames/emp/${cahracterQueue[0].id.split('_')[0]}/spriteFrame`, SpriteFrame)
 
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
