@@ -301,6 +301,31 @@ export class FightMap extends Component {
                     material.setProperty('texSize', new Vec2(ut.width, ut.height));
                     material.setProperty('centerScale', 1);
                 }
+                let multiTargetDataMap = fightProcess.multiTargetDataMap
+                for (const key in multiTargetDataMap) {
+                    //先判断是否场上
+                    const targetBattleData = multiTargetDataMap[key]; // 拿到对应的值
+                    if (targetBattleData.stunned) {
+                        let selectSkeletonON = characterNode.getChildByName('STUN').getComponent(sp.Skeleton)
+                        selectSkeletonON.node.active = true
+                        selectSkeletonON.setAnimation(0, "animation", true)
+                    }
+                    if (targetBattleData.silence) {
+                        let selectSkeletonON = characterNode.getChildByName('SILENCE').getComponent(sp.Skeleton)
+                        selectSkeletonON.node.active = true
+                        selectSkeletonON.setAnimation(0, "animation", true)
+                    }
+                    if (targetBattleData.poison) {
+                        let selectSkeletonON = characterNode.getChildByName('POISON').getComponent(sp.Skeleton)
+                        selectSkeletonON.node.active = true
+                        selectSkeletonON.setAnimation(0, "animation", true)
+                    }
+                    if (targetBattleData.healDown) {
+                        let selectSkeletonON = characterNode.getChildByName('HEAL_DOWN').getComponent(sp.Skeleton)
+                        selectSkeletonON.node.active = true
+                        selectSkeletonON.setAnimation(0, "animation", true)
+                    }
+                }
                 // 更新生命值
                 let hpNode = this.Hp.children[this.hasLetterA(fightProcess.sourceUnitId) ? 0 : 1]
                 hpNode.getComponent(ProgressBar).progress = fightProcess.sourceHpAfter / fightProcess.sourceHpBefore
@@ -321,7 +346,15 @@ export class FightMap extends Component {
                     let characterNode = this.getCharacterById(key)
                     const targetBattleData = multiTargetDataMap[key]; // 拿到对应的值
                     if (characterNode) {
+                        let selectSkeleton = characterNode.getChildByName("POISON2").getComponent(sp.Skeleton)
+                        selectSkeleton.node.active = true
+                        selectSkeleton.setAnimation(0, "animation", false)
                         this.showNumber(this.hasLetterA(key), characterNode, -targetBattleData.value, new math.Color(255, 176, 126, 255), 40)
+                        let Hp = this.Hp.children[this.hasLetterA(key) ? 0 : 1]
+                        Hp.getComponent(ProgressBar).progress = targetBattleData.hpAfter / targetBattleData.hpBefore
+                        Hp.getChildByName("user_li_count").getComponent(Label).string = targetBattleData.hpAfter + "/" + targetBattleData.hpBefore
+                        const hurtPromise = this.playAnimation(selectSkeleton)
+                        this.actionAwaitQueue.push(hurtPromise)
                     }
                     let itemNode = this.getChracterChangXiaById(key)
                     if (itemNode) {
@@ -522,10 +555,18 @@ export class FightMap extends Component {
                                 await this.showString(1, itemNode, new math.Color(255, 0, 0), "中毒+" + targetBattleData.value)
 
                             } else if (effectType == 'MAX_HP_DOWN') {
-                                await this.showString(1, itemNode, new math.Color(255, 0, 0), "生命上限 -" + targetBattleData.value)
+                                if (fightProcess.sourceUnitId == 'A1101' || fightProcess.sourceUnitId == 'B1101') {
+                                    await this.showString(1, itemNode, new math.Color(255, 0, 0), "飞弹抗性 -" + targetBattleData.value)
+                                } else {
+                                    await this.showString(1, itemNode, new math.Color(255, 0, 0), "生命上限 -" + targetBattleData.value)
+                                }
 
                             } else if (effectType == 'HP_UP') {
-                                await this.showString(1, itemNode, new math.Color(0, 255, 0), "生命上限 +" + targetBattleData.value)
+                                if (fightProcess.sourceUnitId == 'A1101' || fightProcess.sourceUnitId == 'B1101') {
+                                    await this.showString(1, itemNode, new math.Color(0, 255, 0), "血限不减")
+                                } else {
+                                    await this.showString(1, itemNode, new math.Color(0, 255, 0), "生命上限 +" + targetBattleData.value)
+                                }
 
                             } else if (effectType == 'HEAL') {
                                 await this.showString(1, itemNode, new math.Color(0, 255, 0), "+" + targetBattleData.value)
@@ -761,45 +802,61 @@ export class FightMap extends Component {
                             })
                             // await new Promise(res => setTimeout(res, 200 / this.timeScale))
                         } else if (effectType == 'ATTACK_UP' || effectType == 'ATTACK_UP_PRET'
+                            || effectType == 'ATTACK_RESIST_BOOST' || effectType == 'ATTACK_RESIST_BOOST_PRET'
                             || effectType == 'FIRE_BOOST' || effectType == 'FIRE_BOOST_PRET'
                             || effectType == 'FIRE_RESIST_BOOST' || effectType == 'FIRE_RESIST_BOOST_PRET'
                             || effectType == 'POISON_BOOST' || effectType == 'POISON_BOOST_PRET'
                             || effectType == 'POISON_RESIST_BOOST' || effectType == 'POISON_RESIST_BOOST_PRET'
                             || effectType == 'MISSILE_BOOST' || effectType == 'MISSILE_BOOST_PRET'
                             || effectType == 'MISSILE_RESIST_BOOST' || effectType == 'MISSILE_RESIST_BOOST_PRET'
-                            || effectType == 'HP_UP' || effectType == 'HP_UP_PRET'
+                            || effectType == 'HP_UP' || effectType == 'HP_UP_PRET' || effectType == 'BLOODTHIRST' || effectType == 'HEAL'
                             || effectType == 'SPEED_UP' || effectType == 'SPEED_UP_PRET') {
                             AudioMgr.inst.playOneShot("sound/fight/skill/HP_UP");
-                            let selectSkeleton = targetCharacterNode.getChildByName("HP_UP").getComponent(sp.Skeleton)
-                            selectSkeleton.node.active = true
-                            selectSkeleton.setAnimation(0, "animation", false)
-                            selectSkeleton.setCompleteListener(async () => {
-                                selectSkeleton.node.active = false
-                                if (fightProcess.targetFieldStatus) {
+                            if (fightProcess.targetFieldStatus) {
+                                let selectSkeleton = targetCharacterNode.getChildByName("HP_UP").getComponent(sp.Skeleton)
+                                selectSkeleton.node.active = true
+                                selectSkeleton.setAnimation(0, "animation", false)
+                                selectSkeleton.setCompleteListener(async () => {
+                                    selectSkeleton.node.active = false
                                     this.showNumber(this.hasLetterA(fightProcess.targetUnitId), targetCharacterNode, +fightProcess.singleTargetValue, new math.Color(82, 201, 25, 255), 40)
-                                }
+                                    await this.showString(1, targetChangXiaNode, new math.Color(0, 255, 0), fightProcess.extraDesc)
+                                })
+                            } else {
+                                let selectSkeleton2 = targetChangXiaNode.getChildByName("buff").getChildByName("HP_UP").getComponent(sp.Skeleton)
+                                selectSkeleton2.node.active = true
                                 await this.showString(1, targetChangXiaNode, new math.Color(0, 255, 0), fightProcess.extraDesc)
-                            })
+                                selectSkeleton2.setAnimation(0, "animation", false)
+                                selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
+                            }
+
                         } else if (effectType == 'ATTACK_DOWN' || effectType == 'ATTACK_DOWN_PRET'
+                            || effectType == 'ATTACK_RESIST_DOWN' || effectType == 'ATTACK_RESIST_DOWN_PRET'
                             || effectType == 'FIRE_DOWN' || effectType == 'FIRE_DOWN_PRET'
                             || effectType == 'FIRE_RESIST_DOWN' || effectType == 'FIRE_RESIST_DOWN_PRET'
                             || effectType == 'POISON_DOWN' || effectType == 'POISON_DOWN_PRET'
                             || effectType == 'POISON_RESIST_DOWN' || effectType == 'POISON_RESIST_DOWN_PRET'
                             || effectType == 'MISSILE_DOWN' || effectType == 'MISSILE_DOWN_PRET'
-                            || effectType == 'MISSILE_RESIST_DOWN' || effectType == 'MISSILE_RESIST_DOWN_PRET' || effectType == 'WEAKEN'
+                            || effectType == 'MISSILE_RESIST_DOWN' || effectType == 'MISSILE_RESIST_DOWN_PRET'
                             || effectType == 'MAX_HP_DOWN' || effectType == 'MAX_HP_DOWN_PRET'
                             || effectType == 'SPEED_DOWN' || effectType == 'SPEED_DOWN_PRET') {
                             AudioMgr.inst.playOneShot("sound/fight/skill/MAX_HP_DOWN");
-                            let selectSkeleton = targetCharacterNode.getChildByName("MAX_HP_DOWN").getComponent(sp.Skeleton)
-                            selectSkeleton.node.active = true
-                            selectSkeleton.setAnimation(0, "animation", false)
-                            selectSkeleton.setCompleteListener(async () => {
-                                selectSkeleton.node.active = false
-                                if (fightProcess.targetFieldStatus) {
+                            if (fightProcess.targetFieldStatus) {
+                                let selectSkeleton = targetCharacterNode.getChildByName("MAX_HP_DOWN").getComponent(sp.Skeleton)
+                                selectSkeleton.node.active = true
+                                selectSkeleton.setAnimation(0, "animation", false)
+                                selectSkeleton.setCompleteListener(async () => {
+                                    selectSkeleton.node.active = false
                                     this.showNumber(this.hasLetterA(fightProcess.targetUnitId), targetCharacterNode, -fightProcess.singleTargetValue, new math.Color(255, 176, 126, 255), 40)
-                                }
+                                    await this.showString(1, targetChangXiaNode, new math.Color(255, 0, 0), fightProcess.extraDesc)
+                                })
+                            } else {
+                                let selectSkeleton2 = targetChangXiaNode.getChildByName("buff").getChildByName("MAX_HP_DOWN").getComponent(sp.Skeleton)
+                                selectSkeleton2.node.active = true
                                 await this.showString(1, targetChangXiaNode, new math.Color(255, 0, 0), fightProcess.extraDesc)
-                            })
+                                selectSkeleton2.setAnimation(0, "animation", false)
+                                selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
+                            }
+
                         } else {
                             if (fightProcess.targetFieldStatus) {
                                 this.showNumber(this.hasLetterA(fightProcess.targetUnitId), targetCharacterNode, -fightProcess.singleTargetValue, new math.Color(255, 176, 126, 255), 40)
@@ -839,22 +896,24 @@ export class FightMap extends Component {
                             if (effectType == 'HEAL' || effectType == 'XU_HEAL') {
                                 AudioMgr.inst.playOneShot("sound/fight/skill/HEAL");
                             } else if (effectType == 'ATTACK_UP' || effectType == 'ATTACK_UP_PRET'
+                                || effectType == 'ATTACK_RESIST_BOOST' || effectType == 'ATTACK_RESIST_BOOST_PRET'
                                 || effectType == 'FIRE_BOOST' || effectType == 'FIRE_BOOST_PRET'
                                 || effectType == 'FIRE_RESIST_BOOST' || effectType == 'FIRE_RESIST_BOOST_PRET'
                                 || effectType == 'POISON_BOOST' || effectType == 'POISON_BOOST_PRET'
                                 || effectType == 'POISON_RESIST_BOOST' || effectType == 'POISON_RESIST_BOOST_PRET'
                                 || effectType == 'MISSILE_BOOST' || effectType == 'MISSILE_BOOST_PRET'
                                 || effectType == 'MISSILE_RESIST_BOOST' || effectType == 'MISSILE_RESIST_BOOST_PRET'
-                                || effectType == 'HP_UP' || effectType == 'HP_UP_PRET'
+                                || effectType == 'HP_UP' || effectType == 'HP_UP_PRET' || effectType == 'BLOODTHIRST'
                                 || effectType == 'SPEED_UP' || effectType == 'SPEED_UP_PRET') {
                                 AudioMgr.inst.playOneShot("sound/fight/skill/HP_UP");
                             } else if (effectType == 'ATTACK_DOWN' || effectType == 'ATTACK_DOWN_PRET'
+                                || effectType == 'ATTACK_RESIST_DOWN' || effectType == 'ATTACK_RESIST_DOWN_PRET'
                                 || effectType == 'FIRE_DOWN' || effectType == 'FIRE_DOWN_PRET'
                                 || effectType == 'FIRE_RESIST_DOWN' || effectType == 'FIRE_RESIST_DOWN_PRET'
                                 || effectType == 'POISON_DOWN' || effectType == 'POISON_DOWN_PRET'
                                 || effectType == 'POISON_RESIST_DOWN' || effectType == 'POISON_RESIST_DOWN_PRET'
                                 || effectType == 'MISSILE_DOWN' || effectType == 'MISSILE_DOWN_PRET'
-                                || effectType == 'MISSILE_RESIST_DOWN' || effectType == 'MISSILE_RESIST_DOWN_PRET' || effectType == 'WEAKEN'
+                                || effectType == 'MISSILE_RESIST_DOWN' || effectType == 'MISSILE_RESIST_DOWN_PRET'
                                 || effectType == 'MAX_HP_DOWN' || effectType == 'MAX_HP_DOWN_PRET'
                                 || effectType == 'SPEED_DOWN' || effectType == 'SPEED_DOWN_PRET') {
                                 AudioMgr.inst.playOneShot("sound/fight/skill/MAX_HP_DOWN");
@@ -962,24 +1021,26 @@ export class FightMap extends Component {
                                     effectTypeName = 'HEAL'
                                 }
                                 if (effectType == 'ATTACK_UP' || effectType == 'ATTACK_UP_PRET'
+                                    || effectType == 'ATTACK_RESIST_BOOST' || effectType == 'ATTACK_RESIST_BOOST_PRET'
                                     || effectType == 'FIRE_BOOST' || effectType == 'FIRE_BOOST_PRET'
                                     || effectType == 'FIRE_RESIST_BOOST' || effectType == 'FIRE_RESIST_BOOST_PRET'
                                     || effectType == 'POISON_BOOST' || effectType == 'POISON_BOOST_PRET'
                                     || effectType == 'POISON_RESIST_BOOST' || effectType == 'POISON_RESIST_BOOST_PRET'
                                     || effectType == 'MISSILE_BOOST' || effectType == 'MISSILE_BOOST_PRET'
                                     || effectType == 'MISSILE_RESIST_BOOST' || effectType == 'MISSILE_RESIST_BOOST_PRET'
-                                    || effectType == 'HP_UP' || effectType == 'HP_UP_PRET'
+                                    || effectType == 'HP_UP' || effectType == 'HP_UP_PRET' || effectType == 'BLOODTHIRST'
                                     || effectType == 'SPEED_UP' || effectType == 'SPEED_UP_PRET') {
                                     effectTypeName = 'HP_UP'
                                 }
 
                                 if (effectType == 'ATTACK_DOWN' || effectType == 'ATTACK_DOWN_PRET'
+                                    || effectType == 'ATTACK_RESIST_DOWN' || effectType == 'ATTACK_RESIST_DOWN_PRET'
                                     || effectType == 'FIRE_DOWN' || effectType == 'FIRE_DOWN_PRET'
                                     || effectType == 'FIRE_RESIST_DOWN' || effectType == 'FIRE_RESIST_DOWN_PRET'
                                     || effectType == 'POISON_DOWN' || effectType == 'POISON_DOWN_PRET'
                                     || effectType == 'POISON_RESIST_DOWN' || effectType == 'POISON_RESIST_DOWN_PRET'
                                     || effectType == 'MISSILE_DOWN' || effectType == 'MISSILE_DOWN_PRET'
-                                    || effectType == 'MISSILE_RESIST_DOWN' || effectType == 'MISSILE_RESIST_DOWN_PRET' || effectType == 'WEAKEN'
+                                    || effectType == 'MISSILE_RESIST_DOWN' || effectType == 'MISSILE_RESIST_DOWN_PRET'
                                     || effectType == 'MAX_HP_DOWN' || effectType == 'MAX_HP_DOWN_PRET'
                                     || effectType == 'SPEED_DOWN' || effectType == 'SPEED_DOWN_PRET') {
                                     effectTypeName = 'MAX_HP_DOWN'
@@ -1038,6 +1099,16 @@ export class FightMap extends Component {
     // 1. 给 playAnimation 添加超时机制，防止动画不回调
     async playAnimation(Skeleton: sp.Skeleton) {
         return new Promise<void>(res => {
+            if (!Skeleton) {
+                res(); // 没有骨骼组件直接完成
+                return;
+            }
+            if (!Skeleton.node) {
+                res(); // 没有骨骼组件直接完成
+                return;
+            }
+
+
             if (!(Skeleton instanceof sp.Skeleton)) {
                 res(); // 非骨骼组件直接完成
                 return;

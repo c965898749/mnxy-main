@@ -27013,7 +27013,7 @@
       "__uuid__": "a37321af-3b78-4858-a624-24f5622b0957",
       "__expectedType__": "sp.SkeletonData"
     },
-    "defaultSkin": "",
+    "defaultSkin": "default",
     "defaultAnimation": "",
     "_premultipliedAlpha": false,
     "_timeScale": 1,
@@ -48958,7 +48958,7 @@
       "__uuid__": "a37321af-3b78-4858-a624-24f5622b0957",
       "__expectedType__": "sp.SkeletonData"
     },
-    "defaultSkin": "",
+    "defaultSkin": "default",
     "defaultAnimation": "",
     "_premultipliedAlpha": false,
     "_timeScale": 1,

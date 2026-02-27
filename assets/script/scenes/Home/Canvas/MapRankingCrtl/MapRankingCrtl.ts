@@ -123,7 +123,7 @@ export class MapRankingCrtl extends Component {
             for (let i = 0; i < userlist.length; i++) {
                 let item = nodePool.get()
                 item.getChildByName("titleName").getComponent(Label).string = "青铜塔"
-                item.getChildByName("jieName").getComponent(Label).string = "第" + (userlist[i].floorNum == 1 ? 1 : userlist[i].floorNum-1) + "层"
+                item.getChildByName("jieName").getComponent(Label).string = "第" + userlist[i].floorNum + "层"
                 item.getChildByName("guanName").getComponent(Label).string = this.formatToAncientDate(userlist[i].passTime)
                 item.getChildByName("name").getComponent(Label).string = userlist[i].nickname
                 item.getChildByName("Lv").getComponent(Label).string = "lv " + userlist[i].lv
