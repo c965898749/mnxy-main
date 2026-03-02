@@ -43,6 +43,8 @@ export class HeroCharacterDetailPorperty extends Component {
 
     // 渲染属性
     async renderProperty(create: CharacterStateCreate) {
+        console.log(create,444);
+        
         var cc = [
             // 1. 普通（浅灰）- 与银白背景区分开，不泛白
             new Color(200, 200, 200, 200),
@@ -159,7 +161,7 @@ export class HeroCharacterDetailPorperty extends Component {
                 .setCharacter(eqCharacters, async (c, n) => {
                     // n.removeFromParent();
                     // n.destroy()
-                    this.clickFun1(c.id, n, empType)
+                    this.clickFun1(c.uuid, n, empType)
                     return
                 })
             this.node.parent.getChildByName("CharacterDetail").active = true
@@ -230,7 +232,7 @@ export class HeroCharacterDetailPorperty extends Component {
         const token = getToken()
         const postData = {
             token: token,
-            id: create.id,
+            id: create.uuid,
             str: itemId,
             userId: config.userData.userId
         };

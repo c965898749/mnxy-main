@@ -11,6 +11,7 @@ import { CharacterEnum } from '../../../game/fight/character/CharacterEnum';
 import { AudioMgr } from '../../../util/resource/AudioMgr';
 import { FightSuccess } from './FightSuccess';
 import { ItemCtrl } from '../../Home/Canvas/Tiem/ItemCtrl';
+import { HeroCharacterDetail } from '../../Hero/Canvas/HeroCharacterDetail';
 const { ccclass, property } = _decorator;
 enum Style { 纯色描边, 透明衰减, 明暗衰减 }
 @ccclass('FightMap')
@@ -147,6 +148,8 @@ export class FightMap extends Component {
                         let progress = campA[i].maxHp / campA[i].maxHp
                         this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("my_hp").getComponent(ProgressBar).progress = progress
                         this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = campA[i].maxHp + "/" + campA[i].maxHp
+                        let create = campA[i]
+                        this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("header").on("click", () => this.clickFun(create))
                     }
                     for (var i = 0; i < campB.length; i++) {
                         this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("header").getComponent(Sprite).spriteFrame =
@@ -156,6 +159,8 @@ export class FightMap extends Component {
                         let progress = campB[i].maxHp / campB[i].maxHp
                         this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("my_hp").getComponent(ProgressBar).progress = progress
                         this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = campB[i].maxHp + "/" + campB[i].maxHp
+                        let create = campB[i]
+                        this.tiem.children[1].children[campA[i].goIntoNum - 1].getChildByName("header").on("click", () => this.clickFun(create))
                     }
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
@@ -607,6 +612,21 @@ export class FightMap extends Component {
                                 selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
                             })
                             await new Promise(res => setTimeout(res, 200 / this.timeScale))
+                        } if (eventType == "斩妖剑") {
+                            AudioMgr.inst.playOneShot("sound/fight/skill/DHSZ3");
+                            let selectSkeleton = targetCharacterNode.getChildByName("DHSZ").getComponent(sp.Skeleton)
+                            selectSkeleton.node.active = true
+                            selectSkeleton.setAnimation(0, "animation", false)
+                            selectSkeleton.setCompleteListener(() => {
+                                selectSkeleton.node.active = false
+                                AudioMgr.inst.playOneShot("sound/fight/skill/DHSZ");
+                                let selectSkeleton2 = targetCharacterNode.getChildByName("DHSZ2").getComponent(sp.Skeleton)
+                                selectSkeleton2.node.active = true
+                                this.showNumber(this.hasLetterA(fightProcess.targetUnitId), targetCharacterNode, -fightProcess.singleTargetValue, new math.Color(255, 176, 126, 255), 40)
+                                selectSkeleton2.setAnimation(0, "animation", false)
+                                selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
+                            })
+                            await new Promise(res => setTimeout(res, 200 / this.timeScale))
                         } else if (eventType == "北极剑意") {
                             AudioMgr.inst.playOneShot("sound/fight/skill/DHSZ3");
                             let selectSkeleton = targetCharacterNode.getChildByName("DHSZ").getComponent(sp.Skeleton)
@@ -862,8 +882,22 @@ export class FightMap extends Component {
                                 this.showNumber(this.hasLetterA(fightProcess.targetUnitId), targetCharacterNode, -fightProcess.singleTargetValue, new math.Color(255, 176, 126, 255), 40)
                                 let hut = targetCharacterNode.getChildByName(effectType).getComponent(sp.Skeleton)
                                 hut.node.active = true
-                                hut.setAnimation(0, "animation", false)
-                                hut.setCompleteListener(() => { hut.node.active = false })
+                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
+                                    hut.setAnimation(0, "animation", true);
+                                } else {
+                                    hut.setAnimation(0, "animation", false)
+                                    hut.setCompleteListener(() => { hut.node.active = false })
+                                }
+                            } else {
+                                let selectSkeleton2 = targetChangXiaNode.getChildByName("buff").getChildByName(effectType).getComponent(sp.Skeleton)
+                                selectSkeleton2.node.active = true
+                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
+                                    selectSkeleton2.setAnimation(0, "animation", true)
+                                } else {
+                                    selectSkeleton2.setAnimation(0, "animation", false)
+                                    selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
+                                }
+
                             }
                             AudioMgr.inst.playOneShot("sound/fight/skill/" + effectType);
                             await this.showString(1, targetChangXiaNode, new math.Color(255, 0, 0), fightProcess.extraDesc)
@@ -1292,6 +1326,16 @@ export class FightMap extends Component {
     private fightEnd() {
         this.node.getChildByName("FightFailure").active = true
         this.node.getChildByName("FightSuccess").active = false
+    }
+
+
+    public async clickFun(c) {
+        console.log(c, 999);
+
+        AudioMgr.inst.playOneShot("sound/other/click");
+        const characterDetail = this.node.getChildByName("CharacterDetail")
+        characterDetail.active = true
+        await characterDetail.getComponent(HeroCharacterDetail).setCharacter(c)
     }
 }
 

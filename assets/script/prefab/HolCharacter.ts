@@ -107,7 +107,7 @@ export class HolCharacter extends Component {
         const HpNode = StateNode.getChildByName("Hp")
         const EnergyNode = StateNode.getChildByName("Energy")
         // 数据合理化
-        this.state.reasonableData()
+        // this.state.reasonableData()
         // 更新生命值
         HpNode.getChildByName("Value").setScale(
             this.state.hp / this.state.maxHp,

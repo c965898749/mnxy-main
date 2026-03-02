@@ -67,10 +67,16 @@ export class EquipmentMessageCrtl extends Component {
                     item.getChildByName("yxjm_df_txk").on("click", () => { this.clickFun(messageDetail) })
                     item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
                         await util.bundle.load(`game/texture/frames/emp/${messageDetail.id.split('_')[0]}/spriteFrame`, SpriteFrame)
+                    if (messageDetail.status == 1) {
+                        var content = `<color=#E5D75A>${messageDetail.userName}  <color=#E69A3A>${messageDetail.timeStr}打造了 </color><color=#E5D75A>${messageDetail.eqName}</color><color=#EEE365>(${messageDetail.star}星)</color></color></color>`
+                        item.getChildByName("RichText").getComponent(RichText).string = content
+                    } else {
+                        var content = `<color=#E5D75A>${messageDetail.userName}  <color=#E69A3A>${messageDetail.timeStr}购买了 </color><color=#E5D75A>${messageDetail.eqName}</color><color=#EEE365>(${messageDetail.star}星)</color></color></color>`
+                        item.getChildByName("RichText").getComponent(RichText).string = content
+                    }
+                    // var content = `<color=#E5D75A>${messageDetail.userName}  <color=#E69A3A>${messageDetail.timeStr}打造了 </color><color=#E5D75A>${messageDetail.eqName}</color><color=#EEE365>(${messageDetail.star}星)</color></color></color>`
 
-                    var content = `<color=#E5D75A>${messageDetail.userName}  <color=#E69A3A>${messageDetail.timeStr}打造了 </color><color=#E5D75A>${messageDetail.eqName}</color><color=#EEE365>(${messageDetail.star}星)</color></color></color>`
-
-                    item.getChildByName("RichText").getComponent(RichText).string = content
+                    // item.getChildByName("RichText").getComponent(RichText).string = content
                     // // 绑定事件
 
                     this.ContentNode.addChild(item)

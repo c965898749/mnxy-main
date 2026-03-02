@@ -201,6 +201,7 @@ export class HomeBuildings extends Component {
                     config.userData.darkSteel = user.darkSteel
                     config.userData.purpleGold = user.purpleGold
                     config.userData.crystal = user.crystal
+                    config.userData.characters= user.characterList
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
                     const rewardsFab = await util.bundle.load("prefab/rewards", Prefab)
                     const rewards = instantiate(rewardsFab)

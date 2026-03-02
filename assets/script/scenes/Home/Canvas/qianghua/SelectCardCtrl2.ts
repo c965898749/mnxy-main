@@ -86,7 +86,6 @@ export class SelectCardCtrl2 extends Component {
                     item.getChildByName("itemCount").getComponent(Label).string = value + ""
                 }
             }
-            const meta = CharacterEnum[create[i].id]
             item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`game/texture/frames/hero/Header/${create[i].id}/spriteFrame`, SpriteFrame)
             // 渲染星级
@@ -97,7 +96,7 @@ export class SelectCardCtrl2 extends Component {
                     item.getChildByName("star-001").children[j].children[0].active = true
                 }
             }
-            item.getChildByName("name").getComponent(Label).string = meta.name + "  Lv" + create[i].lv + "/" + create[i].maxLv
+            item.getChildByName("name").getComponent(Label).string = create[i].name + "  Lv" + create[i].lv + "/" + create[i].maxLv
             // 仙、佛、圣、魔、妖、兽
             const cmp = new Map([
                 ['sacred', '仙界'],
@@ -109,7 +108,7 @@ export class SelectCardCtrl2 extends Component {
             ]);
 
             const position = ["仙灵", "神将", "武圣"]
-            item.getChildByName("Camp").getComponent(Label).string = cmp.get(meta.CharacterCamp) + "." + position[meta.position]
+            item.getChildByName("Camp").getComponent(Label).string = cmp.get(create[i].camp) + "." + create[i].profession
             // // 绑定事件
             // this.Item.children[goIntoNum - 1].on("click", () => { this.clickFun(create[i]) })
             item.getChildByName("id").getComponent(Label).string = create[i].id;

@@ -170,12 +170,9 @@ export class ItemCtrl extends Component {
                     var userInfo = data.data;
                     config.userData.characters = userInfo.characterList
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
-                    const meta = CharacterEnum[create.id]
-                    var goIntoNum = create.goIntoNum
                     this.node.getChildByName("tiemHeader").children[0].getComponent(Sprite).spriteFrame =
                         await util.bundle.load(`game/texture/frames/hero/Header/${create.id}/spriteFrame`, SpriteFrame)
                     // 渲染星级
-                    console.log(meta.name + "---" + goIntoNum)
                     this.node.children[4].active = true
                     this.node.children[3].active = true
                     this.node.children[2].active = true
@@ -186,7 +183,7 @@ export class ItemCtrl extends Component {
                             this.node.children[4].children[j].children[0].active = true
                         }
                     }
-                    this.node.children[2].getComponent(Label).string = meta.name + "  Lv" + create.lv + "/" + create.maxLv
+                    this.node.children[2].getComponent(Label).string = create.name + "  Lv" + create.lv + "/" + create.maxLv
                     // 仙、佛、圣、魔、妖、兽
                     const cmp = new Map([
                         ['sacred', '仙界'],
@@ -198,7 +195,7 @@ export class ItemCtrl extends Component {
                     ]);
                     // this.power = this.power + parseInt(this.getZhanli(create[i]).toString())
                     const position = ["仙灵", "神将", "武圣"]
-                    this.node.children[3].getComponent(Label).string = cmp.get(meta.CharacterCamp) + "." + position[meta.position]
+                    this.node.children[3].getComponent(Label).string =cmp.get(create.camp) + "." + create.profession
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                 }

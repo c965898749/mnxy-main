@@ -41,7 +41,7 @@ export class EqHeroAllHeros extends Component {
                 await holAnimationNode
                     .getComponent(EqHeroCharacterDetail)
                     .setCharacter(eqCharacters, async (c, n) => {
-                        this.clickFun1(c.id, n)
+                        this.clickFun1(c.uuid, n)
                         return
                     })
                 this.node.parent.getChildByName("CharacterDetail").active = true

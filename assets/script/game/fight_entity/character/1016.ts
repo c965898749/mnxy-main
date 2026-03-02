@@ -51,7 +51,7 @@ export class Character extends CharacterMetaState {
     PassiveIntroduceTwo: string = `
     
     禁心咒 Lv1
-    场下，每当有单位登场，有17%几率令场上英雄沉默2回合
+    场下，每当有单位登场，有50%几率令场上英雄沉默2回合
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `

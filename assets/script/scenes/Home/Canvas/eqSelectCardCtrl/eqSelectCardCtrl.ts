@@ -47,7 +47,8 @@ export class eqSelectCardCtrl extends Component {
                     item.getChildByName("star-001").children[j].children[0].active = true
                 }
             }
-            item.getChildByName("stackCount").getComponent(Label).string = create[i].stackCount + ""
+            item.getChildByName("Label-001").active = false;
+            item.getChildByName("stackCount").active = false;
             item.getChildByName("name").getComponent(Label).string = create[i].name + "  Lv" + create[i].lv + "/" + create[i].maxLv
             // 仙、佛、圣、魔、妖、兽
             const cmp = new Map([

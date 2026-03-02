@@ -51,7 +51,6 @@ export class SelectCardCtrl extends Component {
         for (let i = 0; i < create.length; i++) {
             let item = nodePool.get()
             item.getChildByName("Button").active = true
-            const meta = CharacterEnum[create[i].id]
             item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`game/texture/frames/hero/Header/${create[i].id}/spriteFrame`, SpriteFrame)
             // 渲染星级
@@ -63,7 +62,7 @@ export class SelectCardCtrl extends Component {
                 }
             }
             item.getChildByName("stackCount").getComponent(Label).string =create[i].stackCount+""
-            item.getChildByName("name").getComponent(Label).string = meta.name + "  Lv" + create[i].lv + "/"+create[i].maxLv
+            item.getChildByName("name").getComponent(Label).string = create[i].name + "  Lv" + create[i].lv + "/"+create[i].maxLv
             // 仙、佛、圣、魔、妖、兽
             const cmp = new Map([
                 ['sacred', '仙界'],
@@ -75,7 +74,7 @@ export class SelectCardCtrl extends Component {
             ]);
 
             const position = ["仙灵", "神将", "武圣"]
-            item.getChildByName("Camp").getComponent(Label).string = cmp.get(meta.CharacterCamp) + "." + position[meta.position]
+            item.getChildByName("Camp").getComponent(Label).string = cmp.get(create[i].camp) + "." + create[i].profession
             // // 绑定事件
             item.getChildByName("Button").getComponent(Button).transition = 3
             item.getChildByName("Button").getComponent(Button).zoomScale = 0.9

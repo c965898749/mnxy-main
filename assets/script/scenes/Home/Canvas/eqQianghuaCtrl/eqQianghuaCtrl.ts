@@ -73,7 +73,7 @@ export class eqQianghuaCtrl extends Component {
     }
 
     async clickFun(create) {
-        this._zhuId = create.id
+        this._zhuId = create.uuid
         AudioMgr.inst.playOneShot("sound/other/click");
         let $node = this.zhuCard.getChildByName("HeroCardItem");
         $node.getChildByName("heroMask").getChildByName("hero").getComponent(Sprite).spriteFrame =
@@ -194,7 +194,7 @@ export class eqQianghuaCtrl extends Component {
         this.cahracterQueue2 = []
         this.cahracterQueue2 = config.userData.equipments
         if (this._zhuId) {
-            this.cahracterQueue2 = this.cahracterQueue2.filter(x => this._zhuId != x.id)
+            this.cahracterQueue2 = this.cahracterQueue2.filter(x => this._zhuId != x.uuid+"")
         }
         ////console.log(this.cahracterQueue2)
         await this.render2(this.cahracterQueue2)
@@ -278,7 +278,7 @@ export class eqQianghuaCtrl extends Component {
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
 
                     for (var i = 0; i < userInfo.eqCharactersList.length; i++) {
-                        if (this._zhuId == userInfo.eqCharactersList[i].id) {
+                        if (this._zhuId == userInfo.eqCharactersList[i].uuid) {
                             this.congCard.getChildByName("main_bg").getComponent(Sprite).spriteFrame =
                                 await util.bundle.load(`image/qianghua/congCard2/spriteFrame`, SpriteFrame)
                             this.congCard.getChildByName("num").getComponent(Label).string = null
