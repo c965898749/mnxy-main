@@ -394,7 +394,7 @@ export class AddEquipmentCtrl extends Component {
             this.butn4.getComponent(UIOpacity).opacity = 100;
             this.butn3.getComponent(UIOpacity).opacity = 100;
             this.butn5.getComponent(UIOpacity).opacity = 255;
-            this.daNum.getComponent(Label).string = "(" + config.userData.diamond + ")"
+            this.chongzhiNode.getComponent(Label).string = "1000(" + config.userData.diamond + ")"
         }
     }
 

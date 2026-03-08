@@ -612,7 +612,7 @@ export class FightMap extends Component {
                                 selectSkeleton2.setCompleteListener(() => { selectSkeleton2.node.active = false })
                             })
                             await new Promise(res => setTimeout(res, 200 / this.timeScale))
-                        } if (eventType == "斩妖剑") {
+                        } else if (eventType == "斩妖剑") {
                             AudioMgr.inst.playOneShot("sound/fight/skill/DHSZ3");
                             let selectSkeleton = targetCharacterNode.getChildByName("DHSZ").getComponent(sp.Skeleton)
                             selectSkeleton.node.active = true
@@ -879,6 +879,8 @@ export class FightMap extends Component {
 
                         } else {
                             if (fightProcess.targetFieldStatus) {
+                                console.log(effectType,444);
+                                
                                 this.showNumber(this.hasLetterA(fightProcess.targetUnitId), targetCharacterNode, -fightProcess.singleTargetValue, new math.Color(255, 176, 126, 255), 40)
                                 let hut = targetCharacterNode.getChildByName(effectType).getComponent(sp.Skeleton)
                                 hut.node.active = true

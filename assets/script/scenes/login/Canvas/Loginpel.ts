@@ -14,6 +14,8 @@ export class Loginpel extends Component {
     Username: EditBox;
     @property(EditBox)
     Password: EditBox;
+    @property(EditBox)
+    YaoCode: EditBox;
     // redis-server.exe redis.windows.conf
     // url = "http://192.168.0.104:8080/"
     url = "http://127.0.0.1:8080/"
@@ -37,7 +39,34 @@ export class Loginpel extends Component {
     @property(Label)
     downloadRemainTimeLabel: Label = null!;
 
+    @property({ tooltip: "QQ群号" })
+    public qqGroupNum: string = "587452663"; // 替换为你的群号
 
+    // 按钮点击回调：打开超链接
+    public onButtonClick() {
+        let groupUrl = "";
+        // 1. 区分平台生成QQ加群链接
+        if (sys.isBrowser) {
+            // 网页端：QQ加群网页链接
+            groupUrl = `https://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=rXTeZRMHy35lfIWcuardpJaZbQyUl9yp&authKey=xpEbNlr4/WHTL/cPd9FtcyI73lr95JgdPiRspKB2Gd7z/egoMqPX4hHOowZ5DgNt&noverify=0&group_code=587452663`;
+        } else if (sys.isNative) {
+            // 原生端：QQ私有协议
+            if (sys.os === sys.OS.ANDROID) {
+                groupUrl = `mqqapi://card/show_pslcard?src_type=internal&version=1&uin=${this.qqGroupNum}&card_type=group&source=qrcode`;
+            } else if (sys.os === sys.OS.IOS) {
+                groupUrl = `mqq://im/chat?chat_type=group&uin=${this.qqGroupNum}&version=1&src_type=web`;
+            }
+        }
+
+        if (!groupUrl) {
+            console.error("当前平台不支持QQ加群跳转");
+            return;
+        }
+
+        // 2. ✅ 核心修改：使用Cocos内置sys.openURL，跨平台兼容
+        sys.openURL(groupUrl);
+        console.log(`正在打开QQ加群链接：${groupUrl}`);
+    }
     protected onLoad(): void {
         if (JSB) {
             this.node.getChildByName("update").active = true;
@@ -323,6 +352,7 @@ export class Loginpel extends Component {
                             "darkSteel": userInfo.darkSteel,
                             "purpleGold": userInfo.purpleGold,
                             "crystal": userInfo.crystal,
+                             "myCode":userInfo.myCode
                         },
                     }
                     this.SetLeaveEnergy(userInfo.tiliCount)
@@ -401,11 +431,37 @@ export class Loginpel extends Component {
             const close = util.message.confirm({ message: "请输入密码" })
             return;
         }
+        this.node.getChildByName("YaoCode").active = true
+
+    }
+
+    closeYao() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.getChildByName("YaoCode").active = false
+    }
+    yaoCode() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        const username = this.Username.string;
+        const yaoCode = this.YaoCode.string;
+        const password = this.Password.string; // 假设有两个输入框，分别用于用户名和密码
+        if (!username) {
+            const close = util.message.confirm({ message: "请输入账号" })
+            return;
+        }
+        if (!password) {
+            const close = util.message.confirm({ message: "请输入密码" })
+            return;
+        }
+        if (!yaoCode) {
+            const close = util.message.confirm({ message: "请输入邀请码" })
+            return;
+        }
         // 验证逻辑（示例）
         if (username && password) {
             const postData = {
                 username: username,
-                userpassword: password
+                userpassword: password,
+                yaoCode:yaoCode
             };
             // let formData = new FormData();
             // formData.append('username', username);
@@ -525,6 +581,7 @@ export class Loginpel extends Component {
                                 "darkSteel": userInfo.darkSteel,
                                 "purpleGold": userInfo.purpleGold,
                                 "crystal": userInfo.crystal,
+                                "myCode":userInfo.myCode
                             },
                         }
                         this.SetLeaveEnergy(userInfo.tiliCount)

@@ -1,15 +1,17 @@
-import { _decorator, Component, Label, Node, tween, v3, sp, director, Prefab, instantiate, find, Sprite, SpriteFrame } from 'cc';
+import { _decorator, Component, Label, Node, tween, v3, sp, director, Prefab, instantiate, find, Sprite, SpriteFrame, Button } from 'cc';
 import { L } from 'db://assets/script/common/common/Language';
 import { getConfig, getToken, updateTiliAndHuoLi, updateTiliTime } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 import { FightMap } from '../../../Fight/Canvas/FightMap';
 import { HomeCanvas } from '../../HomeCanvas';
+import { Rewards } from '../../rewards/Rewards';
 const { ccclass, property } = _decorator;
 
 @ccclass('PveCtrl')
 export class PveCtrl extends Component {
-
+    @property(Button)
+    btnUpdate: Button
     @property(Node)
     Tili: Node
     @property(Node)
@@ -45,6 +47,13 @@ export class PveCtrl extends Component {
     @property({ type: cc.Integer, tooltip: "固定尺寸" })
     energy = 0
     huoliEnergy = 0
+    @property(Node)
+    introduceBack: Node
+    @property(Node)
+    numNode: Node
+    @property(Node)
+    useNumNode: Node
+    num = 0;
     start() {
         updateTiliAndHuoLi()
         this.refresh()
@@ -83,6 +92,7 @@ export class PveCtrl extends Component {
                 //console.log(data); // 处理响应数据
                 if (data.success == '1') {
                     var data = data.data
+                    this.chapter = data.id;
                     for (let i = 0; i < data["pveBossDetails"].length; i++) {
                         let pveBossDetails = data["pveBossDetails"][i];
                         let bossNode = this.BossList.children[i];
@@ -117,6 +127,7 @@ export class PveCtrl extends Component {
                         1,
                         1
                     )
+                    this.num = data.num
                     this.node.active = true
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
@@ -222,6 +233,16 @@ export class PveCtrl extends Component {
     }
 
     async tanSuo() {
+
+        this.btnUpdate.interactable = false
+        let time = 5
+        let self = this
+        this.schedule(function () {
+            time--
+        }, 1, 5)
+        this.scheduleOnce(function () {
+            self.btnUpdate.interactable = true
+        }, 10)
         let [chapter, tribulation, level] = this.chapter.split('-');
         if (Number(level) > 10) {
             return await util.message.prompt({ message: "关卡已探索完" })
@@ -348,6 +369,89 @@ export class PveCtrl extends Component {
         var key = 'Leave_EnergyNumber2';
         var value = i + "";
         localStorage.setItem(key, value);
+    }
+    openIntroduceBack() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.introduceBack.active = true
+        this.numNode.getComponent(Label).string = this.num + ""
+    }
+    closeIntroduceBack() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.introduceBack.active = false
+    }
+
+    async saoDan() {
+
+        var useNum = Number(this.useNumNode.getComponent(Label).string)
+        if (Number(useNum) <= 0) {
+            return await util.message.prompt({ message: "请选择扫荡券" })
+        }
+        var LeaveEnergy = this.GetLeaveEnergy();
+        if (LeaveEnergy - 2 * useNum < 0) {
+            return await util.message.prompt({ message: "体力不足" })
+        }
+        let [chapter, tribulation, level] = this.chapter.split('-');
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            str: chapter + "-" + tribulation + "-" + level,
+            userId: config.userData.userId,
+            totalSilverSpent: useNum
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "saodan", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    var map = data.data;
+                    var user = map['user'];
+                    this.useNumNode.getComponent(Label).string = "0"
+                    const reward = map["rewards"];
+                    config.userData.bronze1 = user.bronze1
+                    config.userData.gold = user.gold
+                    config.userData.diamond = user.diamond
+                    config.userData.bronze = user.bronze
+                    config.userData.darkSteel = user.darkSteel
+                    config.userData.purpleGold = user.purpleGold
+                    config.userData.crystal = user.crystal
+                    config.userData.characters = user.characterList
+                    config.userData.exp = user.exp
+                    config.userData.lv = user.lv
+                    this.Exp.getChildByName("ExpCount").getComponent(Label).string = "还需" + (1000 - config.userData.exp)
+                    this.ExpBar.setScale(
+                        config.userData.exp / 1000,
+                        1,
+                        1
+                    )
+                    localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    this.SetLeaveEnergy(LeaveEnergy - 2 * useNum)
+                    const rewardsFab = await util.bundle.load("prefab/rewards", Prefab)
+                    const rewards = instantiate(rewardsFab)
+                    this.node.parent.addChild(rewards)
+                    await rewards
+                        .getComponent(Rewards)
+                        .read(reward)
+
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+
+
     }
 }
 

@@ -15,9 +15,9 @@ export class MapCrtl extends Component {
     Map: Node
     index: number = 0
     initialized = false;
-    tiles = ["踏上旅途", "冲向妖界", "龙宫探宝", "地府改命", "大闹天宫","西天取经"]
+    tiles = ["踏上旅途", "冲向妖界", "龙宫探宝", "地府改命", "大闹天宫","西天取经","修成正果"]
     start() {
-        this.Title.getComponent(Label).string = "踏上旅途 1/6"
+        this.Title.getComponent(Label).string = "踏上旅途 1/7"
         this.refresh()
     }
     onEnable() {
@@ -39,7 +39,7 @@ export class MapCrtl extends Component {
         // 验证关卡格式是否正确
         if (
             isNaN(currentChapter) || isNaN(currentCalamity) || isNaN(currentStage) ||
-            currentChapter < 1 || currentChapter > 6 ||
+            currentChapter < 1 || currentChapter > 7 ||
             currentCalamity < 1 || currentCalamity > 6 ||
             currentStage < 1 || currentStage > 10
         ) {
@@ -87,10 +87,10 @@ export class MapCrtl extends Component {
             .to(0.5, { position: v3(-640, 0) })
             .start();
         this.index++
-        if (this.index >= 6) {
+        if (this.index >= 7) {
             this.index = 0
         }
-        this.Title.getComponent(Label).string = this.tiles[this.index] + (this.index + 1) + "/6"
+        this.Title.getComponent(Label).string = this.tiles[this.index] + (this.index + 1) + "/7"
         this.Map.children[this.index].setPosition(640, 0, 0)
         tween(this.Map.children[this.index])
             .to(0.5, { position: v3(0, 0) })
@@ -103,9 +103,9 @@ export class MapCrtl extends Component {
             .start();
         this.index--
         if (this.index < 0) {
-            this.index = 5
+            this.index = 6
         }
-        this.Title.getComponent(Label).string = this.tiles[this.index] + (this.index + 1) + "/6"
+        this.Title.getComponent(Label).string = this.tiles[this.index] + (this.index + 1) + "/7"
         this.Map.children[this.index].setPosition(-640, 0, 0)
         tween(this.Map.children[this.index])
             .to(0.5, { position: v3(0, 0) })

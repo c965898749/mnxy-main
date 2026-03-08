@@ -1,19 +1,55 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Label, Node, RichText, Sprite, SpriteFrame } from 'cc';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 import { questionCrtl } from '../questionCrtl/questionCrtl';
+import { AscensionPillJinjiCtrl } from './AscensionPillJinjiCtrl';
+import { getConfig, getToken } from 'db://assets/script/common/config/config';
 const { ccclass, property } = _decorator;
 
 @ccclass('AscensionPillCtrl')
 export class AscensionPillCtrl extends Component {
+    @property(Node)
+    numNode: Node
+    @property(Node)
+    useNumNode: Node
+    @property(Node)
+    introduceBack: Node
+    initialized: boolean = false
+    num = 0;
+    @property(Node)
+    RichTextNode: Node
+    @property(Node)
+    p1Node: Node
+    @property(Node)
+    p2Node: Node
+    @property(Node)
+    p3Node: Node
+    @property(Node)
+    p4Node: Node
+    @property(Node)
+    p5Node: Node
+    @property(Node)
+    p6Node: Node
+    @property(Node)
+    headNode: Node
+    @property(Node)
+    headName: Node
+    customEventNum
+    p4 = 0
+    p5 = 0
+    p6 = 0
     start() {
+        this.refresh()
+    }
+    onEnable() {
+        if (!this.initialized) {
+            // 初始化代码
+            this.initialized = true;
+        } else {
+            this.refresh()
+        }
 
     }
-
-    update(deltaTime: number) {
-
-    }
-
     async questry() {
         let message = `<size=26><color=#FFD700><b>飞升丹抢夺·极简最终版</b></color></size>
 
@@ -51,21 +87,134 @@ export class AscensionPillCtrl extends Component {
         this.node.active = false
     }
 
-    public async bodyReceive1() {
+    public async bodyReceive(event: Event, customEventData: string) {
         AudioMgr.inst.playOneShot("sound/other/click");
-        return await util.message.prompt({ message: "暂未开放" })
+        let activeCtrl = this.node.parent.getChildByName("AscensionPillJinjiCtrl")
+        activeCtrl.active = true
+        await this.node.parent.getChildByName("AscensionPillJinjiCtrl")
+            .getComponent(AscensionPillJinjiCtrl)
+            .render(customEventData)
     }
 
-    public async bodyReceive2() {
+    opendetail() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        return await util.message.prompt({ message: "暂未开放" })
+        this.node.parent.getChildByName("AscensionPillJinjiMessageCrtl").active = true
+    }
+    refresh() {
+        const config = getConfig()
+        const token = getToken()
+
+        const postData = {
+            token: token,
+            userId: config.userData.userId
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "ascensionPillDetail", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                //console.log(data); // 处理响应数据
+                if (data.success == '1') {
+                    let map = data.data
+                    const robRecord = map['robRecord'];
+                    const p1 = map['p1'];
+                    this.p1Node.getComponent(Label).string = p1
+                    const p2 = map['p2'];
+                    this.p2Node.getComponent(Label).string = p2
+                    const p3 = map['p3'];
+                    this.p3Node.getComponent(Label).string = p3
+                    this.p4 = map['p4'];
+                    this.p4Node.getComponent(Label).string = "材料 " + this.p4 + "/7"
+                    this.p5 = map['p5'];
+                    this.p5Node.getComponent(Label).string = "材料 " + this.p5 + "/7"
+                    this.p6 = map['p6'];
+                    this.p6Node.getComponent(Label).string = "材料 " + this.p6 + "/7"
+                    let content = null;
+                    content = `<color=#E36F1A>${robRecord.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>飞升丹夺取中</color>遭到<color=#EEE365>${robRecord.nickname}</color>抢夺你<color=#00BCD4>${robRecord.robPillNum}个飞升丹</color>。</color>`
+                    this.RichTextNode.getChildByName("RichText").getComponent(RichText).string = content
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+    }
+    async openIntroduceBack(event: Event, customEventData: string) {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        console.log(customEventData);
+        this.customEventNum=customEventData
+        this.introduceBack.active = true
+        if (customEventData == "1") {
+            this.headNode.getComponent(Sprite).spriteFrame = await util.bundle.load('image/bagCrtl/10400025/spriteFrame', SpriteFrame)
+            this.numNode.getComponent(Label).string = this.p4 + ""
+            this.headName.getComponent(Label).string = "力量琥珀"
+        } else if (customEventData == "2") {
+            this.headNode.getComponent(Sprite).spriteFrame = await util.bundle.load('image/bagCrtl/10400024/spriteFrame', SpriteFrame)
+            this.numNode.getComponent(Label).string = this.p5 + ""
+            this.headName.getComponent(Label).string = "元神勾玉"
+        } else {
+            this.headNode.getComponent(Sprite).spriteFrame = await util.bundle.load('image/bagCrtl/10400026/spriteFrame', SpriteFrame)
+            this.numNode.getComponent(Label).string = this.p6 + ""
+            this.headName.getComponent(Label).string = "月汐灵石"
+        }
+
+    }
+    closeIntroduceBack() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.introduceBack.active = false
     }
 
-    public async bodyReceive3() {
+    async feiShenhechen() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        return await util.message.prompt({ message: "暂未开放" })
-    }
+        var useNum = Number(this.useNumNode.getComponent(Label).string)
+        if (Number(useNum) < 7) {
+            return await util.message.prompt({ message: "请至少选择7个飞升材料" })
+        }
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            str: useNum,
+            userId: config.userData.userId,
+            id: this.customEventNum
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "feiShenhechen", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    this.refresh()
+                    this.useNumNode.getComponent(Label).string = "0"
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
 
+
+    }
 }
 
 

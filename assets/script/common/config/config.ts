@@ -25,7 +25,7 @@ class VolumeDetail {
 class ServerUrl {
     // redis-server.exe redis.windows.conf
     // url = "http://192.168.0.104:8080/"
-    // url = "http://127.0.0.1:8080/"
+    url = "http://127.0.0.1:8080/"
     // url="http://czx.yimem.com:3000/"
 }
 
@@ -71,6 +71,7 @@ class UserData extends Resource {
     public darkSteel: number = 0
     public purpleGold: number = 0
     public crystal: number = 0
+    public myCode:string
 
 
     // 已经收集到的英雄
@@ -89,6 +90,7 @@ class UserData extends Resource {
         this.diamond = or.diamond || 100
         this.soul = or.soul || 1000
         this.gameImg = or.gameImg
+        this.myCode=or.myCode
         this.winCount = or.winCount
         this.rate = or.rate || 0
         this.bronze = or.bronze || 0

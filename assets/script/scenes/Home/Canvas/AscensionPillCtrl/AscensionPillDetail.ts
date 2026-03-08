@@ -304,7 +304,7 @@ export class AscensionPillDetail extends Component {
                     this.danyaoNum.getComponent(Label).string = "X" + data.dangyaoTotal2 + "(" + data.dangyaoTotal + ")"
                     this.gold.getComponent(Label).string = data.gold
                     this.hearoNum.getComponent(Label).string = "X" + data.cardTotal2 + "(" + data.cardTotal + ")"
-                    var userInfo = data.userInfo;
+                    var userInfo = data.userInfo;                    
                     config.userData.gold = userInfo.gold
                     config.userData.characters = userInfo.characterList
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
