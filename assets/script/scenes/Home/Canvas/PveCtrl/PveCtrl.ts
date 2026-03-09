@@ -53,7 +53,12 @@ export class PveCtrl extends Component {
     numNode: Node
     @property(Node)
     useNumNode: Node
+    @property(Node)
+    jiangliNode: Node
     num = 0;
+    baoCount = 20
+    @property(Node)
+    shangxianNode:Node
     start() {
         updateTiliAndHuoLi()
         this.refresh()
@@ -121,6 +126,11 @@ export class PveCtrl extends Component {
                         1,
                         1
                     )
+                    if (level == 10) {
+                        this.jiangliNode.active = true
+                    } else {
+                        this.jiangliNode.active = false
+                    }
                     this.Exp.getChildByName("ExpCount").getComponent(Label).string = "还需" + (1000 - config.userData.exp)
                     this.ExpBar.setScale(
                         config.userData.exp / 1000,
@@ -128,6 +138,7 @@ export class PveCtrl extends Component {
                         1
                     )
                     this.num = data.num
+                    this.baoCount = data.baoCount
                     this.node.active = true
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
@@ -298,6 +309,7 @@ export class PveCtrl extends Component {
                                 const pveDetail = map['pveDetail'];
                                 const rewards = map["rewards"];
                                 const levelUp = map["levelUp"]
+                                this.baoCount = user.baoCount
                                 const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
                                 const holAnimationNode = instantiate(holAnimationPrefab)
                                 this.node.parent.addChild(holAnimationNode)
@@ -327,6 +339,11 @@ export class PveCtrl extends Component {
                                         1,
                                         1
                                     )
+                                    if (level == 10) {
+                                        this.jiangliNode.active = true
+                                    } else {
+                                        this.jiangliNode.active = false
+                                    }
                                     config.userData.characters = user.characterList
                                 }
                                 config.userData.exp = user.exp
@@ -374,6 +391,8 @@ export class PveCtrl extends Component {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.introduceBack.active = true
         this.numNode.getComponent(Label).string = this.num + ""
+        this.useNumNode.getComponent(Label).string = "0"
+        this.shangxianNode.getComponent(Label).string = "今日扫荡宝石："+this.baoCount+"/20"
     }
     closeIntroduceBack() {
         AudioMgr.inst.playOneShot("sound/other/click");
@@ -427,6 +446,8 @@ export class PveCtrl extends Component {
                     config.userData.characters = user.characterList
                     config.userData.exp = user.exp
                     config.userData.lv = user.lv
+                    this.baoCount=user.baoCount
+                    this.shangxianNode.getComponent(Label).string = "今日扫荡宝石："+this.baoCount+"/20"
                     this.Exp.getChildByName("ExpCount").getComponent(Label).string = "还需" + (1000 - config.userData.exp)
                     this.ExpBar.setScale(
                         config.userData.exp / 1000,
