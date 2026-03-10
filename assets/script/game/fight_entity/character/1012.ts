@@ -59,7 +59,7 @@ export class Character extends CharacterMetaState {
     SkillIntroduce: string = `
     
     燃灯道人协同 Lv1
-    与燃灯道人在同一队伍时，增加自身1862点生命上限，88点，158点速度
+    与燃灯道人在同一队伍时，增加自身266点生命上限，88点，158点速度
     `.replace(/ /ig, "")
 
 

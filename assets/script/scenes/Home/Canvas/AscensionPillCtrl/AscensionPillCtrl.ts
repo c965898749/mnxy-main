@@ -138,6 +138,17 @@ export class AscensionPillCtrl extends Component {
                     this.p6 = map['p6'];
                     this.p6Node.getComponent(Label).string = "材料 " + this.p6 + "/7"
                     let content = null;
+                    if (this.customEventNum) {
+                        if (this.customEventNum == "1") {
+                            this.numNode.getComponent(Label).string = this.p4 + ""
+                        }
+                        if (this.customEventNum == "2") {
+                            this.numNode.getComponent(Label).string = this.p5 + ""
+                        }
+                        if (this.customEventNum == "3") {
+                            this.numNode.getComponent(Label).string = this.p6 + ""
+                        }
+                    }
                     content = `<color=#E36F1A>${robRecord.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>飞升丹夺取中</color>遭到<color=#EEE365>${robRecord.nickname}</color>抢夺你<color=#00BCD4>${robRecord.robPillNum}个飞升丹</color>。</color>`
                     this.RichTextNode.getChildByName("RichText").getComponent(RichText).string = content
                 } else {
@@ -152,7 +163,7 @@ export class AscensionPillCtrl extends Component {
     async openIntroduceBack(event: Event, customEventData: string) {
         AudioMgr.inst.playOneShot("sound/other/click");
         console.log(customEventData);
-        this.customEventNum=customEventData
+        this.customEventNum = customEventData
         this.introduceBack.active = true
         if (customEventData == "1") {
             this.headNode.getComponent(Sprite).spriteFrame = await util.bundle.load('image/bagCrtl/10400025/spriteFrame', SpriteFrame)

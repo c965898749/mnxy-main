@@ -20,6 +20,8 @@ export class RecruitCardCtrl extends Component {
     @property(Node)
     diamond3: Node
     @property(Node)
+    diamond4: Node
+    @property(Node)
     BlockInputEvents: Node
     start() {
 
@@ -28,10 +30,11 @@ export class RecruitCardCtrl extends Component {
     update(deltaTime: number) {
         const config = getConfig()
         // console.log(config)
-        this.rateNode.getComponent(Label).string = config.userData.rate+"倍"
+        this.rateNode.getComponent(Label).string = config.userData.rate + "倍"
         this.diamond1.getComponent(Label).string = "(已有" + config.userData.soul + ")"
         this.diamond2.getComponent(Label).string = "(已有" + config.userData.diamond + ")"
         this.diamond3.getComponent(Label).string = "(已有" + config.userData.diamond + ")"
+        this.diamond4.getComponent(Label).string = "(已有" + config.userData.soul + ")"
     }
 
     onGStart3(recruitCardCtrl: recruitCardCtrl) {
@@ -217,6 +220,75 @@ export class RecruitCardCtrl extends Component {
                         config.userData.characters = dto.characters
                         config.userData.diamond = user.diamond
                         config.userData.rate = user.rate
+                        localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    }
+
+                } else {
+                    this.BlockInputEvents.active = false
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                this.BlockInputEvents.active = false
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+
+    }
+
+
+    async onGStart4(recruitCardCtr) {
+        this.BlockInputEvents.active = true
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "/soulShiChou", options)
+            .then(response => {
+                if (!response.ok) {
+                    this.BlockInputEvents.active = false
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                console.log(data); // 处理响应数据
+                if (data.success == '1') {
+                    var map = data.data;
+                    let dto = map['dto'];
+                    let user = map['user'];
+                    this.tenCard.active = true;
+                    this.tenCardPos.active = true;
+                    AudioMgr.inst.playOneShot("sound/other/click");
+                    if (this.tenCard.children.length > 0) {
+                        //  console.log('recruitCardCtrl存在卡牌');
+                    } else {
+                        //    console.log('recruitCardCtrl不存在卡牌10');
+                        const nodePool = util.resource.getNodePool(
+                            await util.bundle.load("/prefab/RecuitCardItem", Prefab)
+                        )
+                        AudioMgr.inst.playOneShot("sound/other/getcard");
+                        for (let i = 0; i < dto.heros.length; i++) {
+                            const node = nodePool.get()
+                            const characterAvatar = node.getComponent(RecuitCardItem)
+                            characterAvatar.node.parent = this.tenCardPos.children[i];
+                            characterAvatar.node.position.x = 0;
+                            characterAvatar.node.position.y = 0;
+                            characterAvatar.init(dto.heros[i], () => {
+                                this.buttonOk.node.active = true;
+                            });
+                        }
+                        config.userData.characters = dto.characters
+                        config.userData.soul = user.soul
+                        config.userData.rate = user.rate
+                        this.diamond4.getComponent(Label).string = "(已有" + config.userData.soul + ")"
                         localStorage.setItem("UserConfigData", JSON.stringify(config))
                     }
 

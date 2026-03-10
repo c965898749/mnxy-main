@@ -421,11 +421,9 @@ export class FightMap extends Component {
                 let multiTargetDataMap = fightProcess.multiTargetDataMap
                 if (multiTargetDataMap) {
                     for (const key in multiTargetDataMap) {
-                        const targetBattleData = multiTargetDataMap[key]; // 拿到对应的值
-                        if (targetBattleData.fieldStatus) {
-                            let characterNode = this.getCharacterById(key)
+                        let characterNode = this.getCharacterById(key)
+                        if (characterNode) {
                             characterNode.getComponent(Sprite).spriteFrame = null
-                            //死亡移除所有动画
                             characterNode.children.forEach(buffNode => { buffNode.active = false; });
                         }
                         let itemNode = this.getChracterChangXiaById(key)
@@ -541,11 +539,9 @@ export class FightMap extends Component {
                                 } else {
                                     this.showNumber(this.hasLetterA(key), characterNode, -targetBattleData.value, new math.Color(255, 176, 126, 255), 40)
                                 }
-                                if (targetBattleData.fieldStatus) {
-                                    // 更新场上生命值
-                                    this.Hp.children[this.hasLetterA(key) ? 0 : 1].getComponent(ProgressBar).progress = targetBattleData.hpAfter / targetBattleData.hpBefore
-                                    this.Hp.children[this.hasLetterA(key) ? 0 : 1].getChildByName("user_li_count").getComponent(Label).string = targetBattleData.hpAfter + "/" + targetBattleData.hpBefore
-                                }
+                                // 更新场上生命值
+                                this.Hp.children[this.hasLetterA(key) ? 0 : 1].getComponent(ProgressBar).progress = targetBattleData.hpAfter / targetBattleData.hpBefore
+                                this.Hp.children[this.hasLetterA(key) ? 0 : 1].getChildByName("user_li_count").getComponent(Label).string = targetBattleData.hpAfter + "/" + targetBattleData.hpBefore
 
                             }
 
@@ -832,7 +828,7 @@ export class FightMap extends Component {
                             || effectType == 'HP_UP' || effectType == 'HP_UP_PRET' || effectType == 'BLOODTHIRST' || effectType == 'HEAL'
                             || effectType == 'SPEED_UP' || effectType == 'SPEED_UP_PRET') {
                             AudioMgr.inst.playOneShot("sound/fight/skill/HP_UP");
-                            if (fightProcess.targetFieldStatus) {
+                            if (targetCharacterNode) {
                                 let selectSkeleton = targetCharacterNode.getChildByName("HP_UP").getComponent(sp.Skeleton)
                                 selectSkeleton.node.active = true
                                 selectSkeleton.setAnimation(0, "animation", false)
@@ -860,7 +856,7 @@ export class FightMap extends Component {
                             || effectType == 'MAX_HP_DOWN' || effectType == 'MAX_HP_DOWN_PRET'
                             || effectType == 'SPEED_DOWN' || effectType == 'SPEED_DOWN_PRET') {
                             AudioMgr.inst.playOneShot("sound/fight/skill/MAX_HP_DOWN");
-                            if (fightProcess.targetFieldStatus) {
+                            if (targetCharacterNode) {
                                 let selectSkeleton = targetCharacterNode.getChildByName("MAX_HP_DOWN").getComponent(sp.Skeleton)
                                 selectSkeleton.node.active = true
                                 selectSkeleton.setAnimation(0, "animation", false)
@@ -878,9 +874,9 @@ export class FightMap extends Component {
                             }
 
                         } else {
-                            if (fightProcess.targetFieldStatus) {
-                                console.log(effectType,444);
-                                
+                            if (targetCharacterNode) {
+                                console.log(effectType, 444);
+
                                 this.showNumber(this.hasLetterA(fightProcess.targetUnitId), targetCharacterNode, -fightProcess.singleTargetValue, new math.Color(255, 176, 126, 255), 40)
                                 let hut = targetCharacterNode.getChildByName(effectType).getComponent(sp.Skeleton)
                                 hut.node.active = true
@@ -905,7 +901,7 @@ export class FightMap extends Component {
                             await this.showString(1, targetChangXiaNode, new math.Color(255, 0, 0), fightProcess.extraDesc)
                         }
 
-                        if (fightProcess.targetFieldStatus) {
+                        if (targetCharacterNode) {
                             // 更新场上生命值
                             this.Hp.children[this.hasLetterA(fightProcess.targetUnitId) ? 0 : 1].getComponent(ProgressBar).progress = fightProcess.targetHpAfter / fightProcess.targetHpBefore
                             this.Hp.children[this.hasLetterA(fightProcess.targetUnitId) ? 0 : 1].getChildByName("user_li_count").getComponent(Label).string = fightProcess.targetHpAfter + "/" + fightProcess.targetHpBefore
@@ -1012,7 +1008,7 @@ export class FightMap extends Component {
                                 let characterItemNode = this.getChracterChangXiaById(fightProcess.sourceUnitId)
                                 let targetCharacterNode = this.getCharacterById(fightProcess.targetUnitId)
                                 let targetChangXiaNode = this.getChracterChangXiaById(fightProcess.targetUnitId)
-                                if (fightProcess.targetFieldStatus) {
+                                if (targetCharacterNode) {
                                     let effectTypeName = effectType
                                     if (effectType == 'XU_HEAL') {
                                         effectTypeName = 'HEAL'

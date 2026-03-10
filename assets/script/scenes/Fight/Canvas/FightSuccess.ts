@@ -56,7 +56,7 @@ export class FightSuccess extends Component {
                     this.rewards.children[i].getChildByName("hero").getComponent(Sprite).spriteFrame =
                         await util.bundle.load('image/ui/qiu/spriteFrame', SpriteFrame)
                 } else if ("4" == content.rewardType) {
-                    //护法、装备
+                    //护法
                     const meta = CharacterEnum[content.itemId]
                       this.rewards.children[i].getChildByName("hero").getComponent(Sprite).spriteFrame =
                     await util.bundle.load('game/texture/frames/hero/Header/' + content.itemId + '/spriteFrame', SpriteFrame)
@@ -65,6 +65,12 @@ export class FightSuccess extends Component {
                     //材料
                       this.rewards.children[i].getChildByName("hero").getComponent(Sprite).spriteFrame =
                     await util.bundle.load(content.img, SpriteFrame)
+                    this.rewards.children[i].getChildByName("Label").getComponent(Label).string = content.itemName
+                }else if ("7" == content.rewardType) {
+                    //装备
+                      let id=content.itemId+""
+                      this.rewards.children[i].getChildByName("hero").getComponent(Sprite).spriteFrame =
+                       await util.bundle.load(`game/texture/frames/emp/${id.split('_')[0]}/spriteFrame`, SpriteFrame)
                     this.rewards.children[i].getChildByName("Label").getComponent(Label).string = content.itemName
                 }
             }
