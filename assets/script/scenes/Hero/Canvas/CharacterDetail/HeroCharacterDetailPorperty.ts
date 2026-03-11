@@ -140,17 +140,16 @@ export class HeroCharacterDetailPorperty extends Component {
                 n.getChildByName("Label").getComponent(Label).string = nameNode[index]
                 n.getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame = null
             }
-            n.on("click", () => this.empOnclick(create.id, index))
+            n.on("click", () => this.empOnclick(create, index))
         })
     }
 
-    async empOnclick(itemId, empType) {
+    async empOnclick(create, empType) {
         // AudioMgr.inst.playOneShot("sound/other/click");
-        console.log("点击了装备栏位", itemId, empType)
         const config = getConfig()
         var cahracterQueue = []
         cahracterQueue = config.userData.equipments
-        cahracterQueue = cahracterQueue.filter(x => x.goIntoNum == itemId && x.eqType == empType)
+        cahracterQueue = cahracterQueue.filter(x => x.goIntoNum == create.id && x.eqType == empType)
         if (cahracterQueue.length > 0) {
             let eqCharacters = cahracterQueue[0]
             const holAnimationPrefab = await util.bundle.load("prefab/CharacterDetail", Prefab)
@@ -168,8 +167,8 @@ export class HeroCharacterDetailPorperty extends Component {
         } else {
             var cahracterQueue2 = []
             cahracterQueue2 = config.userData.equipments
-            cahracterQueue2 = cahracterQueue2.filter(x => x.goIntoNum == 0 && x.eqType == empType)
-            await this.render(cahracterQueue2, itemId, empType)
+            cahracterQueue2 = cahracterQueue2.filter(x => x.goIntoNum == 0 && x.eqType == empType&& x.profession == create.profession&&x.camp==create.camp)
+            await this.render(cahracterQueue2, create.id, empType)
         }
     }
     async render(characterQueue: EquipmentStateCreate[], itemId: string, empType: number) {
