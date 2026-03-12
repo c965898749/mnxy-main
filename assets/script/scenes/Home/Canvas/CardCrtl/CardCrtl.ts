@@ -46,6 +46,11 @@ export class CardCrtl extends Component {
         this.node.parent.getChildByName("AscensionPillDetail").active = true
     }
 
+    public async extendExp() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("ExtendExp").active = true
+    }
+
     public openSet() {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.parent.getChildByName("SetCtrl").active = true

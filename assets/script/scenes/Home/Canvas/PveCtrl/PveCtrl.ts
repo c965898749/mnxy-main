@@ -58,7 +58,7 @@ export class PveCtrl extends Component {
     num = 0;
     baoCount = 20
     @property(Node)
-    shangxianNode:Node
+    shangxianNode: Node
     start() {
         updateTiliAndHuoLi()
         this.refresh()
@@ -128,6 +128,14 @@ export class PveCtrl extends Component {
                     )
                     if (level == 10) {
                         this.jiangliNode.active = true
+                        this.jiangliNode.getChildByName("boss").getChildByName("hero").getComponent(Sprite).spriteFrame =
+                            await util.bundle.load('image/ui/icon_69/spriteFrame', SpriteFrame)
+                        this.jiangliNode.getChildByName("boss").getChildByName("Label").getComponent(Label).string = '100'
+                    } else if (level == 5 && data["reward"]) {
+                        this.jiangliNode.active = true
+                        this.jiangliNode.getChildByName("boss").getChildByName("hero").getComponent(Sprite).spriteFrame =
+                            await util.bundle.load('game/texture/frames/hero/Header/' + data["reward"] + '/spriteFrame', SpriteFrame)
+                        this.jiangliNode.getChildByName("boss").getChildByName("Label").getComponent(Label).string = '1'
                     } else {
                         this.jiangliNode.active = false
                     }
@@ -308,6 +316,7 @@ export class PveCtrl extends Component {
                                 const battle = map['battle'];
                                 const pveDetail = map['pveDetail'];
                                 const rewards = map["rewards"];
+                                const reward = map["reward"];
                                 const levelUp = map["levelUp"]
                                 this.baoCount = user.baoCount
                                 const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
@@ -341,6 +350,14 @@ export class PveCtrl extends Component {
                                     )
                                     if (level == 10) {
                                         this.jiangliNode.active = true
+                                        this.jiangliNode.getChildByName("boss").getChildByName("hero").getComponent(Sprite).spriteFrame =
+                                            await util.bundle.load('image/ui/icon_69/spriteFrame', SpriteFrame)
+                                        this.jiangliNode.getChildByName("boss").getChildByName("Label").getComponent(Label).string = '100'
+                                    } else if (level == 5 && reward) {
+                                        this.jiangliNode.active = true
+                                        this.jiangliNode.getChildByName("boss").getChildByName("hero").getComponent(Sprite).spriteFrame =
+                                            await util.bundle.load('game/texture/frames/hero/Header/' + reward + '/spriteFrame', SpriteFrame)
+                                        this.jiangliNode.getChildByName("boss").getChildByName("Label").getComponent(Label).string = ''
                                     } else {
                                         this.jiangliNode.active = false
                                     }
@@ -392,7 +409,7 @@ export class PveCtrl extends Component {
         this.introduceBack.active = true
         this.numNode.getComponent(Label).string = this.num + ""
         this.useNumNode.getComponent(Label).string = "0"
-        this.shangxianNode.getComponent(Label).string = "今日扫荡宝石："+this.baoCount+"/20"
+        this.shangxianNode.getComponent(Label).string = "今日扫荡宝石：" + this.baoCount + "/20"
     }
     closeIntroduceBack() {
         AudioMgr.inst.playOneShot("sound/other/click");
@@ -446,8 +463,8 @@ export class PveCtrl extends Component {
                     config.userData.characters = user.characterList
                     config.userData.exp = user.exp
                     config.userData.lv = user.lv
-                    this.baoCount=user.baoCount
-                    this.shangxianNode.getComponent(Label).string = "今日扫荡宝石："+this.baoCount+"/20"
+                    this.baoCount = user.baoCount
+                    this.shangxianNode.getComponent(Label).string = "今日扫荡宝石：" + this.baoCount + "/20"
                     this.Exp.getChildByName("ExpCount").getComponent(Label).string = "还需" + (1000 - config.userData.exp)
                     this.ExpBar.setScale(
                         config.userData.exp / 1000,

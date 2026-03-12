@@ -149,8 +149,8 @@ export class AscensionPillCtrl extends Component {
                             this.numNode.getComponent(Label).string = this.p6 + ""
                         }
                     }
-                    content = `<color=#E36F1A>${robRecord.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>飞升丹夺取中</color>遭到<color=#EEE365>${robRecord.nickname}</color>抢夺你<color=#00BCD4>${robRecord.robPillNum}个飞升丹</color>。</color>`
-                    this.RichTextNode.getChildByName("RichText").getComponent(RichText).string = content
+                    content = `<color=#E36F1A>${robRecord.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>飞升丹夺取中</color>遭到<color=#EEE365>${robRecord.nickname}</color>抢夺你<color=#00BCD4>${robRecord.robPillNum}个${robRecord.itemName}</color>。</color>`
+                    this.RichTextNode.getComponent(RichText).string = content
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                 }

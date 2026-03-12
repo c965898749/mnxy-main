@@ -80,7 +80,7 @@ export class AscensionPillJinjiMessageCrtl extends Component {
                         await util.bundle.load(messageDetail.gameImg, SpriteFrame)
 
                     let content = null;
-                    content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>飞升丹夺取中</color>遭到<color=#EEE365>${messageDetail.nickname}</color>抢夺你<color=#00BCD4>${messageDetail.robPillNum}个飞升丹</color>。</color>`
+                    content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>飞升丹夺取中</color>遭到<color=#EEE365>${messageDetail.nickname}</color>抢夺你<color=#00BCD4>${messageDetail.robPillNum}个${messageDetail.itemName}</color>。</color>`
                     item.getChildByName("RichText").getComponent(RichText).string = content
                     this.ContentNode.addChild(item)
                     continue
