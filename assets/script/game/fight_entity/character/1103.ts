@@ -10,21 +10,21 @@ import { CharacterState } from "../../fight/character/CharacterState";
 import { BuffState } from "../../fight/buff/BuffState";
 
 
-@RegisterCharacter({ id: "1060" })
+@RegisterCharacter({ id: "1103" })
 export class Character extends CharacterMetaState {
 
-    name: string = "鹏魔王"
+    name: string = "哮天犬"
 
-    AnimationDir: string = "game/fight_entity/character/1060"
+    AnimationDir: string = "game/fight_entity/character/1103"
 
 
-    AvatarPath: string = "game/texture/frames/hero/1060/spriteFrame"
+    AvatarPath: string = "game/texture/frames/hero/1103/spriteFrame"
 
-    HeaderPath: string = "game/texture/frames/hero/Header/1060/spriteFrame"
+    HeaderPath: string = "game/texture/frames/hero/Header/1103/spriteFrame"
 
     AnimationType: "DrangonBones" | "Spine" = "Spine"
 
-  AnimationScale: number = 1
+    AnimationScale: number = 1
 
     HpGrowth: number = 45
 
@@ -38,35 +38,34 @@ export class Character extends CharacterMetaState {
 
     Energy: number = 90
 
-    CharacterCamp: "ordinary" | "nature" | "abyss" | "dark" | "machine" | "sacred" = "dark"
+    CharacterCamp: "ordinary" | "nature" | "abyss" | "dark" | "machine" | "sacred" = "ordinary"
 
-   position = 1
+    position = 2
 
     CharacterQuality: number = 4
 
     PassiveIntroduceOne: string = `
     
-    死雨风暴 Lv1
-    死亡时，敌方所有生物中毒每回合损失10点生命
+    兽妖 Lv1
+    攻击前有10%概率提升攻击且使攻击附带疾病效果（本方每有一名兽族，额外增加20%的攻击力，攻击后清除）。
     `.replace(/ /ig, "")
+
 
     PassiveIntroduceTwo: string = `
 
-    死亡徘徊 Lv1
-    死亡时，令当前敌人中毒,令敌方每回合损失70点生命
+    月之暗面 lv1
+    场上，哮天犬(兽族护法数*20%)概率将所受伤害的10%转移给已方兽族护法。
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `
-    
-    大圣鸿威 Lv1
-    与狮驼王在同一队伍时，增加自身705点生命上限，63点攻击，176点速度
+
+    玄武 协同 lv1
+    与玄武在同一队伍时，增加自身352点生命上限，176点攻击，176点速度
     `.replace(/ /ig, "")
 
-    introduce: string = "为七大圣之一，自称混天大圣，位列第三。"
+    introduce: string = "吞天地环宇，食日月风雷。"
 
-    skillValue: string = `死雨风暴  死亡徘徊  大圣鸿威`
+    skillValue: string = `兽妖 月之暗面 玄武协同`
 
-
-  
 
 }

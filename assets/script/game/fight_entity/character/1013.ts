@@ -46,7 +46,7 @@ export class Character extends CharacterMetaState {
     PassiveIntroduceOne: string = `
     
     烛火燎原 Lv1
-    受到任意伤害时对全体敌方造成54点火焰伤害
+    场上，受到任意伤害时对全体敌方造成54点火焰伤害
     `.replace(/ /ig, "")
 
     PassiveIntroduceTwo: string = `
