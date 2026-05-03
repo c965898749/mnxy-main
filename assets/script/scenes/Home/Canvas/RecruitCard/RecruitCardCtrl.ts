@@ -23,6 +23,7 @@ export class RecruitCardCtrl extends Component {
     diamond4: Node
     @property(Node)
     BlockInputEvents: Node
+    isChongzhi=false
     start() {
 
     }
@@ -168,8 +169,15 @@ export class RecruitCardCtrl extends Component {
 
 
     }
-
     async onGStart2(recruitCardCtr) {
+        if (!this.isChongzhi) {
+            const result = await util.message.confirm({
+                message: "确定使用钻石10连抽吗?"
+            })
+            // 是否确定
+            if (result === false) return
+        }
+        this.isChongzhi = true
         this.BlockInputEvents.active = true
         const config = getConfig()
         const token = getToken()

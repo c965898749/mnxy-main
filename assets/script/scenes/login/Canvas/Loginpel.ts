@@ -40,7 +40,7 @@ export class Loginpel extends Component {
     downloadRemainTimeLabel: Label = null!;
 
     @property({ tooltip: "QQ群号" })
-    public qqGroupNum: string = "587452663"; // 替换为你的群号
+    public qqGroupNum: string = "1092641657"; // 替换为你的群号
 
     // 按钮点击回调：打开超链接
     public onButtonClick() {
@@ -48,7 +48,7 @@ export class Loginpel extends Component {
         // 1. 区分平台生成QQ加群链接
         if (sys.isBrowser) {
             // 网页端：QQ加群网页链接
-            groupUrl = `https://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=rXTeZRMHy35lfIWcuardpJaZbQyUl9yp&authKey=xpEbNlr4/WHTL/cPd9FtcyI73lr95JgdPiRspKB2Gd7z/egoMqPX4hHOowZ5DgNt&noverify=0&group_code=587452663`;
+            groupUrl = `http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=fnX_AEpW4t9XJpp-879tk2lkDo-XAKyq&authKey=RGLrlQBABDeCblVIuTlC33MYlk73F%2FXDhhLI9heMn9fycTq9G6yVVlI5l4BuqehF&noverify=0&group_code=1092641657`;
         } else if (sys.isNative) {
             // 原生端：QQ私有协议
             if (sys.os === sys.OS.ANDROID) {

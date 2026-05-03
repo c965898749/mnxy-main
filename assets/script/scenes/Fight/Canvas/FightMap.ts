@@ -160,7 +160,7 @@ export class FightMap extends Component {
                         this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("my_hp").getComponent(ProgressBar).progress = progress
                         this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = campB[i].maxHp + "/" + campB[i].maxHp
                         let create = campB[i]
-                        this.tiem.children[1].children[campA[i].goIntoNum - 1].getChildByName("header").on("click", () => this.clickFun(create))
+                        this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("header").on("click", () => this.clickFun(create))
                     }
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
@@ -299,7 +299,7 @@ export class FightMap extends Component {
                     material.setProperty('outerActive', 1);
                     material.setProperty('outerStyle', Style.透明衰减);
                     material.setProperty('outerColor', cc[fightProcess.flyup - 1]);
-                    material?.setProperty('outerWidth', 0.5);
+                    material?.setProperty('outerWidth', 0.8);
                     material.setProperty('innerActive', 0);
                     material.setProperty('brightness', 1);
                     let ut = characterNode.getComponent(UITransform);
@@ -644,7 +644,7 @@ export class FightMap extends Component {
 
                                 characterNode,
                                 {
-                                    targetPosition: { x: this.hasLetterA(fightProcess.sourceUnitId) ? -90 : 90, y: 0 },
+                                    targetPosition: { x: this.hasLetterA(fightProcess.sourceUnitId) ? 90 : -90, y: 0 },
                                     moveCurve: true,
                                     moveTimeScale: this.timeScale
                                 }
@@ -654,7 +654,7 @@ export class FightMap extends Component {
                             hut.node.active = true
                             hut.setAnimation(0, "animation", false)
                             //伤害结算
-                            this.showNumber(this.hasLetterA(fightProcess.sourceUnitId), targetCharacterNode, -fightProcess.singleTargetValue, new math.Color(255, 176, 126, 255), 40)
+                            this.showNumber(!this.hasLetterA(fightProcess.sourceUnitId), targetCharacterNode, -fightProcess.singleTargetValue, new math.Color(255, 176, 126, 255), 40)
                             this.Hp.children[this.hasLetterA(fightProcess.targetUnitId) ? 0 : 1].getComponent(ProgressBar).progress = fightProcess.targetHpAfter / fightProcess.targetHpBefore
                             this.Hp.children[this.hasLetterA(fightProcess.targetUnitId) ? 0 : 1].getChildByName("user_li_count").getComponent(Label).string = fightProcess.targetHpAfter + "/" + fightProcess.targetHpBefore
 
@@ -668,7 +668,7 @@ export class FightMap extends Component {
                             await util.sundry.moveNodeToPosition(
                                 characterNode,
                                 {
-                                    targetPosition: { x: this.hasLetterA(fightProcess.sourceUnitId) ? 180 : -180, y: 0 },
+                                    targetPosition: { x: this.hasLetterA(fightProcess.sourceUnitId) ? -180 : 180, y: 0 },
                                     moveCurve: true,
                                     moveTimeScale: this.timeScale
                                 }
@@ -679,7 +679,7 @@ export class FightMap extends Component {
 
                                 characterNode,
                                 {
-                                    targetPosition: { x: this.hasLetterA(fightProcess.sourceUnitId) ? -90 : 90, y: 0 },
+                                    targetPosition: { x: this.hasLetterA(fightProcess.sourceUnitId) ? 90 : -90, y: 0 },
                                     moveCurve: true,
                                     moveTimeScale: this.timeScale
                                 }
@@ -689,7 +689,7 @@ export class FightMap extends Component {
                             hut.node.active = true
                             hut.setAnimation(0, "animation", false)
                             //伤害结算
-                            this.showNumber(this.hasLetterA(fightProcess.sourceUnitId), targetCharacterNode, -fightProcess.singleTargetValue, new math.Color(255, 176, 126, 255), 40)
+                            this.showNumber(!this.hasLetterA(fightProcess.sourceUnitId), targetCharacterNode, -fightProcess.singleTargetValue, new math.Color(255, 176, 126, 255), 40)
                             this.Hp.children[this.hasLetterA(fightProcess.targetUnitId) ? 0 : 1].getComponent(ProgressBar).progress = fightProcess.targetHpAfter / fightProcess.targetHpBefore
                             this.Hp.children[this.hasLetterA(fightProcess.targetUnitId) ? 0 : 1].getChildByName("user_li_count").getComponent(Label).string = fightProcess.targetHpAfter + "/" + fightProcess.targetHpBefore
 
@@ -703,7 +703,7 @@ export class FightMap extends Component {
                             await util.sundry.moveNodeToPosition(
                                 characterNode,
                                 {
-                                    targetPosition: { x: this.hasLetterA(fightProcess.sourceUnitId) ? 180 : -180, y: 0 },
+                                    targetPosition: { x: this.hasLetterA(fightProcess.sourceUnitId) ? -180 : 180, y: 0 },
                                     moveCurve: true,
                                     moveTimeScale: this.timeScale
                                 }
