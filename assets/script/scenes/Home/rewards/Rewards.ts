@@ -17,7 +17,7 @@ export class Rewards extends Component {
             for (var i = 0; i < rewards.length; i++) {
                 this.itemNode.children[i].getChildByName("Label").getComponent(Label).string = rewards[i].rewardAmount
                 if ("1" == rewards[i].rewardType) {
-                    //钻石
+                    //灵石
                     this.itemNode.children[i].getChildByName("hero").getComponent(Sprite).spriteFrame =
                         await util.bundle.load('image/ui/icon_08/spriteFrame', SpriteFrame)
                 } else if ("2" == rewards[i].rewardType) {

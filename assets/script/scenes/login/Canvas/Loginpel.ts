@@ -1,4 +1,4 @@
-import { _decorator, Component, director, EditBox, instantiate, Label, Prefab, ProgressBar, sys } from 'cc';
+import { _decorator, Component, director, EditBox, instantiate, Node, Label, Prefab, ProgressBar, sys, tween, Vec3, RichText } from 'cc';
 const { ccclass, property } = _decorator;
 import { util } from '../../../util/util';
 import { AudioMgr } from "../../../util/resource/AudioMgr";
@@ -21,6 +21,24 @@ export class Loginpel extends Component {
     // url = "http://127.0.0.1:8080/"
     url = "http://czx.yimem.com:3000/"
 
+    //更新公告内容
+    content = `
+<size=32><color=#FFD700>✨QQ神仙版本更新公告✨</color></size>
+
+<size=26><color=#FFFFFF>各位修仙道友速速围观！仙界大更新来袭</color></size>
+
+<size=28><color=#00FF00>【庆典福利反馈活动开启】</color></size>
+<size=24><color=#F5F5F5>修仙一路辛苦打拼，专属福利重磅派送，海量豪礼免费领取，轻松薅尽仙界好福利</color></size>
+
+<size=28><color=#00BFFF>【全新趣味任务系统上线】</color></size>
+<size=24><color=#F5F5F5>告别佛系闲逛摸鱼，日常趣味任务超多，随手做完就能领丰厚资源，升级变强一路畅通</color></size>
+
+<size=28><color=#FF4500>【第八章血色禁地副本开放】</color></size>
+<size=24><color=#F5F5F5>秘境危机四伏妖魔横行，闯关激战收获满满，通关高概率掉落极品宝石，打造神装再也不愁</color></size>
+
+<size=26><color=#FFA500>祝诸位道友运气爆棚，宝石狂爆，战力一路狂飙！</color></size>`
+
+    checkUpdateToday = false;
     @property(Label)
     messageLabel: Label = null!;
 
@@ -38,6 +56,9 @@ export class Loginpel extends Component {
 
     @property(Label)
     downloadRemainTimeLabel: Label = null!;
+
+    @property(Node)
+    ContentNode: Node
 
     @property({ tooltip: "QQ群号" })
     public qqGroupNum: string = "1092641657"; // 替换为你的群号
@@ -192,6 +213,7 @@ export class Loginpel extends Component {
             case GGHotUpdateInstanceState.CheckUpdateSucNewVersionFound:
                 this.messageLabel.string = `检查更新成功，并且发现现版本，开始热更新`;
                 // 检查更新成功，并且发现现版本，开始热更新
+                this.checkUpdateToday = true;
                 instance.hotUpdate();
                 break;
             case GGHotUpdateInstanceState.CheckUpdateSucAlreadyUpToDate:
@@ -256,10 +278,37 @@ export class Loginpel extends Component {
 
     private _enterLobbyScene() {
         this.node.getChildByName("update").active = false;
+        // 弹窗弹跳入场效果
+        if (this.checkUpdateToday) {
+            this.ContentNode.getComponent(RichText).string = this.content
+            this.node.getChildByName("GameNotice").active = true
+            this.node.getChildByName("GameNotice").scale = new Vec3(0, 0, 0)
+            tween(this.node.getChildByName("GameNotice"))
+                .to(1, { scale: new Vec3(1, 1, 1) }, { easing: 'elasticOut' })
+                .start();
+        }
+        // return
         this.enterGame()
     }
 
+    openGameNotice() {
+        if (this.node.getChildByName("GameNotice").active) {
+            this.node.getChildByName("GameNotice").active = false
+        } else {
+            AudioMgr.inst.playOneShot("sound/other/click");
+            this.ContentNode.getComponent(RichText).string = this.content
+            this.node.getChildByName("GameNotice").active = true
+            this.node.getChildByName("GameNotice").scale = new Vec3(0, 0, 0)
+            tween(this.node.getChildByName("GameNotice"))
+                .to(1, { scale: new Vec3(1, 1, 1) }, { easing: 'elasticOut' })
+                .start();
+        }
 
+    }
+    closeGameNotice() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.getChildByName("GameNotice").active = false
+    }
 
     /**
        * 设置下载进度可见性
@@ -352,7 +401,7 @@ export class Loginpel extends Component {
                             "darkSteel": userInfo.darkSteel,
                             "purpleGold": userInfo.purpleGold,
                             "crystal": userInfo.crystal,
-                             "myCode":userInfo.myCode
+                            "myCode": userInfo.myCode
                         },
                     }
                     this.SetLeaveEnergy(userInfo.tiliCount)
@@ -461,7 +510,7 @@ export class Loginpel extends Component {
             const postData = {
                 username: username,
                 userpassword: password,
-                yaoCode:yaoCode
+                yaoCode: yaoCode
             };
             // let formData = new FormData();
             // formData.append('username', username);
@@ -581,7 +630,7 @@ export class Loginpel extends Component {
                                 "darkSteel": userInfo.darkSteel,
                                 "purpleGold": userInfo.purpleGold,
                                 "crystal": userInfo.crystal,
-                                "myCode":userInfo.myCode
+                                "myCode": userInfo.myCode
                             },
                         }
                         this.SetLeaveEnergy(userInfo.tiliCount)

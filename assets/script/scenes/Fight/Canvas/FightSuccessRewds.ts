@@ -45,7 +45,7 @@ export class FightSuccessRewds extends Component {
                 this.rewards.children[i].active = true
                 this.rewards.children[i].getChildByName("Label").getComponent(Label).string = content.rewardAmount
                 if ("1" == content.rewardType) {
-                    //钻石
+                    //灵石
                     this.rewards.children[i].getChildByName("hero").getComponent(Sprite).spriteFrame =
                         await util.bundle.load('image/ui/icon_08/spriteFrame', SpriteFrame)
                 } else if ("2" == content.rewardType) {

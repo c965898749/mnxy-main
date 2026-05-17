@@ -17,7 +17,7 @@ function levelUpNeedGold(create: CharacterStateCreate): number {
     )
 }
 
-// 升级所需钻石
+// 升级所需灵石
 function levelUpNeedSoule(create: CharacterStateCreate): number {
     return Math.ceil(
         CharacterEnum[create.id].CharacterQuality * create.lv * (create.lv / (create.lv + 80) + 1) * 100 * 0.5

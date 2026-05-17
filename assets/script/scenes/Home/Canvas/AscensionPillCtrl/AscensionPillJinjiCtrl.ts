@@ -26,7 +26,7 @@ export class AscensionPillJinjiCtrl extends Component {
     // EnergyReturnTime: 600//体力回复时间
     itemId = 0
     timer = 0
-    @property({ type: cc.Integer, tooltip: "固定尺寸" })
+    @property({ tooltip: "固定尺寸" })
     energy = 0
     @property(Node)
     remarkNode: Node

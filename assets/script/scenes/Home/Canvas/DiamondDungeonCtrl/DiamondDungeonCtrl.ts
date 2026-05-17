@@ -75,7 +75,7 @@ export class DiamondDungeonCtrl extends Component {
                         for (let j = 0; j < rewardList.length; j++) {
                             item.getChildByName("boss").children[j].getChildByName("Node").active = true
                             if ("1" == rewardList[j].rewardType) {
-                                //钻石
+                                //灵石
                                 item.getChildByName("boss").children[j].getChildByName("Node").getComponent(Sprite).spriteFrame =
                                     await util.bundle.load('image/ui/icon_08/spriteFrame', SpriteFrame)
                             } else if ("2" == rewardList[j].rewardType) {

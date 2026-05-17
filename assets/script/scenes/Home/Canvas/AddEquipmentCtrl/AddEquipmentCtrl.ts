@@ -403,7 +403,7 @@ export class AddEquipmentCtrl extends Component {
     async chongzhi() {
         if (!this.isChongzhi) {
             const result = await util.message.confirm({
-                message: "确定使用钻石重置商城吗?"
+                message: "确定使用灵石重置商城吗?"
             })
             // 是否确定
             if (result === false) return

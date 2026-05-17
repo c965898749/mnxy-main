@@ -24,7 +24,7 @@ export class JinjichangCtrl extends Component {
     MaxEnergy: 720//最大体力值
     // EnergyReturnTime: 600//体力回复时间
     timer = 0
-    @property({ type: cc.Integer, tooltip: "固定尺寸" })
+    @property({ tooltip: "固定尺寸" })
     energy = 0
     start() {
         this.refushData()

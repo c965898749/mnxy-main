@@ -42,9 +42,9 @@ export class PveCtrl extends Component {
     @property(Node)
     BossList: Node
     chapter: string
-    @property({ type: cc.Integer, tooltip: "固定尺寸" })
+    @property({ tooltip: "固定尺寸" })
     MaxEnergy: 720//最大体力值
-    @property({ type: cc.Integer, tooltip: "固定尺寸" })
+    @property({ tooltip: "固定尺寸" })
     energy = 0
     huoliEnergy = 0
     @property(Node)

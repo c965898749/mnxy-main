@@ -10,7 +10,7 @@ export class ImgFixedSize extends Component {
     update(deltaTime: number) {
 
     }
-    @property({ type: cc.Integer, tooltip: "固定尺寸" })
+    @property({ tooltip: "固定尺寸" })
     public set fixedSize(value) {
         this._fixedSize = value;
         this.onSizeChanged();
@@ -20,12 +20,12 @@ export class ImgFixedSize extends Component {
         return this._fixedSize;
     }
 
-    @property({ type: cc.Integer, tooltip: "固定尺寸" })
+    @property({ tooltip: "固定尺寸" })
     private _fixedSize: number = 1;
 
     onLoad() {
         this._fixedSize = this.fixedSize;
-        this.node.on(cc.Node.EventType.SIZE_CHANGED, this.onSizeChanged, this);
+        this.node.on(Node.EventType.SIZE_CHANGED, this.onSizeChanged, this);
         this.onSizeChanged();
     }
 

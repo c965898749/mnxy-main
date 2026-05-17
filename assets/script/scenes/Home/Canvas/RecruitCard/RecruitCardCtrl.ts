@@ -172,7 +172,7 @@ export class RecruitCardCtrl extends Component {
     async onGStart2(recruitCardCtr) {
         if (!this.isChongzhi) {
             const result = await util.message.confirm({
-                message: "确定使用钻石10连抽吗?"
+                message: "确定使用灵石10连抽吗?"
             })
             // 是否确定
             if (result === false) return

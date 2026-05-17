@@ -40,8 +40,8 @@ export class ActiveCtrl extends Component {
 <color=#98FB98><size=19>为迎接大家的热情，我们也准备了丰富的运营活动：</size></color>
 <color=#FFA500><size=18>★ 梦回2013活动礼包，助力仙友再续前缘，含10000钻、1个女娲石和30000银两</size></color>
 <color=#FFA500><size=18>★ 累计登录7天，领取传说伙伴【瑶池仙女】</size></color>
-<color=#FFA500><size=18>★ 新手成长礼包，含1000钻石+2个体力药</size></color>
-<color=#FFA500><size=18>★ 助力升级，每升1级奖励1000钻石+3.5万银两</size></color>
+<color=#FFA500><size=18>★ 新手成长礼包，含1000灵石+2个体力药</size></color>
+<color=#FFA500><size=18>★ 助力升级，每升1级奖励1000灵石+3.5万银两</size></color>
 
 <color=#87CEFA><size=18>如有任何问题，请联系客服：</size></color>
 <color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
@@ -70,11 +70,11 @@ export class ActiveCtrl extends Component {
 <color=#FFFFFF><size=17>8. 场次不足8人，则不进行赛事</size></color>
 
 
-<color=#FF6347><size=19>冠军奖励（价值超10000钻石）：</size></color>
+<color=#FF6347><size=19>冠军奖励（价值超10000灵石）：</size></color>
 <color=#FF4500><size=18>★ 专属称号【擂台霸主】（永久属性加成）</size></color>
 <color=#FF4500><size=18>★ 传说级武器【如意金箍棒】</size></color>
 <color=#FF4500><size=18>★ 争霸赛冠军雕像（主城广场展示1个月）</size></color>
-<color=#FF4500><size=18>★ 钻石*5000 + 魂力宝珠*5</size></color>
+<color=#FF4500><size=18>★ 灵石*5000 + 魂力宝珠*5</size></color>
 
 <color=#87CEFA><size=18>赛事相关问题：</size></color>
 <color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
@@ -91,7 +91,7 @@ export class ActiveCtrl extends Component {
 <color=#FFA500><size=19>为优化副本探险体验，游戏将于以下时间进行版本更新：</size></color>
 <color=#FFFF00><size=18>▶ 维护时间：2025年12月21日 09:00-13:00（预计4小时）</size></color>
 <color=#FFFF00><size=18>▶ 维护范围：全服所有服务器</size></color>
-<color=#FF6347><size=18>▶ 维护补偿：钻石*5000 + 金币*10万 + 魂魄*500</size></color>
+<color=#FF6347><size=18>▶ 维护补偿：灵石*5000 + 金币*10万 + 魂魄*500</size></color>
 
 <color=#FFA500><size=19>本次更新内容：</size></color>
 <color=#FFFFFF><size=17>1. 第二章【冲向妖界】关卡，掉落传说级【萌年兽】合成材料</size></color>
@@ -113,7 +113,7 @@ export class ActiveCtrl extends Component {
 <color=#FFA500><size=19>为优化副本探险体验，游戏将于以下时间进行版本更新：</size></color>
 <color=#FFFF00><size=18>▶ 维护时间：2025年12月21日 09:00-13:00（预计4小时）</size></color>
 <color=#FFFF00><size=18>▶ 维护范围：全服所有服务器</size></color>
-<color=#FF6347><size=18>▶ 维护补偿：钻石*5000 + 金币*10万 + 魂魄*500</size></color>
+<color=#FF6347><size=18>▶ 维护补偿：灵石*5000 + 金币*10万 + 魂魄*500</size></color>
 
 <color=#FFA500><size=19>本次更新内容：</size></color>
 <color=#FFFFFF><size=17>1. 第四章【地府改命】关卡，掉落传说级【阎王】合成材料</size></color>
@@ -135,7 +135,7 @@ export class ActiveCtrl extends Component {
 <color=#FFA500><size=19>为优化副本探险体验，游戏将于以下时间进行版本更新：</size></color>
 <color=#FFFF00><size=18>▶ 维护时间：2025年12月21日 09:00-13:00（预计4小时）</size></color>
 <color=#FFFF00><size=18>▶ 维护范围：全服所有服务器</size></color>
-<color=#FF6347><size=18>▶ 维护补偿：钻石*5000 + 金币*10万 + 魂魄*500</size></color>
+<color=#FF6347><size=18>▶ 维护补偿：灵石*5000 + 金币*10万 + 魂魄*500</size></color>
 
 <color=#FFA500><size=19>本次更新内容：</size></color>
 <color=#FFFFFF><size=17>1. 第五章【大闹天宫】关卡，掉落传说级【圣灵天将】合成材料</size></color>
@@ -195,14 +195,14 @@ export class ActiveCtrl extends Component {
         // <color=#FFFFFF><size=20>各位玩家请注意！多重福利盛宴已开启，多重错过！</size></color>
 
         // <color=#FF6347><size=20>✨ 全民登录豪礼 ✨</size></color>
-        // <color=#FFFF00><size=18>▶ 累计登录2天：钻石*500</size></color>
+        // <color=#FFFF00><size=18>▶ 累计登录2天：灵石*500</size></color>
         // <color=#FFFF00><size=18>▶ 累计登录5天：开荒神器【轩辕剑】</size></color>
         // <color=#FFFF00><size=18>▶ 累计登录7天：传说伙伴【瑶池仙女】</size></color>
 
         // <color=#FF6347><size=20>🎁 兑换福利 🎁</size></color>
         // <color=#FFFF00><size=18>▶ 拒绝玄学，集齐指定素材可合成：传说级4.5星伙伴【齐天大圣】等</size></color>
         // <color=#FFFF00><size=18>▶ 完成日常任务额外得：限定头像框「福利达人」</size></color>
-        // <color=#FFFF00><size=18>▶ 分享活动至社交平台：钻石*100 + 10万*金币</size></color>
+        // <color=#FFFF00><size=18>▶ 分享活动至社交平台：灵石*100 + 10万*金币</size></color>
 
         // <color=#FFA500><size=19>活动时间：永久</size></color>
         // <color=#FFA500><size=19>分享活动奖励领取：祭坛-客服石碑</size></color>

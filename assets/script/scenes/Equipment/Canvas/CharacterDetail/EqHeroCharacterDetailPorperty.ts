@@ -13,7 +13,7 @@ function levelUpNeedGold(create: EquipmentStateCreate): number {
     )
 }
 
-// 升级所需钻石
+// 升级所需灵石
 function levelUpNeedSoule(create: EquipmentStateCreate): number {
     return Math.ceil(
         CharacterEnum[create.id].CharacterQuality * create.lv * (create.lv / (create.lv + 80) + 1) * 100 * 0.5
@@ -42,53 +42,30 @@ export class EqHeroCharacterDetailPorperty extends Component {
         this.node.getChildByName("CharacterAnimation").getComponent(Sprite).spriteFrame =
             await util.bundle.load(`game/texture/frames/emp/${create.id.split('_')[0]}/spriteFrame`, SpriteFrame)
         this.node.getChildByName("Attribute").children.forEach(n => n.active = false)
-        if (create.star < 3.5) {
-            this.node.getChildByName("Attribute").children[0].active = true
-            this.node.getChildByName("Attribute").children[0].getChildByName("Icon").getComponent(Label).string = create.name.split('.')[0]
-            if (create.name.split('.')[0] == "锋利") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.wlAtk + ''
-            } else if (create.name.split('.')[0] == "坚韧") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.wlDef + ''
-            } else if (create.name.split('.')[0] == "火焰") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.hyAtk + ''
-            } else if (create.name.split('.')[0] == "火抗") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.hyDef + ''
-            } else if (create.name.split('.')[0] == "毒素") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.dsDef + ''
-            } else if (create.name.split('.')[0] == "毒抗") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.dsDef + ''
-            } else if (create.name.split('.')[0] == "飞弹") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.fdAtk + ''
-            } else if (create.name.split('.')[0] == "弹抗") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.fdDef + ''
-            } else if (create.name.split('.')[0] == "治愈") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.zlDef + ''
-            }
+
+        this.node.getChildByName("Attribute").children[0].active = true
+        this.node.getChildByName("Attribute").children[0].getChildByName("Icon").getComponent(Label).string = create.name.split('.')[0]
+        if (create.name.split('.')[0] == "锋利") {
+            this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.wlAtk + ''
+        } else if (create.name.split('.')[0] == "坚韧") {
+            this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.wlDef + ''
+        } else if (create.name.split('.')[0] == "火焰") {
+            this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.hyAtk + ''
+        } else if (create.name.split('.')[0] == "火抗") {
+            this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.hyDef + ''
+        } else if (create.name.split('.')[0] == "毒素") {
+            this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.dsDef + ''
+        } else if (create.name.split('.')[0] == "毒抗") {
+            this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.dsDef + ''
+        } else if (create.name.split('.')[0] == "飞弹") {
+            this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.fdAtk + ''
+        } else if (create.name.split('.')[0] == "弹抗") {
+            this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.fdDef + ''
+        } else if (create.name.split('.')[0] == "治愈") {
+            this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.zlDef + ''
         }
+
         if (create.star >= 3.5) {
-            this.node.getChildByName("Attribute").children[0].active = true
-            this.node.getChildByName("Attribute").children[0].getChildByName("Icon").getComponent(Label).string = create.name.split('.')[0]
-            if (create.name.split('.')[0] == "锋利") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.wlAtk + ''
-            } else if (create.name.split('.')[0] == "坚韧") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.wlDef + ''
-            } else if (create.name.split('.')[0] == "火焰") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.hyAtk + ''
-            } else if (create.name.split('.')[0] == "火抗") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.hyDef + ''
-            } else if (create.name.split('.')[0] == "毒素") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.dsAtk + ''
-            } else if (create.name.split('.')[0] == "毒抗") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.dsDef + ''
-            } else if (create.name.split('.')[0] == "飞弹") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.fdAtk + ''
-            } else if (create.name.split('.')[0] == "弹抗") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.fdDef + ''
-            } else if (create.name.split('.')[0] == "治愈") {
-                this.node.getChildByName("Attribute").children[0].getChildByName("Value").getComponent(Label).string = create.zlDef + ''
-            }
-
-
             this.node.getChildByName("Attribute").children[1].active = true
             this.node.getChildByName("Attribute").children[1].getChildByName("Icon").getComponent(Label).string = create.name.split('.')[1]
             if (create.name.split('.')[0] == "锋利") {
@@ -109,6 +86,30 @@ export class EqHeroCharacterDetailPorperty extends Component {
                 this.node.getChildByName("Attribute").children[1].getChildByName("Value").getComponent(Label).string = create.fdDef + ''
             } else if (create.name.split('.')[0] == "治愈") {
                 this.node.getChildByName("Attribute").children[1].getChildByName("Value").getComponent(Label).string = create.zlDef + ''
+            }
+        }
+
+        if (create.star >= 4.5) {
+            this.node.getChildByName("Attribute").children[2].active = true
+            this.node.getChildByName("Attribute").children[2].getChildByName("Icon").getComponent(Label).string = create.name.split('.')[2]
+            if (create.name.split('.')[0] == "锋利") {
+                this.node.getChildByName("Attribute").children[2].getChildByName("Value").getComponent(Label).string = create.wlAtk + ''
+            } else if (create.name.split('.')[0] == "坚韧") {
+                this.node.getChildByName("Attribute").children[2].getChildByName("Value").getComponent(Label).string = create.wlDef + ''
+            } else if (create.name.split('.')[0] == "火焰") {
+                this.node.getChildByName("Attribute").children[2].getChildByName("Value").getComponent(Label).string = create.hyAtk + ''
+            } else if (create.name.split('.')[0] == "火抗") {
+                this.node.getChildByName("Attribute").children[2].getChildByName("Value").getComponent(Label).string = create.hyDef + ''
+            } else if (create.name.split('.')[0] == "毒素") {
+                this.node.getChildByName("Attribute").children[2].getChildByName("Value").getComponent(Label).string = create.dsAtk + ''
+            } else if (create.name.split('.')[0] == "毒抗") {
+                this.node.getChildByName("Attribute").children[2].getChildByName("Value").getComponent(Label).string = create.dsDef + ''
+            } else if (create.name.split('.')[0] == "飞弹") {
+                this.node.getChildByName("Attribute").children[2].getChildByName("Value").getComponent(Label).string = create.fdAtk + ''
+            } else if (create.name.split('.')[0] == "弹抗") {
+                this.node.getChildByName("Attribute").children[2].getChildByName("Value").getComponent(Label).string = create.fdDef + ''
+            } else if (create.name.split('.')[0] == "治愈") {
+                this.node.getChildByName("Attribute").children[2].getChildByName("Value").getComponent(Label).string = create.zlDef + ''
             }
         }
         // 仙、佛、圣、魔、妖、兽
