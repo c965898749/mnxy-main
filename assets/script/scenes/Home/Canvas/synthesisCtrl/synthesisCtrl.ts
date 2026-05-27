@@ -75,7 +75,7 @@ export class synthesisCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/tuPuhenchenList", options)
+        fetch(config.ServerUrl.url + "tuPuhenchenList", options)
             .then(response => {
 
                 return response.json(); // 解析 JSON 响应
@@ -114,7 +114,7 @@ export class synthesisCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/findHechenCard", options)
+        fetch(config.ServerUrl.url + "findHechenCard", options)
             .then(response => {
 
                 return response.json(); // 解析 JSON 响应
@@ -208,7 +208,7 @@ export class synthesisCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/hechenCard", options)
+        fetch(config.ServerUrl.url + "hechenCard", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -446,7 +446,7 @@ export class synthesisCtrl extends Component {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(postData),
             };
-            fetch(config.ServerUrl.url + "/checkHechen", options)
+            fetch(config.ServerUrl.url + "checkHechen", options)
                 .then(response => {
 
                     return response.json(); // 解析 JSON 响应

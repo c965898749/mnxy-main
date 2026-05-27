@@ -42,7 +42,7 @@ export class MessageCrtl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/messageList", options)
+        fetch(config.ServerUrl.url + "messageList", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -165,7 +165,7 @@ export class MessageCrtl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/invitationHandle", options)
+        fetch(config.ServerUrl.url + "invitationHandle", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -206,7 +206,7 @@ export class MessageCrtl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/invitationHandle", options)
+        fetch(config.ServerUrl.url + "invitationHandle", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -247,7 +247,7 @@ export class MessageCrtl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/receive", options)
+        fetch(config.ServerUrl.url + "receive", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');

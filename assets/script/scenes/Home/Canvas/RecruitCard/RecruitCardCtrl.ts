@@ -52,7 +52,7 @@ export class RecruitCardCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/soulChou", options)
+        fetch(config.ServerUrl.url + "soulChou", options)
             .then(response => {
                 if (!response.ok) {
                     this.BlockInputEvents.active = false
@@ -118,7 +118,7 @@ export class RecruitCardCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/danChou", options)
+        fetch(config.ServerUrl.url + "danChou", options)
             .then(response => {
                 if (!response.ok) {
                     this.BlockInputEvents.active = false
@@ -190,7 +190,7 @@ export class RecruitCardCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/shiChou", options)
+        fetch(config.ServerUrl.url + "shiChou", options)
             .then(response => {
                 if (!response.ok) {
                     this.BlockInputEvents.active = false
@@ -258,7 +258,7 @@ export class RecruitCardCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/soulShiChou", options)
+        fetch(config.ServerUrl.url + "soulShiChou", options)
             .then(response => {
                 if (!response.ok) {
                     this.BlockInputEvents.active = false

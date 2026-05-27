@@ -126,7 +126,7 @@ export class AddEquipmentCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/equipmentNew", options)
+        fetch(config.ServerUrl.url + "equipmentNew", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -190,7 +190,7 @@ export class AddEquipmentCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/danChouEq", options)
+        fetch(config.ServerUrl.url + "danChouEq", options)
             .then(response => {
                 if (!response.ok) {
                     this.BlockInputEvents.active = false
@@ -420,7 +420,7 @@ export class AddEquipmentCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/chongzhi2", options)
+        fetch(config.ServerUrl.url + "chongzhi2", options)
             .then(response => {
 
                 return response.json(); // 解析 JSON 响应
@@ -543,7 +543,7 @@ export class AddEquipmentCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/getEqChares", options)
+        fetch(config.ServerUrl.url + "getEqChares", options)
             .then(response => {
 
                 return response.json(); // 解析 JSON 响应
@@ -661,7 +661,7 @@ export class AddEquipmentCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/buyStore3", options)
+        fetch(config.ServerUrl.url + "buyStore3", options)
             .then(response => {
 
                 return response.json(); // 解析 JSON 响应

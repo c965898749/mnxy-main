@@ -27,7 +27,7 @@ export class HomeCanvas extends Component {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(postData),
             };
-            fetch(config.ServerUrl.url + "/isTrue", options)
+            fetch(config.ServerUrl.url + "isTrue", options)
                 .then(response => {
 
                     return response.json(); // 解析 JSON 响应

@@ -204,7 +204,7 @@ export class AscensionPillDetail extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/cardFlyUp", options)
+        fetch(config.ServerUrl.url + "cardFlyUp", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -273,7 +273,7 @@ export class AscensionPillDetail extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/cardFlyUp2", options)
+        fetch(config.ServerUrl.url + "cardFlyUp2", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');

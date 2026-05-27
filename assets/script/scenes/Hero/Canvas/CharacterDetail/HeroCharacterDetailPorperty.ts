@@ -199,7 +199,7 @@ export class HeroCharacterDetailPorperty extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/changeEqState", options)
+        fetch(config.ServerUrl.url + "changeEqState", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -240,7 +240,7 @@ export class HeroCharacterDetailPorperty extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/changeEqState2", options)
+        fetch(config.ServerUrl.url + "changeEqState2", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -302,7 +302,7 @@ export class HeroCharacterDetailPorperty extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/changeState", options)
+        fetch(config.ServerUrl.url + "changeState", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -402,7 +402,7 @@ export class HeroCharacterDetailPorperty extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/characteSell", options)
+        fetch(config.ServerUrl.url + "characteSell", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');

@@ -25,8 +25,8 @@ class VolumeDetail {
 class ServerUrl {
     // redis-server.exe redis.windows.conf
     // url = "http://192.168.0.104:8080/"
-    // url = "http://127.0.0.1:8080/"
-    url="http://czx.yimem.com:3000/"
+    url = "http://127.0.0.1:8889/"
+    // url="http://czx.yimem.com:3000/"
 }
 
 let globalId: number = 1
@@ -238,7 +238,7 @@ export function updateTiliTime() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(postData),
     };
-    fetch(config.ServerUrl.url + "/updateTli", options)
+    fetch(config.ServerUrl.url + "updateTli", options)
         .then(response => {
 
             return response.json(); // 解析 JSON 响应
@@ -275,7 +275,7 @@ export function updateHuoliTime() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(postData),
     };
-    fetch(config.ServerUrl.url + "/updateTli3", options)
+    fetch(config.ServerUrl.url + "updateTli3", options)
         .then(response => {
 
             return response.json(); // 解析 JSON 响应
@@ -304,7 +304,7 @@ export function updateTiliAndHuoLi() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(postData),
     };
-    fetch(config.ServerUrl.url + "/updateTli2", options)
+    fetch(config.ServerUrl.url + "updateTli2", options)
         .then(response => {
 
             return response.json(); // 解析 JSON 响应

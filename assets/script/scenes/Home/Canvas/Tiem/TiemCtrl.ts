@@ -168,7 +168,7 @@ export class TiemCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/itemUpdate", options)
+        fetch(config.ServerUrl.url + "itemUpdate", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');

@@ -61,7 +61,7 @@ export class EqHeroAllHeros extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/changeEqState", options)
+        fetch(config.ServerUrl.url + "changeEqState", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');

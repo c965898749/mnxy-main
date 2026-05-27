@@ -128,7 +128,7 @@ export class ShopCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/chongzhi", options)
+        fetch(config.ServerUrl.url + "chongzhi", options)
             .then(response => {
 
                 return response.json(); // 解析 JSON 响应
@@ -214,7 +214,7 @@ export class ShopCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/getStore", options)
+        fetch(config.ServerUrl.url + "getStore", options)
             .then(response => {
 
                 return response.json(); // 解析 JSON 响应
@@ -303,7 +303,7 @@ export class ShopCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/getStore2", options)
+        fetch(config.ServerUrl.url + "getStore2", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -380,7 +380,7 @@ export class ShopCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/buyStore2", options)
+        fetch(config.ServerUrl.url + "buyStore2", options)
             .then(response => {
 
                 return response.json(); // 解析 JSON 响应
@@ -426,7 +426,7 @@ export class ShopCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/buyStore", options)
+        fetch(config.ServerUrl.url + "buyStore", options)
             .then(response => {
 
                 return response.json(); // 解析 JSON 响应

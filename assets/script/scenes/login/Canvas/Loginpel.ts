@@ -18,8 +18,8 @@ export class Loginpel extends Component {
     YaoCode: EditBox;
     // redis-server.exe redis.windows.conf
     // url = "http://192.168.0.104:8080/"
-    // url = "http://127.0.0.1:8080/"
-    url = "http://czx.yimem.com:3000/"
+    url = "http://127.0.0.1:8889/"
+    // url = "http://czx.yimem.com:3000/"
 
     //更新公告内容
     content = `
@@ -213,7 +213,6 @@ export class Loginpel extends Component {
             case GGHotUpdateInstanceState.CheckUpdateSucNewVersionFound:
                 this.messageLabel.string = `检查更新成功，并且发现现版本，开始热更新`;
                 // 检查更新成功，并且发现现版本，开始热更新
-                this.checkUpdateToday = true;
                 instance.hotUpdate();
                 break;
             case GGHotUpdateInstanceState.CheckUpdateSucAlreadyUpToDate:
@@ -279,15 +278,6 @@ export class Loginpel extends Component {
     private _enterLobbyScene() {
         this.node.getChildByName("update").active = false;
         // 弹窗弹跳入场效果
-        if (this.checkUpdateToday) {
-            this.ContentNode.getComponent(RichText).string = this.content
-            this.node.getChildByName("GameNotice").active = true
-            this.node.getChildByName("GameNotice").scale = new Vec3(0, 0, 0)
-            tween(this.node.getChildByName("GameNotice"))
-                .to(1, { scale: new Vec3(1, 1, 1) }, { easing: 'elasticOut' })
-                .start();
-        }
-        // return
         this.enterGame()
     }
 

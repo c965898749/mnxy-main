@@ -74,7 +74,7 @@ export class changheader extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/changerHeader", options)
+        fetch(config.ServerUrl.url + "changerHeader", options)
             .then(response => {
 
                 return response.json(); // 解析 JSON 响应

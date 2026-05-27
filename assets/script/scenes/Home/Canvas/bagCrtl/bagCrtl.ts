@@ -57,7 +57,7 @@ export class bagCrtl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/bagItemList", options)
+        fetch(config.ServerUrl.url + "bagItemList", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -171,7 +171,7 @@ export class bagCrtl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/useBagItem", options)
+        fetch(config.ServerUrl.url + "useBagItem", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');

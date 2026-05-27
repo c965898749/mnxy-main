@@ -156,7 +156,7 @@ export class ExtendExp extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/xina", options)
+        fetch(config.ServerUrl.url + "xina", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');

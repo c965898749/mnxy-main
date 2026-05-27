@@ -44,7 +44,7 @@ export class giftExchangeCode extends Component {
             };
 
             // 发送 POST 请求
-            fetch(config.ServerUrl.url + "/giftExchangeCode", options)
+            fetch(config.ServerUrl.url + "giftExchangeCode", options)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');

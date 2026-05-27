@@ -148,7 +148,7 @@ export class eqQianghuaCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/eqCardLevelUp", options)
+        fetch(config.ServerUrl.url + "eqCardLevelUp", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -263,7 +263,7 @@ export class eqQianghuaCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        fetch(config.ServerUrl.url + "/eqCardLevelUp2", options)
+        fetch(config.ServerUrl.url + "eqCardLevelUp2", options)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
