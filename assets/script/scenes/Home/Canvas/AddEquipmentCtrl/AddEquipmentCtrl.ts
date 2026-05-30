@@ -1,4 +1,4 @@
-import { _decorator, Component, sp, Node, Sprite, SpriteFrame, UIOpacity, Label, Button, Vec3, tween, RichText, Prefab } from 'cc';
+import { _decorator, Component, sp, Node, Sprite, SpriteFrame, UIOpacity, Label, Button, Vec3, tween, RichText, Prefab, EventTouch, log, UITransform } from 'cc';
 import { getConfig, getToken } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
@@ -434,6 +434,7 @@ export class AddEquipmentCtrl extends Component {
                     for (let i = 0; i < childrens.length; i++) {
                         const node = childrens[i];
                         node.getChildByName("arms").children.forEach(x => {
+                            x.getChildByName("th").off(Node.EventType.TOUCH_START);
                             x.getChildByName("sell").getChildByName("Background").off("click")
                             x.getChildByName("sell").getChildByName("Background").getComponent(Button).interactable = true
                         })
@@ -515,6 +516,9 @@ export class AddEquipmentCtrl extends Component {
                                 aa.getChildByName("sell").getChildByName("Background").on("click", () => { this.clickFun(itemC.uuid, aa) })
 
                             }
+                            aa.getChildByName("th").on(Node.EventType.TOUCH_START, (e: EventTouch) => {
+                                this.showdetail(e, itemC, aa);
+                            }, this);
                         }
                         this.ContentNode.addChild(item)
                         continue
@@ -557,6 +561,7 @@ export class AddEquipmentCtrl extends Component {
                     for (let i = 0; i < childrens.length; i++) {
                         const node = childrens[i];
                         node.getChildByName("arms").children.forEach(x => {
+                            x.getChildByName("th").off(Node.EventType.TOUCH_START);
                             x.getChildByName("sell").getChildByName("Background").off("click")
                             x.getChildByName("sell").getChildByName("Background").getComponent(Button).interactable = true
                         })
@@ -635,6 +640,9 @@ export class AddEquipmentCtrl extends Component {
                                 aa.getChildByName("sell").getChildByName("Background").on("click", () => { this.clickFun(itemC.uuid, aa) })
 
                             }
+                            aa.getChildByName("th").on(Node.EventType.TOUCH_START, (e: EventTouch) => {
+                                this.showdetail(e, itemC, aa);
+                            }, this);
                         }
                         this.ContentNode.addChild(item)
                         continue
@@ -647,6 +655,51 @@ export class AddEquipmentCtrl extends Component {
             }
             );
     }
+    // 显示所有的属性
+    async showdetail(e: EventTouch, itemC: any, itemNode: Node) {
+        const kk = e.getUILocation();
+        const localPos = new Vec3(kk.x, kk.y, 0);
+        const ui = this.node.getComponent(UITransform)!;
+        const screenPos = ui.convertToNodeSpaceAR(localPos);
+        let message = ``
+        message += ` 星级: ${itemC.star}  职业: ${itemC.profession}\n`
+        message += `\n`
+        let cc = []
+        if (itemC.wlAtk > 0) {
+            cc.push(`锋利: ${Math.ceil(itemC.wlAtk)}`)
+        }
+        if (itemC.hyAtk > 0) {
+            cc.push(`火焰: ${Math.ceil(itemC.hyAtk)}`)
+        }
+        if (itemC.dsAtk > 0) {
+            cc.push(`毒素: ${Math.ceil(itemC.dsAtk)}`)
+        }
+        if (itemC.fdAtk > 0) {
+            cc.push(`飞弹: ${Math.ceil(itemC.fdAtk)}`)
+        }
+        if (itemC.wlDef > 0) {
+            cc.push(`坚韧: ${Math.ceil(itemC.wlDef)}`)
+        }
+        if (itemC.hyDef > 0) {
+            cc.push(`火抗: ${Math.ceil(itemC.hyDef)}`)
+        }
+        if (itemC.dsDef > 0) {
+            cc.push(`毒抗: ${Math.ceil(itemC.dsDef)}`)
+        }
+        if (itemC.fdDef > 0) {
+            cc.push(`弹抗: ${Math.ceil(itemC.fdDef)}`)
+        }
+        if (itemC.zlDef > 0) {
+            cc.push(`治疗: ${Math.ceil(itemC.zlDef)}`)
+        }
+        for (let i = 0; i < cc.length; i += 2) {
+            message += ` ${cc[i]}  ${cc[i + 1] || ''}\n`
+        }
+        message += `\n`
+        message += ` 介绍: ${itemC.introduce}\n`
+        await util.message.setDetail({ message: message, name: itemC.name, localPos: screenPos })
+    }
+
 
     clickFun(id: any, aa: Node) {
         const config = getConfig()

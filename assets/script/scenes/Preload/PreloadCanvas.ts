@@ -23,7 +23,7 @@ export class PreloadCanvas extends Component {
         holPreLoad.setProcess(70)
         util.message.preloadIntroduce()
         holPreLoad.setProcess(80)
-
+        util.message.preloadDetail()
         holPreLoad.setProcess(100)
 
         // 监听进度条完成函数

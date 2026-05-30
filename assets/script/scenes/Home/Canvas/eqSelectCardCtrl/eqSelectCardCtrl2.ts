@@ -71,14 +71,24 @@ export class eqSelectCardCtrl2 extends Component {
             item.getChildByName("itemCount").active = false
             item.getChildByName("Label-001").active = false;
             item.getChildByName("stackCount").active = false;
+            item.getChildByName("levelUp").active = false;
+            if (create[i].stackCount > 0) {
+                item.getChildByName("itemCount").active = true
+                item.getChildByName("stackCount").active = true;
+                item.getChildByName("levelUp").active = true;
+                item.getChildByName("stackCount").getComponent(Label).string = create[i].stackCount + ""
+            }
             item.getChildByName("Toggle").getComponent(Toggle).isChecked = false
             item.getChildByName("itemCount").getComponent(Label).string = "1"
             item.getChildByName("cong").active = false
+
             for (const [key, value] of this.myMap) {
                 if (create[i].id == key + "") {
                     item.getChildByName("Toggle").getComponent(Toggle).isChecked = true
                     item.getChildByName("cong").active = true
-                    // item.getChildByName("stackCount").getComponent(Label).string = (Number(create[i].stackCount) + 1 - Number(value)) + ""
+                    if (create[i].stackCount > 0) {
+                        item.getChildByName("stackCount").getComponent(Label).string = (Number(create[i].stackCount) + 1 - Number(value)) + ""
+                    }
                     item.getChildByName("itemCount").getComponent(Label).string = value + ""
                 }
             }
@@ -107,7 +117,7 @@ export class eqSelectCardCtrl2 extends Component {
             item.getChildByName("Camp").getComponent(Label).string = cmp.get(create[i].camp) + "." + create[i].profession
             // // 绑定事件
             // this.Item.children[goIntoNum - 1].on("click", () => { this.clickFun(create[i]) })
-            item.getChildByName("id").getComponent(Label).string = create[i].uuid+"";
+            item.getChildByName("id").getComponent(Label).string = create[i].uuid + "";
             // item.getChildByName("Toggle").on('toggle', callback, this);
             this.ContentNode.addChild(item)
             item.getComponent(AttrLevelCtrl).initData(this)

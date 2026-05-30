@@ -8,6 +8,7 @@ import { preloadPrompt, prompt } from "./message/prompt"
 import { getNodePool } from "./resource/getNodePool";
 import { moveNodeToPosition } from "./sundry/moveNodeToPosition";
 import { introduce, preloadIntroduce } from "./message/introduce";
+import { setDetail, preloadDetail } from "./message/connect";
 import { formateNumber } from "./sundry/formateNumber";
 
 // 根据对象
@@ -36,6 +37,8 @@ export const util = {
         preloadLoad ,
         introduce ,
         preloadIntroduce ,
+        setDetail ,
+        preloadDetail ,
     } ,
     // 杂项功能
     sundry: {

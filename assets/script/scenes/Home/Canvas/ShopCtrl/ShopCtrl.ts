@@ -1,4 +1,4 @@
-import { _decorator, Button, Component, director, Label, Node, Prefab, Sprite, SpriteFrame } from 'cc';
+import { _decorator, Button, Component, director, EventTouch, Label, Node, Prefab, Sprite, SpriteFrame, UITransform, Vec3 } from 'cc';
 import { getConfig, getToken } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
@@ -142,6 +142,7 @@ export class ShopCtrl extends Component {
                     for (let i = 0; i < childrens.length; i++) {
                         const node = childrens[i];
                         node.getChildByName("arms").children.forEach(x => {
+                            x.getChildByName("th").off(Node.EventType.TOUCH_START);
                             x.getChildByName("sell").getChildByName("Background").off("click")
                             x.getChildByName("sell").getChildByName("Background").getComponent(Button).interactable = true
                         })
@@ -178,6 +179,7 @@ export class ShopCtrl extends Component {
                                 aa.getChildByName("sell").getChildByName("Background").getChildByName("icon_61").getComponent(Sprite).spriteFrame =
                                     await util.bundle.load(`image/ui/icon_69/spriteFrame`, SpriteFrame)
                             }
+                            aa.getChildByName("sign").getChildByName("Label").getComponent(Label).string = itemC.itemName
                             // icon_61
                             aa.getComponent(Sprite).spriteFrame =
                                 await util.bundle.load(`image/store/common_0${itemC.quality}/spriteFrame`, SpriteFrame)
@@ -186,6 +188,9 @@ export class ShopCtrl extends Component {
                                     await util.bundle.load(`game/texture/frames/hero/Header/${itemC.itemId}/spriteFrame`, SpriteFrame)
                             }
                             aa.getChildByName("sell").getChildByName("Background").on("click", () => { this.clickFun(itemC.id, aa) })
+                            aa.getChildByName("th").on(Node.EventType.TOUCH_START, (e: EventTouch) => {
+                                this.showdetail(e, itemC, aa);
+                            }, this);
                         }
                         this.ContentNode.addChild(item)
                         continue
@@ -228,6 +233,7 @@ export class ShopCtrl extends Component {
                     for (let i = 0; i < childrens.length; i++) {
                         const node = childrens[i];
                         node.getChildByName("arms").children.forEach(x => {
+                            x.getChildByName("th").off(Node.EventType.TOUCH_START);
                             x.getChildByName("sell").getChildByName("Background").off("click")
                             x.getChildByName("sell").getChildByName("Background").getComponent(Button).interactable = true
                         })
@@ -261,7 +267,7 @@ export class ShopCtrl extends Component {
                                 aa.getChildByName("sell").getChildByName("Background").getChildByName("icon_61").getComponent(Sprite).spriteFrame =
                                     await util.bundle.load(`image/ui/icon_69/spriteFrame`, SpriteFrame)
                             }
-                            // icon_61
+                            aa.getChildByName("sign").getChildByName("Label").getComponent(Label).string = itemC.itemName
                             aa.getComponent(Sprite).spriteFrame =
                                 await util.bundle.load(`image/store/common_0${itemC.quality}/spriteFrame`, SpriteFrame)
                             if (itemC.type == 1) {
@@ -279,6 +285,9 @@ export class ShopCtrl extends Component {
                                 aa.getChildByName("sell").getChildByName("Background").on("click", () => { this.clickFun(itemC.id, aa) })
 
                             }
+                            aa.getChildByName("th").on(Node.EventType.TOUCH_START, (e: EventTouch) => {
+                                this.showdetail(e, itemC, aa);
+                            }, this);
                         }
                         this.ContentNode.addChild(item)
                         continue
@@ -291,6 +300,17 @@ export class ShopCtrl extends Component {
             }
             );
     }
+
+    // 显示所有的属性
+    async showdetail(e: EventTouch, itemC: any, itemNode: Node) {
+        console.log(itemC.itemName);
+        const cc = e.getUILocation();
+        const localPos = new Vec3(cc.x, cc.y, 0);
+        const ui = this.node.getComponent(UITransform)!;
+        const screenPos = ui.convertToNodeSpaceAR(localPos);
+        await util.message.setDetail({ message: itemC.itemDesc, name: itemC.itemName, localPos: screenPos })
+    }
+
 
     init2() {
         const config = getConfig()

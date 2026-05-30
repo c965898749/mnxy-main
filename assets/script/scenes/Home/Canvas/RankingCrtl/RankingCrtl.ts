@@ -59,7 +59,7 @@ export class RankingCrtl extends Component {
                     this.myRangking.getComponent(Label).string = myRangking
                     for (let i = 0; i < userlist.length; i++) {
                         let item = nodePool.get()
-                        if (myRangking > 100) {
+                        if (config.userData.userId == userlist[i].userId) {
                             item.getChildByName("tiaozhan").active = false
 
                         } else {
