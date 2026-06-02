@@ -99,9 +99,9 @@ export class Loginpel extends Component {
                 // case sys.OS.OHOS:
                 //     packageUrl = `https://raw.githubusercontent.com/zhitaocai/cocos-creator-gg-hot-update-demo/v6/build/ohos/data-gg-hot-update`;
                 //     break;
-                // case sys.OS.IOS:
-                //     packageUrl = `http://czx.yimem.com:5502/data-gg-hot-update`;
-                //     break;
+                case sys.OS.IOS:
+                    packageUrl = `http://czx.yimem.com:5505/data-gg-hot-update`;
+                    break;
                 case sys.OS.ANDROID:
                     // packageUrl = `https://raw.githubusercontent.com/zhitaocai/cocos-creator-gg-hot-update-demo/v6/build/android/data-gg-hot-update`;
                     // packageUrl = `http://192.168.40.10:8082/gg-hot-update-demo/build/android/data-gg-hot-update`;
