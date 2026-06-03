@@ -67,6 +67,11 @@ export class FightSuccessRewds extends Component {
                     this.rewards.children[i].getChildByName("hero").getComponent(Sprite).spriteFrame =
                         await util.bundle.load(content.img, SpriteFrame)
                     this.rewards.children[i].getChildByName("Label").getComponent(Label).string = content.itemName
+                } else if ("7" == content.rewardType) {
+                    //材料
+                    this.rewards.children[i].getChildByName("hero").getComponent(Sprite).spriteFrame =
+                        await util.bundle.load("game/texture/frames/emp/"+content.itemId+"/spriteFrame", SpriteFrame)
+                    // this.rewards.children[i].getChildByName("Label").getComponent(Label).string = content.itemName
                 }
             }
         } else {

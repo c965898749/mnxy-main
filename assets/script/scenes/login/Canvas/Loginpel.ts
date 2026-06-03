@@ -20,6 +20,7 @@ export class Loginpel extends Component {
     // url = "http://192.168.0.104:8080/"
     // url = "http://127.0.0.1:8889/"
     url = "http://czx.yimem.com:3000/"
+    // url = "https://czx.yimem.com:3002/"
 
     //更新公告内容
     content = `
@@ -103,8 +104,6 @@ export class Loginpel extends Component {
                     packageUrl = `http://czx.yimem.com:5505/data-gg-hot-update`;
                     break;
                 case sys.OS.ANDROID:
-                    // packageUrl = `https://raw.githubusercontent.com/zhitaocai/cocos-creator-gg-hot-update-demo/v6/build/android/data-gg-hot-update`;
-                    // packageUrl = `http://192.168.40.10:8082/gg-hot-update-demo/build/android/data-gg-hot-update`;
                     packageUrl = `http://czx.yimem.com:5502/data-gg-hot-update`;
                     break;
             }
