@@ -1,4 +1,4 @@
-import { _decorator, Component, director, EditBox, instantiate, Node, Label, Prefab, ProgressBar, sys, tween, Vec3, RichText } from 'cc';
+import { _decorator, Component, director, EditBox, instantiate, Node, Label, Prefab, ProgressBar, sys, tween, Vec3, RichText, Button } from 'cc';
 const { ccclass, property } = _decorator;
 import { util } from '../../../util/util';
 import { AudioMgr } from "../../../util/resource/AudioMgr";
@@ -15,12 +15,23 @@ export class Loginpel extends Component {
     @property(EditBox)
     Password: EditBox;
     @property(EditBox)
+    Username2: EditBox;
+    @property(EditBox)
+    Password2: EditBox;
+    @property(EditBox)
     YaoCode: EditBox;
+    @property(EditBox)
+    YaoCode2: EditBox;
+    @property(Button)
+    sendCode: Button;
+    @property(Label)
+    sendCodeLabel: Label;
+    isSendingCode: boolean = false;
     // redis-server.exe redis.windows.conf
     // url = "http://192.168.0.104:8080/"
     // url = "http://127.0.0.1:8889/"
-    // url = "http://czx.yimem.com:3000/"
-    url = "https://czx.yimem.com:3002/"
+    url = "http://czx.yimem.com:3000/"
+    // url = "https://czx.yimem.com:3002/"
 
     //更新公告内容
     content = `
@@ -459,31 +470,12 @@ export class Loginpel extends Component {
     }
     register() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        const username = this.Username.string;
-        const password = this.Password.string; // 假设有两个输入框，分别用于用户名和密码
-        if (!username) {
-            const close = util.message.confirm({ message: "请输入账号" })
-            return;
-        }
-        if (!password) {
-            const close = util.message.confirm({ message: "请输入密码" })
-            return;
-        }
-        this.node.getChildByName("YaoCode").active = true
-
-    }
-
-    closeYao() {
-        AudioMgr.inst.playOneShot("sound/other/click");
-        this.node.getChildByName("YaoCode").active = false
-    }
-    yaoCode() {
-        AudioMgr.inst.playOneShot("sound/other/click");
-        const username = this.Username.string;
+        const username = this.Username2.string;
         const yaoCode = this.YaoCode.string;
-        const password = this.Password.string; // 假设有两个输入框，分别用于用户名和密码
+        const yaoCode2 = this.YaoCode2.string;
+        const password = this.Password2.string; // 假设有两个输入框，分别用于用户名和密码
         if (!username) {
-            const close = util.message.confirm({ message: "请输入账号" })
+            const close = util.message.confirm({ message: "请输入邮箱" })
             return;
         }
         if (!password) {
@@ -491,7 +483,7 @@ export class Loginpel extends Component {
             return;
         }
         if (!yaoCode) {
-            const close = util.message.confirm({ message: "请输入邀请码" })
+            const close = util.message.confirm({ message: "请输入验证码" })
             return;
         }
         // 验证逻辑（示例）
@@ -499,7 +491,8 @@ export class Loginpel extends Component {
             const postData = {
                 username: username,
                 userpassword: password,
-                yaoCode: yaoCode
+                yaoCode: yaoCode,
+                yaoCode2: yaoCode2
             };
             // let formData = new FormData();
             // formData.append('username', username);
@@ -544,7 +537,89 @@ export class Loginpel extends Component {
 
         }
     }
+    updateStoreData() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        const username = this.Username2.string;
+        if (!username) {
+            const close = util.message.confirm({ message: "请输入邮箱" })
+            return;
+        }
+        // 验证逻辑（示例）
+        const postData = {
+            str: username,
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+
+        // 发送 POST 请求
+        fetch(this.url + "sendVerificationCode", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(data => {
+                // console.log(data); // 处理响应数据
+                if (data.success == '1') {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                    this.sendCode.interactable = false
+                    let time = 60
+                    let self = this
+                    this.sendCodeLabel.string = "(" + time + ")"
+                    this.schedule(function () {
+                        time--
+                        this.sendCodeLabel.string = "(" + time + ")"
+                        if (time <= 0) {
+                            this.sendCodeLabel.string = "发送验证码"
+                        }
+                    }, 1, 60)
+                    this.scheduleOnce(function () {
+                        self.sendCode.interactable = true
+                        self.sendCodeLabel.string = "发送验证码"
+                    }, 60)
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+    }
+    closeYao() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.getChildByName("YaoCode").active = false
+    }
+
+  goback() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.getChildByName("setCount").active = false
+    }
+
+    goback2() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.getChildByName("register").active = false
+    }
+
+    registerBtn() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.getChildByName("register").active = true
+    }
+
+    loginBtn3() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.getChildByName("setCount").active = true
+    }
+
     loginBtn() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.enterGame();
+    }
+    loginBtn2() {
         AudioMgr.inst.playOneShot("sound/other/click");
         const username = this.Username.string;
         const password = this.Password.string; // 假设有两个输入框，分别用于用户名和密码
@@ -592,43 +667,11 @@ export class Loginpel extends Component {
                 .then(data => {
                     // console.log(data); // 处理响应数据
                     if (data.success == '1') {
+                        const close = util.message.confirm({ message: data.errorMsg })
                         localStorage.setItem("UserConfigData", null)
                         var userInfo = data.data;
-                        var config = {
-                            "version": "0.0.1",
-                            "volume": 0.1,
-                            "userData": {
-                                "userId": userInfo.userId,
-                                "gold": userInfo.gold,
-                                "diamond": userInfo.diamond,
-                                "soul": userInfo.soul,
-                                "lv": userInfo.lv,
-                                "exp": userInfo.exp,
-                                "nickname": userInfo.nickname,
-                                "signCount": userInfo.signCount,
-                                "useCardCount": userInfo.useCardCount,
-                                "backpack": [],
-                                "equipments": userInfo.eqCharactersList,
-                                "characters": userInfo.characterList,
-                                "gameImg": userInfo.gameImg,
-                                "winCount": userInfo.winCount,
-                                "chapter": userInfo.chapter,
-                                "stopLevel": userInfo.stopLevel,
-                                "weiwanCount": userInfo.weiwanCount,
-                                "bronze": userInfo.bronze,
-                                "darkSteel": userInfo.darkSteel,
-                                "purpleGold": userInfo.purpleGold,
-                                "crystal": userInfo.crystal,
-                                "myCode": userInfo.myCode
-                            },
-                        }
-                        this.SetLeaveEnergy(userInfo.tiliCount)
-                        localStorage.setItem('LastGetTime1', userInfo.tiliCountTime + "");
-                        localStorage.setItem('LastGetHuoliTime1', userInfo.huoliCountTime + "");
-                        this.SetLeaveHuoliEnergy(userInfo.huoliCount)
                         localStorage.setItem("token", userInfo.token)
-                        localStorage.setItem("UserConfigData", JSON.stringify(config))
-                        director.loadScene("Home")
+                        this.node.getChildByName("setCount").active = false
                     } else {
                         const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                     }

@@ -26,8 +26,8 @@ class ServerUrl {
     // redis-server.exe redis.windows.conf
     // url = "http://192.168.0.104:8080/"
     // url = "http://127.0.0.1:8889/"
-    // url="http://czx.yimem.com:3000/"
-    url="https://czx.yimem.com:3002/"
+    url="http://czx.yimem.com:3000/"
+    // url="https://czx.yimem.com:3002/"
 }
 
 let globalId: number = 1

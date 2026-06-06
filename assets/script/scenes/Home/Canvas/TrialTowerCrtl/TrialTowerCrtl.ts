@@ -215,6 +215,7 @@ export class TrialTowerCrtl extends Component {
                         config.userData.darkSteel = user.darkSteel
                         config.userData.purpleGold = user.purpleGold
                         config.userData.crystal = user.crystal
+                        config.userData.equipments = user.eqCharactersList
                         if (this.customEventData == 'bronzetower') {
                             config.userData.bronze1 = user.bronze1
                             this.cailiao.getChildByName("num").getComponent(Label).string = user.bronze.toString()
@@ -287,6 +288,7 @@ export class TrialTowerCrtl extends Component {
                     var map = data.data;
                     var user = map['user'];
                     const rewards = map["rewards"];
+                    config.userData.equipments = user.eqCharactersList
                     config.userData.bronze1 = user.bronze1
                     config.userData.gold = user.gold
                     config.userData.bronze = user.bronze

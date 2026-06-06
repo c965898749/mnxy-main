@@ -18,7 +18,6 @@ export class SelectCardCtrl extends Component {
 
     onEnable() {
         // if (!this.initialized) {
-        
         //     // 初始化代码
         //     this.initialized = true;
         // } else {
