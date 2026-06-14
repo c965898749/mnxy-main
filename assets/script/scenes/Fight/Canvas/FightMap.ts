@@ -6,7 +6,7 @@ import { HolNumber } from '../../../prefab/HolNumber';
 import { RoundState } from '../../../game/fight/RoundState';
 import { common } from '../../../common/common/common';
 import { HolPreLoad } from '../../../prefab/HolPreLoad';
-import { getConfig, getToken } from '../../../common/config/config';
+import { battleCache, getConfig, getToken } from '../../../common/config/config';
 import { CharacterEnum } from '../../../game/fight/character/CharacterEnum';
 import { AudioMgr } from '../../../util/resource/AudioMgr';
 import { FightSuccess } from './FightSuccess';
@@ -104,72 +104,64 @@ export class FightMap extends Component {
         this.node.getComponent(Sprite).spriteFrame = images[Math.floor(math.randomRange(0, images.length))]
         holPreLoad.setProcess(50)
         // 当前进度
-        let process = 50
-        const config = getConfig()
-        const token = getToken()
-        const postData = {
-            token: token,
-            id: fightId
-        };
-        const options = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(postData),
-        };
-        fetch(config.ServerUrl.url + "playBattle", options)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json(); // 解析 JSON 响应
-            })
-            .then(async data => {
-                //////console.log(data); // 处理响应数据
-                if (data.success == '1') {
-                    var map = data.data;
-                    this.fightProcess = map['battleLogs'];
-                    const campA = map['campA'];
-                    const campB = map['campB'];
-                    this.name0.getComponent(Label).string = map['name0'];
-                    this.name1.getComponent(Label).string = map['name1'];
-                    var isWin = map['isWin'];
-                    if (isWin == 1) {
-                        this.result = false
-                    } else {
-                        this.result = true
-                    }
-                    this.L1 = campA
-                    this.R1 = campB
-                    for (var i = 0; i < campA.length; i++) {
-                        this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("header").getComponent(Sprite).spriteFrame =
-                            await util.bundle.load(`game/texture/frames/hero/Header/${campA[i].id}/spriteFrame`, SpriteFrame)
-                        this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("id").getComponent(Label).string = campA[i].uuid
-                        this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("my_hp").active = true
-                        let progress = campA[i].maxHp / campA[i].maxHp
-                        this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("my_hp").getComponent(ProgressBar).progress = progress
-                        this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = campA[i].maxHp + "/" + campA[i].maxHp
-                        let create = campA[i]
-                        this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("header").on("click", () => this.clickFun(create))
-                    }
-                    for (var i = 0; i < campB.length; i++) {
-                        this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("header").getComponent(Sprite).spriteFrame =
-                            await util.bundle.load(`game/texture/frames/hero/Header/${campB[i].id}/spriteFrame`, SpriteFrame)
-                        this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("id").getComponent(Label).string = campB[i].uuid
-                        this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("my_hp").active = true
-                        let progress = campB[i].maxHp / campB[i].maxHp
-                        this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("my_hp").getComponent(ProgressBar).progress = progress
-                        this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = campB[i].maxHp + "/" + campB[i].maxHp
-                        let create = campB[i]
-                        this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("header").on("click", () => this.clickFun(create))
-                    }
-                } else {
-                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
-                }
-            })
-            .catch(error => {
-                //console.error('There was a problem with the fetch operation:', error);
+        try {
+            // 获取整套战斗数据，包含日志、双方阵营、名字、胜负
+            const battleInfo = await battleCache.getBattleFullInfo(fightId);
+            // 战斗过程日志数组
+            const fightProcess = battleInfo.battleLogs;
+            // 其他战斗信息
+            // const { campA, campB, name0, name1, isWin } = battleInfo;
+
+            this.fightProcess = fightProcess;
+            // 渲染UI：展示双方名字、阵营、胜负、战斗流程
+            const campA = battleInfo.campA;
+            const campB = battleInfo.campB;
+            this.name0.getComponent(Label).string = battleInfo.name0;
+            this.name1.getComponent(Label).string = battleInfo.name1;
+            var isWin = battleInfo.isWin;
+            if (isWin == 0) {
+                this.result = true
+            } else {
+                this.result = false
             }
-            );
+            this.L1 = campA
+            this.R1 = campB
+            for (var i = 0; i < campA.length; i++) {
+                this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("header").getComponent(Sprite).spriteFrame =
+                    await util.bundle.load(`game/texture/frames/hero/Header/${campA[i].id}/spriteFrame`, SpriteFrame)
+                this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("id").getComponent(Label).string = campA[i].uuid
+                this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("my_hp").active = true
+                let progress = campA[i].maxHp / campA[i].maxHp
+                this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("my_hp").getComponent(ProgressBar).progress = progress
+                this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = campA[i].maxHp + "/" + campA[i].maxHp
+                let create = campA[i]
+                this.tiem.children[0].children[campA[i].goIntoNum - 1].getChildByName("header").on("click", () => this.clickFun(create))
+            }
+            for (var i = 0; i < campB.length; i++) {
+                this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("header").getComponent(Sprite).spriteFrame =
+                    await util.bundle.load(`game/texture/frames/hero/Header/${campB[i].id}/spriteFrame`, SpriteFrame)
+                this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("id").getComponent(Label).string = campB[i].uuid
+                this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("my_hp").active = true
+                let progress = campB[i].maxHp / campB[i].maxHp
+                this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("my_hp").getComponent(ProgressBar).progress = progress
+                this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = campB[i].maxHp + "/" + campB[i].maxHp
+                let create = campB[i]
+                this.tiem.children[1].children[campB[i].goIntoNum - 1].getChildByName("header").on("click", () => this.clickFun(create))
+            }
+        } catch (err: any) {
+            switch (err.message) {
+                case "TOKEN_EXPIRED":
+                    console.log("登录已失效，请重新登录");
+                    // 跳转登录
+                    break;
+                case "BATTLE_RECORD_EXPIRED":
+                    console.log("该战斗记录已过期（仅保留7天）");
+                    // 弹窗提示用户
+                    break;
+                default:
+                    console.error("获取战斗失败", err);
+            }
+        }
 
         // 监听进度条完成函数
         holPreLoad.listenComplete(async () => {

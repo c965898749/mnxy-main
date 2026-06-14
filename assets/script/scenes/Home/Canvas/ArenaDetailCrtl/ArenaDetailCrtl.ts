@@ -1,5 +1,5 @@
 import { _decorator, Component, find, instantiate, Label, Node, Prefab, RichText, Sprite, SpriteFrame, tween, v3 } from 'cc';
-import { getConfig, getToken } from 'db://assets/script/common/config/config';
+import { battleCache, BattleLogItem, getConfig, getToken } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 import { ArenaItemCtrl } from './ArenaItemCtrl';
@@ -298,6 +298,13 @@ export class ArenaDetailCrtl extends Component {
                     const userInfo = map['userInfo'];
                     const gameArenaSignup = map['gameArenaSignup'];
                     const battle = map['battle'];
+                    // 3. 存入本地缓存
+                    const saveItem: BattleLogItem = {
+                        battleId: battle.id,
+                        saveTime: Date.now(),
+                        battleData: battle.json
+                    };
+                    battleCache.saveBattleItem(saveItem);
                     const gameArenaBattle = map['gameArenaBattle'];
                     const ranking = map['ranking'];
                     const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)

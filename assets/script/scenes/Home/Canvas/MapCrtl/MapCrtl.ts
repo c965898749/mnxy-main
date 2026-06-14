@@ -205,6 +205,10 @@ export class MapCrtl extends Component {
             );
 
     }
+    openKuan() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("KuanCrtl").active = true
+    }
 }
 
 

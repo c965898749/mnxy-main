@@ -1,5 +1,5 @@
 import { _decorator, Component, EditBox, find, instantiate, Label, Node, Prefab, Sprite, SpriteFrame } from 'cc';
-import { getConfig, getToken } from 'db://assets/script/common/config/config';
+import { battleCache, BattleLogItem, getConfig, getToken } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 import { FightMap } from '../../../Fight/Canvas/FightMap';
@@ -161,6 +161,13 @@ export class MyFriendsCrtl extends Component {
             .then(async data => {
                 //console.log(data); // 处理响应数据
                 if (data.success == '1') {
+                    // 3. 存入本地缓存
+                    const saveItem: BattleLogItem = {
+                        battleId: data.data.id,
+                        saveTime: Date.now(),
+                        battleData: data.data.json
+                    };
+                    battleCache.saveBattleItem(saveItem);
                     this.refresh()
                     const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
                     const holAnimationNode = instantiate(holAnimationPrefab)

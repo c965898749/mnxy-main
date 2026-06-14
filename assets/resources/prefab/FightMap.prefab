@@ -62416,10 +62416,7 @@
     "__prefab": {
       "__id__": 2627
     },
-    "_clip": {
-      "__uuid__": "61361d69-eb66-49ac-af6f-02e65d796452",
-      "__expectedType__": "cc.AudioClip"
-    },
+    "_clip": null,
     "_loop": false,
     "_playOnAwake": false,
     "_volume": 1,

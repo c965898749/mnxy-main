@@ -23,11 +23,7 @@ class VolumeDetail {
 }
 
 class ServerUrl {
-    // redis-server.exe redis.windows.conf
-    // url = "http://192.168.0.104:8080/"
-    // url = "http://127.0.0.1:8889/"
-    url="http://czx.yimem.com:3000/"
-    // url="https://czx.yimem.com:3002/"
+    url=""
 }
 
 let globalId: number = 1
@@ -199,7 +195,6 @@ export function stockConfig() {
 }
 
 export function updateConfig() {
-    console.log(config.userData.diamond, 444)
     // config.userData.characters = config.userData.characters
     localStorage.setItem("UserConfigData", JSON.stringify(config))
 }
@@ -328,4 +323,145 @@ export function updateTiliAndHuoLi() {
 
 
 
+/** 完整后端返回战斗结构 */
+type BattleFullData = {
+    battleLogs: any[];
+    campA: any;
+    campB: any;
+    name0: string;
+    name1: string;
+    isWin: number;
+};
 
+/** 本地单条缓存结构 */
+export  interface BattleLogItem {
+    battleId: string;
+    saveTime: number;
+    battleData: BattleFullData; // 存储后端整套map数据
+}
+
+
+
+export class BattleLogStorage {
+    private  readonly STORAGE_KEY = "battle_log_list";
+    // 本地最大缓存战斗数量，超出删除最早一条
+    private  readonly MAX_STORE_COUNT = 1000;
+
+    /** 读取本地缓存列表（localStorage 整体存JSON字符串） */
+    private  getAllLocalList(): BattleLogItem[] {
+        const jsonStr = localStorage.getItem(this.STORAGE_KEY);
+        if (!jsonStr) return [];
+        try {
+            const list = JSON.parse(jsonStr);
+            return Array.isArray(list) ? list : [];
+        } catch (err) {
+            localStorage.removeItem(this.STORAGE_KEY);
+            return [];
+        }
+    }
+
+    /** 写入本地，数组转JSON字符串持久化 */
+    private  saveToLocal(list: BattleLogItem[]) {
+        const jsonStr = JSON.stringify(list);
+        localStorage.setItem(this.STORAGE_KEY, jsonStr);
+    }
+
+    /** 删除单条失效战斗缓存 */
+    public  removeLocalBattle(battleId: string) {
+        let list = this.getAllLocalList();
+        list = list.filter(item => item.battleId !== battleId);
+        this.saveToLocal(list);
+    }
+
+    /** 根据战斗ID查询本地缓存 */
+    public  getLocalBattle(battleId: string): BattleLogItem | null {
+        const list = this.getAllLocalList();
+        return list.find(item => item.battleId === battleId) ?? null;
+    }
+
+    /** 新增/更新缓存，自动控容量 */
+    public  saveBattleItem(item: BattleLogItem) {
+        let list = this.getAllLocalList();
+        // 去重，同ID只保留最新
+        list = list.filter(v => v.battleId !== item.battleId);
+        list.push(item);
+        // 超过上限循环删最旧
+        while (list.length > this.MAX_STORE_COUNT) {
+            list.shift();
+        }
+        this.saveToLocal(list);
+    }
+
+    /** 统一获取完整战斗数据入口 */
+    public  async getBattleFullInfo(battleId: string): Promise<BattleFullData> {
+        // 1. 优先读本地缓存
+        const localItem = this.getLocalBattle(battleId);
+        if (localItem) {
+            return localItem.battleData;
+        }
+
+        // 2. 本地无数据，请求后端
+        const fullBattleData = await this.requestBattleServer(battleId);
+
+        // 3. 存入本地缓存
+        const saveItem: BattleLogItem = {
+            battleId: battleId,
+            saveTime: Date.now(),
+            battleData: fullBattleData
+        };
+        this.saveBattleItem(saveItem);
+
+        return fullBattleData;
+    }
+
+    /** POST 请求 playBattle 接口，完全适配你的后端逻辑 */
+    private  async requestBattleServer(fightId: string): Promise<BattleFullData> {
+        const token = getToken();
+        const postData = {
+            token: token,
+            id: fightId
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+
+        const res = await fetch(config.ServerUrl.url + "playBattle", options);
+        if (!res.ok) throw new Error("网络请求失败");
+        const data = await res.json();
+
+        // 1. Token过期分支（自行匹配后端返回码）
+        if (data.success === "2") {
+            throw new Error("TOKEN_EXPIRED");
+        }
+
+        // 2. success=0 代表：Redis7天过期 / 服务端本地文件已删除 → 战斗记录失效
+        if (data.success !== "1") {
+            // 清理本地旧缓存，避免永久存失效数据
+            this.removeLocalBattle(fightId);
+            throw new Error("BATTLE_RECORD_EXPIRED");
+        }
+
+        let map = data.data;
+        // 兜底：极端场景后端返回字符串JSON，自动解析
+        if (typeof map === "string") {
+            try {
+                map = JSON.parse(map);
+            } catch (parseErr) {
+                throw new Error("战斗数据JSON解析失败");
+            }
+        }
+
+        // map 结构：battleLogs、campA、campB、name0、name1、isWin
+        return map as BattleFullData;
+    }
+
+    /** 清空所有战斗本地缓存 */
+    public  clearAll() {
+        localStorage.removeItem(this.STORAGE_KEY);
+    }
+}
+
+// 全局单例，所有外部直接导入这个实例
+export const battleCache = new BattleLogStorage();

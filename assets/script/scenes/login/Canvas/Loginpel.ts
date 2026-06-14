@@ -1,4 +1,4 @@
-import { _decorator, Component, director, EditBox, instantiate, Node, Label, Prefab, ProgressBar, sys, tween, Vec3, RichText, Button } from 'cc';
+import { _decorator, Component, director, EditBox, instantiate, Node, Label, Prefab, ProgressBar, sys, tween, Vec3, RichText, Button, Sprite, SpriteFrame } from 'cc';
 const { ccclass, property } = _decorator;
 import { util } from '../../../util/util';
 import { AudioMgr } from "../../../util/resource/AudioMgr";
@@ -26,13 +26,13 @@ export class Loginpel extends Component {
     sendCode: Button;
     @property(Label)
     sendCodeLabel: Label;
+    @property(Label)
+    severeLabel: Label;
     isSendingCode: boolean = false;
+    @property({ type: Node, tooltip: "任务列表" }) ContentNode2: Node = null;
     // redis-server.exe redis.windows.conf
-    // url = "http://192.168.0.104:8080/"
-    // url = "http://127.0.0.1:8889/"
-    url = "http://czx.yimem.com:3000/"
-    // url = "https://czx.yimem.com:3002/"
-
+    serverList = [{ "id": 1, "name": "梦回西游", "url": "http://127.0.0.1:8889/" }]
+    url=localStorage.getItem("url") ?? this.serverList[0].url;
     //更新公告内容
     content = `
 <size=32><color=#FFD700>✨QQ神仙版本更新公告✨</color></size>
@@ -112,16 +112,30 @@ export class Loginpel extends Component {
                 //     packageUrl = `https://raw.githubusercontent.com/zhitaocai/cocos-creator-gg-hot-update-demo/v6/build/ohos/data-gg-hot-update`;
                 //     break;
                 case sys.OS.IOS:
-                    packageUrl = `http://czx.yimem.com:5505/data-gg-hot-update`;
+                    packageUrl = `https://czx.yimem.com:5508/data-gg-hot-update`;
+                    this.serverList = [
+                        { "id": 1, "name": "梦回西游", "url": "https://czx.yimem.com:3002/" },
+                        { "id": 2, "name": "再续前缘", "url": "https://czx.yimem.com:3004/" },
+                    ]
                     break;
                 case sys.OS.ANDROID:
                     packageUrl = `http://czx.yimem.com:5502/data-gg-hot-update`;
+                    this.serverList = [
+                        { "id": 1, "name": "梦回西游", "url": "http://czx.yimem.com:3000/" },
+                        { "id": 2, "name": "再续前缘", "url": "http://czx.yimem.com:3003/" },
+                    ]
                     break;
             }
             ggHotUpdateManager.init({
                 enableLog: DEBUG,
                 packageUrl: packageUrl,
             });
+        }
+        this.url =localStorage.getItem("url") ?? this.serverList[0].url;
+        for (let i = this.serverList.length - 1; i >= 0; i--) {
+            if (this.url == this.serverList[i].url) {
+                this.severeLabel.string = this.serverList[i].name;
+            }
         }
     }
 
@@ -379,6 +393,9 @@ export class Loginpel extends Component {
                     var config = {
                         "version": "0.0.1",
                         "volume": 0.1,
+                        "ServerUrl": {
+                            "url": this.url
+                        },
                         "userData": {
                             "userId": userInfo.userId,
                             "gold": userInfo.gold,
@@ -595,7 +612,7 @@ export class Loginpel extends Component {
         this.node.getChildByName("YaoCode").active = false
     }
 
-  goback() {
+    goback() {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.getChildByName("setCount").active = false
     }
@@ -604,10 +621,60 @@ export class Loginpel extends Component {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.getChildByName("register").active = false
     }
+    goback3() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.getChildByName("ServerList").active = false
+    }
 
     registerBtn() {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.getChildByName("register").active = true
+    }
+
+
+    async openServerList() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.getChildByName("ServerList").active = true
+        const nodePool = util.resource.getNodePool(
+            await util.bundle.load("prefab/server", Prefab)
+        )
+        const childrens = [...this.ContentNode2.children]
+        for (let i = 0; i < childrens.length; i++) {
+            const node = childrens[i];
+            node.off("click")
+            nodePool.put(node)
+        }
+        for (let i = this.serverList.length - 1; i >= 0; i--) {
+            let item = nodePool.get()
+            if (this.url == this.serverList[i].url) {
+                item.getComponent(Sprite).spriteFrame =
+                    await util.bundle.load("image/back/22/spriteFrame", SpriteFrame)
+            } else {
+                item.getComponent(Sprite).spriteFrame =
+                    await util.bundle.load("image/back/11/spriteFrame", SpriteFrame)
+            }
+            item.getChildByName("num").getComponent(Label).string = i + 1 + "服"
+            item.getChildByName("name").getComponent(Label).string = this.serverList[i].name
+            if (i == this.serverList.length - 1) {
+                item.getChildByName("tuijian").active = true
+                item.getChildByName("good").getComponent(Sprite).spriteFrame =
+                    await util.bundle.load("image/back/good/spriteFrame", SpriteFrame)
+            } else {
+                item.getChildByName("tuijian").active = false
+                item.getChildByName("good").getComponent(Sprite).spriteFrame =
+                    await util.bundle.load("image/back/bad/spriteFrame", SpriteFrame)
+            }
+            // // 绑定事件
+            item.on("click", () => {
+                this.url = this.serverList[i].url
+                localStorage.setItem("url", this.url)
+                this.severeLabel.string = this.serverList[i].name;
+                localStorage.setItem("token", null)
+                this.openServerList()
+            })
+            this.ContentNode2.addChild(item)
+            continue
+        }
     }
 
     loginBtn3() {

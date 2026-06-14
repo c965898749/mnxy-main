@@ -74,7 +74,7 @@ export class MessageCrtl extends Component {
                         item.getChildByName("fEsmZCGbB").active = false
                         item.getChildByName("fEsnbpxoT").active = false
                         item.getChildByName("getRewards").active = false
-                        item.getChildByName("regitPlaye").on("click", () => { this.clickFun(messageDetail.id) })
+                        item.getChildByName("regitPlaye").on("click", () => { this.clickFun(messageDetail.battleId) })
                         item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
                             await util.bundle.load(messageDetail.img, SpriteFrame)
 

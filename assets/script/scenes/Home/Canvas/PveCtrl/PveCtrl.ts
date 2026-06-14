@@ -1,6 +1,6 @@
 import { _decorator, Component, Label, Node, tween, v3, sp, director, Prefab, instantiate, find, Sprite, SpriteFrame, Button } from 'cc';
 import { L } from 'db://assets/script/common/common/Language';
-import { getConfig, getToken, updateTiliAndHuoLi, updateTiliTime } from 'db://assets/script/common/config/config';
+import { battleCache, BattleLogItem, getConfig, getToken, updateTiliAndHuoLi, updateTiliTime } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 import { FightMap } from '../../../Fight/Canvas/FightMap';
@@ -314,6 +314,13 @@ export class PveCtrl extends Component {
                                 var map = data.data;
                                 var user = map['user'];
                                 const battle = map['battle'];
+                                // 3. 存入本地缓存
+                                const saveItem: BattleLogItem = {
+                                    battleId: battle.id,
+                                    saveTime: Date.now(),
+                                    battleData: battle.json
+                                };
+                                battleCache.saveBattleItem(saveItem);
                                 const pveDetail = map['pveDetail'];
                                 const rewards = map["rewards"];
                                 const reward = map["reward"];
