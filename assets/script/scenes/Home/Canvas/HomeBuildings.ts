@@ -1,6 +1,6 @@
 import { _decorator, AudioClip, AudioSource, Component, director, EventTouch, find, instantiate, Label, math, Node, Prefab, screen, Sprite, SpriteFrame, tween, UITransform, v3, Vec3 } from 'cc';
 import { util } from '../../../util/util';
-import { getConfig, getToken, updateHuoliTime, updateTiliAndHuoLi, updateTiliTime } from '../../../common/config/config';
+import { getConfig, getToken} from '../../../common/config/config';
 import { AudioMgr } from "../../../util/resource/AudioMgr";
 import { CharacterState, CharacterStateCreate } from '../../../game/fight/character/CharacterState';
 import { LCoin } from '../../../common/common/Language';
@@ -155,7 +155,6 @@ export class HomeBuildings extends Component {
 
 
     onEnable() {
-        updateTiliAndHuoLi()
         if (!this.initialized) {
             // 初始化代码
             this.initialized = true;
@@ -390,20 +389,15 @@ export class HomeBuildings extends Component {
             if (this.CheckLoginDate(lastDate)) {
                 this.energy = this.MaxEnergy;
                 this.SetLeaveEnergy(this.MaxEnergy);
-                updateTiliTime();
             }
         } else if ((tiliCount + LeaveEnergy) >= this.MaxEnergy) {
             this.energy = this.MaxEnergy;
             localStorage.setItem('LastGetTime1', nowTime + "");
             this.SetLeaveEnergy(this.energy);
-            if (tiliCount > 0) {
-                updateTiliTime();
-            }
         } else if (tiliCount > 0) {
             this.energy = tiliCount + LeaveEnergy;
             localStorage.setItem('LastGetTime1', nowTime + "");
             this.SetLeaveEnergy(this.energy);
-            updateTiliTime();
         }
 
 
@@ -412,20 +406,15 @@ export class HomeBuildings extends Component {
             if (this.CheckLoginHuoliDate(lastDate)) {
                 this.huoliEnergy = this.MaxEnergy;
                 this.SetLeaveHuoliEnergy(this.MaxEnergy);
-                updateHuoliTime();
             }
         } else if ((hiliCount + LeaveHuoliEnergy) >= this.MaxEnergy) {
             this.huoliEnergy = this.MaxEnergy;
             localStorage.setItem('LastGetHuoliTime1', nowTime + "");
             this.SetLeaveHuoliEnergy(this.huoliEnergy);
-            if (hiliCount > 0) {
-                updateHuoliTime();
-            }
         } else if (hiliCount > 0) {
             this.huoliEnergy = hiliCount + LeaveHuoliEnergy;
             localStorage.setItem('LastGetHuoliTime1', nowTime + "");
             this.SetLeaveHuoliEnergy(this.huoliEnergy);
-            updateHuoliTime();
         }
 
 

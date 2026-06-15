@@ -1,6 +1,6 @@
 import { _decorator, Component, Label, Node, tween, v3, sp, director, Prefab, instantiate, find, Sprite, SpriteFrame, Button } from 'cc';
 import { L } from 'db://assets/script/common/common/Language';
-import { battleCache, BattleLogItem, getConfig, getToken, updateTiliAndHuoLi, updateTiliTime } from 'db://assets/script/common/config/config';
+import { battleCache, BattleLogItem, getConfig, getToken, updateTiAndHuoli } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 import { FightMap } from '../../../Fight/Canvas/FightMap';
@@ -60,7 +60,6 @@ export class PveCtrl extends Component {
     @property(Node)
     shangxianNode: Node
     start() {
-        updateTiliAndHuoLi()
         this.refresh()
     }
     onEnable() {
@@ -207,20 +206,15 @@ export class PveCtrl extends Component {
             if (this.CheckLoginDate(lastDate)) {
                 this.energy = this.MaxEnergy;
                 this.SetLeaveEnergy(this.MaxEnergy);
-                updateTiliTime();
             }
         } else if ((tiliCount + LeaveEnergy) >= this.MaxEnergy) {
             this.energy = this.MaxEnergy;
             localStorage.setItem('LastGetTime1', nowTime + "");
             this.SetLeaveEnergy(this.energy);
-            if (tiliCount > 0) {
-                updateTiliTime();
-            }
         } else if (tiliCount > 0) {
             this.energy = tiliCount + LeaveEnergy;
             localStorage.setItem('LastGetTime1', nowTime + "");
             this.SetLeaveEnergy(this.energy);
-            updateTiliTime();
         }
         const config = getConfig()
         var LeaveEnergy = this.GetLeaveEnergy();
@@ -321,6 +315,7 @@ export class PveCtrl extends Component {
                                     battleData: battle.json
                                 };
                                 battleCache.saveBattleItem(saveItem);
+                                updateTiAndHuoli(user);
                                 const pveDetail = map['pveDetail'];
                                 const rewards = map["rewards"];
                                 const reward = map["reward"];

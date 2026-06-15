@@ -98,8 +98,8 @@ export class bagCrtl extends Component {
                     item.getChildByName("name").getComponent(Label).string = itemDetail.itemName
                     item.getChildByName("Count").getComponent(Label).string = itemDetail.description
                     item.getChildByName("textbox_bg").getChildByName("num").getComponent(Label).string = itemDetail.itemCount
-                    item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
-                        await util.bundle.load(itemDetail.icon, SpriteFrame)
+                    // 图标加载抽离，不要写在循环await（关键防叠加）
+                    this.loadItemIcon(item, itemDetail.icon);
                     // // 绑定事件
 
                     this.ContentNode.addChild(item)
@@ -110,6 +110,16 @@ export class bagCrtl extends Component {
                 //console.error('There was a problem with the fetch operation:', error);
             }
             );
+    }
+    /** 单独加载图标，不阻塞渲染循环 */
+    private async loadItemIcon(item: Node, iconPath: string) {
+        try {
+            const sf = await util.bundle.load(iconPath, SpriteFrame);
+            const spriteNode = item.getChildByName("yxjm_df_txk").children[0];
+            spriteNode.getComponent(Sprite).spriteFrame = sf;
+        } catch (e) {
+            console.warn("图标加载失败", iconPath);
+        }
     }
 
     async refresh2() {
@@ -144,7 +154,8 @@ export class bagCrtl extends Component {
                     }
                     for (const character of characters) {
                         const node = nodePool2.get()
-                        node.getChildByName("Avatar").getComponent(Sprite).spriteFrame = await util.bundle.load(character.icon, SpriteFrame)
+                        // 图标异步加载，单独开异步不阻塞循环
+                        this.loadAvatarIcon(node, character.icon);
                         node.getChildByName("itemCount").active = true
                         node.getChildByName("itemCount").getComponent(Label).string = character.itemCount
                         // node.getComponent(Button).transition = 3
@@ -163,6 +174,17 @@ export class bagCrtl extends Component {
             }
             );
         return
+    }
+
+    /** 单独异步加载头像图标，不阻塞列表渲染 */
+    private async loadAvatarIcon(itemNode: Node, iconPath: string) {
+        try {
+            const sf = await util.bundle.load(iconPath, SpriteFrame);
+            const avatarSprite = itemNode.getChildByName("Avatar").getComponent(Sprite);
+            avatarSprite.spriteFrame = sf;
+        } catch (e) {
+            console.warn("头像资源加载失败 path:" + iconPath, e);
+        }
     }
 
     public async hechen(character) {

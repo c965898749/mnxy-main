@@ -1,5 +1,5 @@
 import { _decorator, Component, find, instantiate, Label, Node, Prefab, Sprite, SpriteFrame } from 'cc';
-import { battleCache, BattleLogItem, getConfig, getToken, updateHuoliTime } from 'db://assets/script/common/config/config';
+import { battleCache, BattleLogItem, getConfig, getToken, updateTiAndHuoli } from 'db://assets/script/common/config/config';
 import { util } from 'db://assets/script/util/util';
 import { FightMap } from '../../../Fight/Canvas/FightMap';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
@@ -95,20 +95,15 @@ export class AscensionPillJinjiCtrl extends Component {
             if (this.CheckLoginHuoliDate(lastDate)) {
                 this.huoliEnergy = this.MaxEnergy;
                 this.SetLeaveHuoliEnergy(this.MaxEnergy);
-                updateHuoliTime();
             }
         } else if ((hiliCount + LeaveHuoliEnergy) >= this.MaxEnergy) {
             this.huoliEnergy = this.MaxEnergy;
             localStorage.setItem('LastGetHuoliTime1', nowTime + "");
             this.SetLeaveHuoliEnergy(this.huoliEnergy);
-            if (hiliCount > 0) {
-                updateHuoliTime();
-            }
         } else if (hiliCount > 0) {
             this.huoliEnergy = hiliCount + LeaveHuoliEnergy;
             localStorage.setItem('LastGetHuoliTime1', nowTime + "");
             this.SetLeaveHuoliEnergy(this.huoliEnergy);
-            updateHuoliTime();
         }
 
 
@@ -224,6 +219,7 @@ export class AscensionPillJinjiCtrl extends Component {
                     var map = data.data;
                     const rewards = map["rewards"];
                     const battle = map["battle"];
+                    const userInfo = map["user"];
                     // 3. 存入本地缓存
                     const saveItem: BattleLogItem = {
                         battleId: battle.id,
@@ -231,6 +227,7 @@ export class AscensionPillJinjiCtrl extends Component {
                         battleData: battle.json
                     };
                     battleCache.saveBattleItem(saveItem);
+                    updateTiAndHuoli(userInfo);
                     this.remarkNode.getComponent(Label).string = "今日还可抢夺 " + map['duoCount'] + " 次"
                     const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
                     const holAnimationNode = instantiate(holAnimationPrefab)

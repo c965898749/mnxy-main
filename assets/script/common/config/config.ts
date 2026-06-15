@@ -23,7 +23,7 @@ class VolumeDetail {
 }
 
 class ServerUrl {
-    url=""
+    url = ""
 }
 
 let globalId: number = 1
@@ -68,7 +68,7 @@ class UserData extends Resource {
     public darkSteel: number = 0
     public purpleGold: number = 0
     public crystal: number = 0
-    public myCode:string
+    public myCode: string
 
 
     // 已经收集到的英雄
@@ -87,7 +87,7 @@ class UserData extends Resource {
         this.diamond = or.diamond || 100
         this.soul = or.soul || 1000
         this.gameImg = or.gameImg
-        this.myCode=or.myCode
+        this.myCode = or.myCode
         this.winCount = or.winCount
         this.rate = or.rate || 0
         this.bronze = or.bronze || 0
@@ -214,111 +214,11 @@ export function getToken() {
 }
 
 
-export function updateTiliTime() {
-    const config = getConfig()
-    const token = getToken()
-    var lastTime = parseInt(localStorage.getItem('LastGetTime1'));
-    var key = 'Leave_EnergyNumber2';
-    var str = localStorage.getItem(key);
-    if (str) {
-        str
-    }
-    const postData = {
-        token: token,
-        str: lastTime,
-        tiLi: parseInt(str),
-        userId: config.userData.userId,
-    };
-    const options = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(postData),
-    };
-    fetch(config.ServerUrl.url + "updateTli", options)
-        .then(response => {
-
-            return response.json(); // 解析 JSON 响应
-        })
-        .then(async data => {
-            if (data.success == '1') {
-                // console.log("更新体力时间成功");
-            }
-        })
-        .catch(error => {
-            console.error('There was a problem with the fetch operation:', error);
-        }
-        );
-
-}
-
-export function updateHuoliTime() {
-    const config = getConfig()
-    const token = getToken()
-    var lastTime = parseInt(localStorage.getItem('LastGetHuoliTime1'));
-    var key = 'Leave_EnergyHuoliNumber2';
-    var str = localStorage.getItem(key);
-    if (!str) {
-        str = "0";
-    }
-    const postData = {
-        token: token,
-        str: lastTime,
-        huoLi: parseInt(str),
-        userId: config.userData.userId,
-    };
-    const options = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(postData),
-    };
-    fetch(config.ServerUrl.url + "updateTli3", options)
-        .then(response => {
-
-            return response.json(); // 解析 JSON 响应
-        })
-        .then(async data => {
-            if (data.success == '1') {
-                // console.log("更新活力力时间成功");
-            }
-        })
-        .catch(error => {
-            console.error('There was a problem with the fetch operation:', error);
-        }
-        );
-
-}
-
-export function updateTiliAndHuoLi() {
-    const config = getConfig()
-    const token = getToken()
-    const postData = {
-        token: token,
-        userId: config.userData.userId,
-    };
-    const options = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(postData),
-    };
-    fetch(config.ServerUrl.url + "updateTli2", options)
-        .then(response => {
-
-            return response.json(); // 解析 JSON 响应
-        })
-        .then(async data => {
-            if (data.success == '1') {
-                const userInfo = data.data;
-                localStorage.setItem('Leave_EnergyNumber2', userInfo.tiliCount + "");
-                localStorage.setItem('LastGetTime1', userInfo.tiliCountTime + "");
-                localStorage.setItem('LastGetHuoliTime1', userInfo.huoliCountTime + "");
-                localStorage.setItem('Leave_EnergyHuoliNumber2', userInfo.huoliCount + "");
-            }
-        })
-        .catch(error => {
-            console.error('There was a problem with the fetch operation:', error);
-        }
-        );
-
+export function updateTiAndHuoli(userInfo) {
+    localStorage.setItem('Leave_EnergyNumber2', userInfo.tiliCount + "");
+    localStorage.setItem('LastGetTime1', userInfo.tiliCountTime + "");
+    localStorage.setItem('LastGetHuoliTime1', userInfo.huoliCountTime + "");
+    localStorage.setItem('Leave_EnergyHuoliNumber2', userInfo.huoliCount + "");
 }
 
 
@@ -334,7 +234,7 @@ type BattleFullData = {
 };
 
 /** 本地单条缓存结构 */
-export  interface BattleLogItem {
+export interface BattleLogItem {
     battleId: string;
     saveTime: number;
     battleData: BattleFullData; // 存储后端整套map数据
@@ -343,12 +243,12 @@ export  interface BattleLogItem {
 
 
 export class BattleLogStorage {
-    private  readonly STORAGE_KEY = "battle_log_list";
+    private readonly STORAGE_KEY = "battle_log_list";
     // 本地最大缓存战斗数量，超出删除最早一条
-    private  readonly MAX_STORE_COUNT = 1000;
+    private readonly MAX_STORE_COUNT = 1000;
 
     /** 读取本地缓存列表（localStorage 整体存JSON字符串） */
-    private  getAllLocalList(): BattleLogItem[] {
+    private getAllLocalList(): BattleLogItem[] {
         const jsonStr = localStorage.getItem(this.STORAGE_KEY);
         if (!jsonStr) return [];
         try {
@@ -361,26 +261,26 @@ export class BattleLogStorage {
     }
 
     /** 写入本地，数组转JSON字符串持久化 */
-    private  saveToLocal(list: BattleLogItem[]) {
+    private saveToLocal(list: BattleLogItem[]) {
         const jsonStr = JSON.stringify(list);
         localStorage.setItem(this.STORAGE_KEY, jsonStr);
     }
 
     /** 删除单条失效战斗缓存 */
-    public  removeLocalBattle(battleId: string) {
+    public removeLocalBattle(battleId: string) {
         let list = this.getAllLocalList();
         list = list.filter(item => item.battleId !== battleId);
         this.saveToLocal(list);
     }
 
     /** 根据战斗ID查询本地缓存 */
-    public  getLocalBattle(battleId: string): BattleLogItem | null {
+    public getLocalBattle(battleId: string): BattleLogItem | null {
         const list = this.getAllLocalList();
         return list.find(item => item.battleId === battleId) ?? null;
     }
 
     /** 新增/更新缓存，自动控容量 */
-    public  saveBattleItem(item: BattleLogItem) {
+    public saveBattleItem(item: BattleLogItem) {
         let list = this.getAllLocalList();
         // 去重，同ID只保留最新
         list = list.filter(v => v.battleId !== item.battleId);
@@ -393,7 +293,7 @@ export class BattleLogStorage {
     }
 
     /** 统一获取完整战斗数据入口 */
-    public  async getBattleFullInfo(battleId: string): Promise<BattleFullData> {
+    public async getBattleFullInfo(battleId: string): Promise<BattleFullData> {
         // 1. 优先读本地缓存
         const localItem = this.getLocalBattle(battleId);
         if (localItem) {
@@ -415,7 +315,7 @@ export class BattleLogStorage {
     }
 
     /** POST 请求 playBattle 接口，完全适配你的后端逻辑 */
-    private  async requestBattleServer(fightId: string): Promise<BattleFullData> {
+    private async requestBattleServer(fightId: string): Promise<BattleFullData> {
         const token = getToken();
         const postData = {
             token: token,
@@ -458,7 +358,7 @@ export class BattleLogStorage {
     }
 
     /** 清空所有战斗本地缓存 */
-    public  clearAll() {
+    public clearAll() {
         localStorage.removeItem(this.STORAGE_KEY);
     }
 }
