@@ -75,6 +75,11 @@ export class KuanCrtl extends Component {
         this.node.active = false
     }
 
+    openkuanJinji() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("kuanJinjiCtrl").active = true
+    }
+
     update(deltaTime: number) {
 
     }

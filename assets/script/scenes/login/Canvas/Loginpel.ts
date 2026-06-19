@@ -9,7 +9,7 @@ import { ggHotUpdateManager } from "../../../../../extensions/gg-hot-update/asse
 import { GGHotUpdateInstanceEnum, GGHotUpdateInstanceState } from "../../../../../extensions/gg-hot-update/assets/scripts/hotupdate/GGHotUpdateType";
 @ccclass('Loginpel')
 export class Loginpel extends Component {
-
+    isRequesting: boolean = false;
     @property(EditBox)
     Username: EditBox;
     @property(EditBox)
@@ -32,7 +32,7 @@ export class Loginpel extends Component {
     @property({ type: Node, tooltip: "任务列表" }) ContentNode2: Node = null;
     // redis-server.exe redis.windows.conf
     serverList = [{ "id": 1, "name": "梦回西游", "url": "http://127.0.0.1:8889/" }]
-    url=localStorage.getItem("url") ?? this.serverList[0].url;
+    url = localStorage.getItem("url") ?? this.serverList[0].url;
     //更新公告内容
     content = `
 <size=32><color=#FFD700>✨QQ神仙版本更新公告✨</color></size>
@@ -131,7 +131,7 @@ export class Loginpel extends Component {
                 packageUrl: packageUrl,
             });
         }
-        this.url =localStorage.getItem("url") ?? this.serverList[0].url;
+        this.url = localStorage.getItem("url") ?? this.serverList[0].url;
         for (let i = this.serverList.length - 1; i >= 0; i--) {
             if (this.url == this.serverList[i].url) {
                 this.severeLabel.string = this.serverList[i].name;
@@ -369,6 +369,8 @@ export class Loginpel extends Component {
      * 版本一致，进入游戏主场景
      */
     private enterGame() {
+        if (this.isRequesting) return;
+        this.isRequesting = true;
         const token = getToken()
         const postData = {
             token: token,
@@ -430,11 +432,16 @@ export class Loginpel extends Component {
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                 }
+                setTimeout(() => {
+                    this.isRequesting = false;
+                }, 3000);
             })
             .catch(error => {
                 console.error('There was a problem with the fetch operation:', error);
-            }
-            );
+                setTimeout(() => {
+                    this.isRequesting = false;
+                }, 3000);
+            });
     }
 
     /**
@@ -495,6 +502,12 @@ export class Loginpel extends Component {
             const close = util.message.confirm({ message: "请输入邮箱" })
             return;
         }
+        const emailRegex = /^[a-zA-Z0-9_\-.]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+        if (!emailRegex.test(username)) {
+            util.message.confirm({ message: "请输入有效的邮箱地址" });
+            return;
+        }
+
         if (!password) {
             const close = util.message.confirm({ message: "请输入密码" })
             return;
@@ -559,6 +572,11 @@ export class Loginpel extends Component {
         const username = this.Username2.string;
         if (!username) {
             const close = util.message.confirm({ message: "请输入邮箱" })
+            return;
+        }
+        const emailRegex = /^[a-zA-Z0-9_\-.]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+        if (!emailRegex.test(username)) {
+            util.message.confirm({ message: "请输入有效的邮箱地址" });
             return;
         }
         // 验证逻辑（示例）

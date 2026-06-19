@@ -47,7 +47,7 @@ export class Character extends CharacterMetaState {
     PassiveIntroduceOne: string = `
     
     百毒感染 Lv1
-    登场时令敌方全体中毒，每回合损失40
+    登场时令敌方全体中毒，每回合损失20
     `.replace(/ /ig, "")
 
     PassiveIntroduceTwo: string = `

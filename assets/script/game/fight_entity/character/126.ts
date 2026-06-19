@@ -46,12 +46,20 @@ export class Character extends CharacterMetaState {
 
     PassiveIntroduceOne: string = `
     
-
+    元气消散 Lv1
+    每当有新单位登场时，有40%几率驱散敌方全体的增益效果。 
     `.replace(/ /ig, "")
 
     PassiveIntroduceTwo: string = `
     
-
+    无为而治 Lv1
+    任意位置，每当受到伤害时有20%几率令场上敌方晕眩2回合。 
+    `.replace(/ /ig, "")
+    
+    PassiveIntroduceThree: string = `
+    
+    复仇飞弹 Lv1
+    我方单位死亡时，对场上敌方造成1305点飞弹伤害。 
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `
@@ -61,121 +69,7 @@ export class Character extends CharacterMetaState {
 
     introduce: string = ""
 
-    skillValue: string = ``
+    skillValue: string = `元气消散 无为而治 复仇飞弹 元始天尊协同`
 
-
-    OnCreateState(self: CharacterState): void {
-        if (self.star >= 2) {
-            self.attack *= 1.2
-            self.pierce *= 1.2
-        }
-        if (self.star >= 4) {
-            self.attack *= 1.15
-        }
-    }
-
-    GetOnAttack(): (self: BasicState<any>, actionState: ActionState, fightMap: FightMap) => Promise<any> {
-        return async (self: CharacterState, actionState: ActionState, fightMap: FightMap) => {
-            let enemies = self.component.getEnimies(fightMap.allLiveCharacter)
-            if (enemies.length <= 0) return
-            enemies = enemies.sort((a, b) => a.coordinate.col - b.coordinate.col)
-            actionState.targets.push(enemies[0].state)
-            // 播放动画
-            if (fightMap.isPlayAnimation) {
-                await util.sundry.moveNodeToPosition(
-                    self.component.node,
-                    {
-                        targetPosition: GetCharacterCoordinatePosition(
-                            actionState.targets[0].component.direction,
-                            "attack"
-                        ),
-                        moveCurve: true,
-                        moveTimeScale: actionState.targets[0].component.holAnimation.timeScale
-                    }
-                )
-                await self.component.holAnimation.playAnimation("attack", 1, self.component.defaultState)
-            }
-            // 结算
-            for (const target of actionState.targets) {
-                // // 添加恐惧
-                // if (self.star >= 4 && Math.random() < 0.2) {
-                //     const fearBuff = new BuffState({ id: "fear" })
-                //     target.component.addBuff(self.component, fearBuff)
-                //     fightMap.listenRoundEvent(2, () => target.component.deleteBuff(fearBuff))
-                // }
-                // 攻击
-                fightMap.actionAwaitQueue.push(
-                    self.component.attack(self.attack * 1, target.component)
-                )
-            }
-            // 播放动画
-            if (fightMap.isPlayAnimation) {
-                await util.sundry.moveNodeToPosition(
-                    self.component.node,
-                    {
-                        targetPosition: GetCharacterCoordinatePosition(
-                            self.component.direction,
-                            "ordinary"
-                        ),
-                        moveCurve: true,
-                        moveTimeScale: self.component.holAnimation.timeScale
-                    }
-                )
-            }
-            return
-        }
-    }
-
-    GetOnSkill(): (self: BasicState<any>, actionState: ActionState, fightMap: FightMap) => Promise<any> {
-        return async (self: CharacterState, actionState: ActionState, fightMap: FightMap) => {
-            let enemies = self.component.getEnimies(fightMap.allLiveCharacter)
-            if (enemies.length <= 0) return
-            actionState.targets.push(enemies[Math.floor(enemies.length * Math.random())].state)
-            // 播放动画
-            if (fightMap.isPlayAnimation) {
-                await util.sundry.moveNodeToPosition(
-                    self.component.node,
-                    {
-                        targetPosition: GetCharacterCoordinatePosition(
-                            actionState.targets[0].component.direction,
-                            "attack"
-                        ),
-                        moveCurve: false,
-                        moveTimeScale: actionState.targets[0].component.holAnimation.timeScale
-                    }
-                )
-                await self.component.holAnimation.playAnimation("skill", 1, self.component.defaultState)
-            }
-            // 结算
-            for (const target of actionState.targets) {
-                // 添加流血 TODO
-                const bleedBuff = new BuffState({ id: "bleed" }, {
-                    roundReduceBleed: self.attack * 0.5
-                })
-                target.component.addBuff(self.component, bleedBuff)
-                // 两回合后去掉
-                fightMap.listenRoundEvent(2, () => target.component.deleteBuff(bleedBuff))
-                // 攻击
-                fightMap.actionAwaitQueue.push(
-                    self.component.attack(self.attack * 1.5, target.component)
-                )
-            }
-            // 播放动画
-            if (fightMap.isPlayAnimation) {
-                await util.sundry.moveNodeToPosition(
-                    self.component.node,
-                    {
-                        targetPosition: GetCharacterCoordinatePosition(
-                            self.component.direction,
-                            "ordinary"
-                        ),
-                        moveCurve: true,
-                        moveTimeScale: self.component.holAnimation.timeScale
-                    }
-                )
-            }
-            return
-        }
-    }
 
 }

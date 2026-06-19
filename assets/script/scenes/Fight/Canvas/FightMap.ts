@@ -547,7 +547,11 @@ export class FightMap extends Component {
 
                                 await this.showString(1, itemNode, new math.Color(255, 0, 0), "中毒+" + targetBattleData.value)
 
-                            } else if (effectType == 'MAX_HP_DOWN') {
+                            } else if (effectType == 'POISON_RESIST_BOOST_PRET') {
+
+                                await this.showString(1, itemNode, new math.Color(0, 255, 0), "中毒-" + targetBattleData.value+"%")
+
+                            }else if (effectType == 'MAX_HP_DOWN') {
                                 if (fightProcess.sourceUnitId == 'A1101' || fightProcess.sourceUnitId == 'B1101') {
                                     await this.showString(1, itemNode, new math.Color(255, 0, 0), "飞弹抗性 -" + targetBattleData.value)
                                 } else {
