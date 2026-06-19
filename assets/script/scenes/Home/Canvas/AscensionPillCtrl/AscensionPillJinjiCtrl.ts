@@ -22,7 +22,7 @@ export class AscensionPillJinjiCtrl extends Component {
     customEventData
     initialized = false;
     huoliEnergy = 0
-    MaxEnergy: 720//最大体力值
+    MaxEnergy: 1500//最大体力值
     // EnergyReturnTime: 600//体力回复时间
     itemId = 0
     timer = 0

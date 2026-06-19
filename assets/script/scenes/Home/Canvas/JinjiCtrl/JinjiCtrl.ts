@@ -44,6 +44,10 @@ export class JinjiCtrl extends Component {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.parent.getChildByName("AscensionPillCtrl").active = true
     }
+    public async kuanchanqianduo() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("KuanCrtl").active = true
+    }
 }
 
 

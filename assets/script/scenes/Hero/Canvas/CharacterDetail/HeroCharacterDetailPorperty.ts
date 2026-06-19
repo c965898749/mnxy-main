@@ -43,8 +43,8 @@ export class HeroCharacterDetailPorperty extends Component {
 
     // 渲染属性
     async renderProperty(create: CharacterStateCreate) {
-        console.log(create,444);
-        
+        console.log(create, 444);
+
         var cc = [
             // 1. 普通（浅灰）- 与银白背景区分开，不泛白
             new Color(200, 200, 200, 200),
@@ -167,7 +167,7 @@ export class HeroCharacterDetailPorperty extends Component {
         } else {
             var cahracterQueue2 = []
             cahracterQueue2 = config.userData.equipments
-            cahracterQueue2 = cahracterQueue2.filter(x => x.goIntoNum == 0 && x.eqType == empType&& x.profession == create.profession&&x.camp==create.camp)
+            cahracterQueue2 = cahracterQueue2.filter(x => x.goIntoNum == 0 && x.eqType == empType && x.profession == create.profession && x.camp == create.camp)
             await this.render(cahracterQueue2, create.id, empType)
         }
     }
@@ -274,6 +274,9 @@ export class HeroCharacterDetailPorperty extends Component {
         let message = ``
         message += `${this.$state.meta.PassiveIntroduceOne}\n`
         message += `${this.$state.meta.PassiveIntroduceTwo}\n`
+        if (this.$state.meta.PassiveIntroduceThree) {
+            message += `${this.$state.meta.PassiveIntroduceThree}\n`
+        }
         message += `${this.$state.meta.SkillIntroduce}\n`
         // message += ` 攻击力: ${Math.ceil(this.$state.attack)}\n`
         // message += ` 防御力: ${Math.ceil(this.$state.defence)}\n`

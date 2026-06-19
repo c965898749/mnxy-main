@@ -64,10 +64,11 @@ export class Character extends CharacterMetaState {
 
     SkillIntroduce: string = `
     
-
+    元始天尊协同 Lv1
+    与元始天尊在同一队伍时，增加自身175点生命上限，77点攻击， 51点速度。
     `.replace(/ /ig, "")
 
-    introduce: string = ""
+    introduce: string = "敢言烈火难摧汝，何不丹炉走一轮？"
 
     skillValue: string = `元气消散 无为而治 复仇飞弹 元始天尊协同`
 

@@ -45,7 +45,7 @@ export class ActiveCtrl extends Component {
 
 <color=#87CEFA><size=18>如有任何问题，请联系客服：</size></color>
 <color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
-<color=#FFFFFF><size=16>▶ 官方①QQ群：587452663</size></color>
+<color=#FFFFFF><size=16>▶ 官方①QQ群：1092641657</size></color>
 <color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size></color>
 
 <color=#FF69B4><size=18>感谢各位玩家的支持与理解，祝大家游戏愉快！</size></color>
@@ -78,7 +78,7 @@ export class ActiveCtrl extends Component {
 
 <color=#87CEFA><size=18>赛事相关问题：</size></color>
 <color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
-<color=#FFFFFF><size=16>▶ 官方①QQ群：587452663</size></color>
+<color=#FFFFFF><size=16>▶ 官方①QQ群：1092641657</size></color>
 <color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size></color>
 
 <color=#FF69B4><size=18>狭路相逢勇者胜，擂台之上，等你来战！</size></color>
@@ -100,7 +100,7 @@ export class ActiveCtrl extends Component {
 
 <color=#87CEFA><size=18>遇到烈焰屏障？联系我们：</size></color>
 <color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
-<color=#FFFFFF><size=16>▶ 官方①QQ群：587452663</size></color>
+<color=#FFFFFF><size=16>▶ 官方①QQ群：1092641657</size></color>
 <color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size></color>
 
 <color=#FF69B4><size=18>愿火焰指引你的道路，勇士们！</size></color>
@@ -122,7 +122,7 @@ export class ActiveCtrl extends Component {
 
 <color=#87CEFA><size=18>遇到烈焰屏障？联系我们：</size></color>
 <color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
-<color=#FFFFFF><size=16>▶ 官方①QQ群：587452663</size></color>
+<color=#FFFFFF><size=16>▶ 官方①QQ群：1092641657</size></color>
 <color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size></color>
 
 <color=#FF69B4><size=18>愿火焰指引你的道路，勇士们！</size></color>
@@ -144,51 +144,33 @@ export class ActiveCtrl extends Component {
 
 <color=#87CEFA><size=18>遇到烈焰屏障？联系我们：</size></color>
 <color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
-<color=#FFFFFF><size=16>▶ 官方①QQ群：587452663</size></color>
+<color=#FFFFFF><size=16>▶ 官方①QQ群：1092641657</size></color>
 <color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size></color>
 
 <color=#FF69B4><size=18>愿火焰指引你的道路，勇士们！</size></color>
 <color=#CCCCCC><size=14>【QQ神仙依梦工作室】2025年12月21日</size></color>`
         }
         if (this.page == "page4") {
-            content = `<size=30><color=#FFD700><b>【试炼塔开启 登顶赢锻造神材】</b></color></size>
-                <color=#FFE4B5><size=20>亲爱的烈焰勇士们：</size></color>
+            content = `<color=#FFFFFF><size=20>各位道友：</size>
+<color=#FFA500><size=19>全新五星限定卡牌、全新矿场玩法、属性上限增益重磅上线，助力各位道友潜心修炼、纵横三界，具体更新详情如下：</size>
 
-                <color=#FFA500><size=20>全新试炼塔现已震撼开放！共设三大段位，层层闯关，步步为营，<color=#FFFFFF><b>海量锻造材料</b></color>等你来拿，助力打造专属仙侠神装！</size></color>
-                <size=19>
-                <color=#CD7F32><b>◆ 青铜之塔 ◆</b></color>
-                <color=#FFFFFF>入门试炼，新手进阶必争之地
-                通关奖励：<color=#CD7F32>青铜矿、初级强化石</color>
-                适用装备：新手过渡武器/防具</color>
-                <color=#C0C0C0>────────────────</color>
-                <color=#E6E6FA><b>◆ 白银之塔 ◆</b></color>
-                <color=#FFFFFF>高手角逐，实力验证进阶战场
-                通关奖励：<color=#E6E6FA>玄铁矿、中级强化石</color>
-                适用装备：精品仙侠套装部件</color>
-                <color=#C0C0C0>────────────────</color>
-                <color=#FFD700><b>◆ 黄金之塔 ◆</b></color>
-                <color=#FFFFFF>巅峰对决，登顶者傲视全服
-                通关奖励：<color=#FFD700>紫金石、高级强化石、顶级神器图谱</color>
-                适用装备：传说级仙侠神装</color>
-                <color=#C0C0C0>▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁</color>
-                <color=#FF6B6B><b>【挑战规则】</b></color>
-                <color=#FFFFFF>1. 每日可免费挑战3次，次数耗尽可消耗仙玉重置
-                2. 每段位分100层，逐层通关解锁下一层奖励
-                3. 通关塔顶后选择一键探索，将自动探索
-                4. 通关黄金之塔顶层可获得<b>专属称号：【塔王】</b></color>
+<color=#FFFF00><size=18>▶ 全新五星卡牌：太上老君限定魂魄来袭</size><color=#FFFF00><size=18>▶ 魂魄获取方式：完成每日任务，开启活跃宝箱即可100%获取太上老君五星卡魂魄</size>
+<color=#FFFF00><size=18>▶ 卡牌合成规则：集齐180个太上老君五星魂魄，即可合成完整五星太上老君卡牌</size>
+<color=#FFA500><size=19>全新修炼玩法更新：</size>
+<color=#FFFFFF><size=17>1. 新增矿场抢夺玩法，道友可通过矿场挑战抢夺海量修炼资源，大幅提升修炼速度</size>
+<color=#FFFFFF><size=17>2. 全方位优化修炼体系，解锁全新资源获取渠道，告别修炼停滞，提速进阶</size>
+<color=#FFFFFF><size=17>3. 大幅度提升全服玩家活力上限、体力上限，解锁更多玩法次数，自由探索三界</size>
+<color=#FFFFFF><size=17>4. 活力、体力上限为永久增益，所有道友上线即可自动生效，无需手动激活</size>
+<color=#FF6347><size=19>五星太上老君卡牌专属优势：</size><color=#FF4500><size=18>★ 顶级五星仙卡资质，附带专属仙法buff，战力大幅跃升</size>
+<color=#FF4500><size=18>★ 契合修炼体系特性，搭配矿场玩法可额外提升资源获取效率</size><color=#FF4500><size=18>★ 稀有永久卡牌，属性稳定增益，助力道友登顶武道巅峰</size>
 
-                <color=#4ECDC4><b>【锻造指引】</b></color>
-                <color=#FFFFFF>收集对应段位材料后，可前往【装备打造】打造/强化装备
-                高段位材料可合成高品质道具，神装进阶不容错过！</color></size>
+<color=#87CEFA><size=18>玩法问题咨询渠道：</size>
+<color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size>
+<color=#FFFFFF><size=16>▶ 官方①QQ群：1092641657</size>
+<color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size>
 
-                <color=#87CEFA><size=18>遇到烈焰屏障？联系我们：</size></color>
-                <color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
-                <color=#FFFFFF><size=16>▶ 官方①QQ群：587452663</size></color>
-                <color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size></color>
-
-                <color=#FFD700><size=18><b>即刻登顶试炼塔，锻造你的专属仙侠神兵！</b></size></color>
-                <color=#CCCCCC><size=14>【QQ神仙依梦工作室】2026年1月11日</size></color>
-                `
+<color=#FF69B4><size=18>仙卡现世助力修行，矿场争锋问鼎仙途，各位道友速速启程！</size>
+<color=#CCCCCC><size=14>【QQ神仙依梦工作室】2026年6月19日</size> `
         }
         //         if (this.page == "page4") {
         //             content = `<color=#FFD700><size=28><b>【福利狂欢】海量奖励限时派送中！</b></size></color>
@@ -209,7 +191,7 @@ export class ActiveCtrl extends Component {
 
         // <color=#87CEFA><size=18>奖励发放问题请联系：</size></color>
         // <color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
-        // <color=#FFFFFF><size=16>▶ 官方①QQ群：587452663</size></color>
+        // <color=#FFFFFF><size=16>▶ 官方①QQ群：1092641657</size></color>
         // <color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size></color>
 
         // <color=#FF69B4><size=18>海量奖励已就位，快来领取属于你的专属福利！</size></color>
@@ -247,7 +229,7 @@ export class ActiveCtrl extends Component {
 
 <color=#87CEFA><size=18>奖励发放问题请联系：</size></color>
 <color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
-<color=#FFFFFF><size=16>▶ 官方①QQ群：587452663</size></color>
+<color=#FFFFFF><size=16>▶ 官方①QQ群：1092641657</size></color>
 <color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size></color>
 <color=#FF69B4><size=18>突破等级上限，邀好友领豪礼，畅玩新版本！</size></color>
 <color=#CCCCCC><size=14>【QQ神仙依梦工作室】2026年02月16日</size></color>`

@@ -49,8 +49,12 @@ export class HechenCtrl extends Component {
             })
             .then(async data => {
                 if (data.success == '1') {
-                    var itemCount = data.data;
+                    var map = data.data;
+                    var itemCount = map['itemCount'] || 0;
+                    var userInfo = map['userInfo'];
                     this.itemCount.getComponent(Label).string = itemCount
+                    config.userData.characters = userInfo.characterList
+                    localStorage.setItem("UserConfigData", JSON.stringify(config))
                     clickFun()
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
@@ -82,8 +86,12 @@ export class HechenCtrl extends Component {
             })
             .then(async data => {
                 if (data.success == '1') {
-                    var itemCount = data.data;
+                    var map = data.data;
+                    var itemCount = map['itemCount'] || 0;
+                    var userInfo = map['userInfo'];
                     this.itemCount.getComponent(Label).string = itemCount
+                    config.userData.characters = userInfo.characterList
+                    localStorage.setItem("UserConfigData", JSON.stringify(config))
                     clickFun()
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })

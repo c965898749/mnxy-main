@@ -1,7 +1,8 @@
-import { _decorator, Component, Label, Node } from 'cc';
+import { _decorator, AudioSource, Component, Label, Node, sp } from 'cc';
 import { getConfig, getToken } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
+import { questionCrtl } from '../questionCrtl/questionCrtl';
 const { ccclass, property } = _decorator;
 
 @ccclass('KuanCrtl')
@@ -80,6 +81,105 @@ export class KuanCrtl extends Component {
         this.node.parent.getChildByName("kuanJinjiCtrl").active = true
     }
 
+    shenji() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "upgradeMine", options)
+            .then(response => {
+
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    //  data.data
+                    this.refresh()
+                    const levelUpEffectSkeleton = this.node.getChildByName("LevelUpEffect").getComponent(sp.Skeleton)
+                    //播放声音
+                    const audioSource = levelUpEffectSkeleton.node.getComponent(AudioSource)
+                    audioSource.volume = config.volume * config.volumeDetail.character
+                    audioSource.play()
+                    // 播放动画
+                    levelUpEffectSkeleton.node.active = true
+                    levelUpEffectSkeleton.node.children[0]?.getComponent(sp.Skeleton).setAnimation(0, "animation", false)
+                    levelUpEffectSkeleton.setAnimation(0, "animation", false)
+                    levelUpEffectSkeleton.setCompleteListener(() => levelUpEffectSkeleton.node.active = false)
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+    }
+
+    shouhuo() {
+        // AudioMgr.inst.playOneShot("sound/other/hongb");
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "collectAllSilver", options)
+            .then(response => {
+
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    AudioMgr.inst.playOneShot("sound/other/getCoin");
+                    this.refresh()
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+    }
+    openmessage() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("kuanMessageCrtl").active = true
+    }
+
+    async questry() {
+        var message = `<color=#ff3333><b><size=32>灵脉升级与属性数据总表</size></b></color>
+
+
+<color=#44aaff><size=26>等级　　每小时产出　存储上限　　升级消耗</size></color>
+<color=#888888>——————————————————————————————————</color>
+<color=#44ee44><size=24>Lv.1　　10,000　　100,000　　0</size></color>
+<color=#ffffff><size=24>Lv.2　　50,000　　500,000　　90,000</size></color>
+<color=#ffffff><size=24>Lv.3　　100,000　1,000,000　450,000</size></color>
+<color=#ffffff><size=24>Lv.4　　150,000　1,500,000　1,000,000</size></color>
+<color=#ffffff><size=24>Lv.5　　200,000　2,000,000　1,500,000</size></color>
+<color=#ffdd33><size=24>Lv.6　　250,000　2,500,000　2,000,000</size></color>
+<color=#ffdd33><size=24>Lv.7　　300,000　3,000,000　2,500,000</size></color>
+<color=#ffdd33><size=24>Lv.8　　350,000　3,500,000　3,000,000</color>
+
+
+<color=#aaaaaa><size=18>注：Lv1为初始灵脉，无需升级消耗</size></color>`;
+        await this.node.parent.getChildByName("questionCrtl")
+            .getComponent(questionCrtl)
+            .read(message)
+    }
     update(deltaTime: number) {
 
     }

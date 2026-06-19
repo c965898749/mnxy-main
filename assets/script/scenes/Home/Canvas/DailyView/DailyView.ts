@@ -65,6 +65,7 @@ export class DailyView extends Component {
                 if (data.success == '1') {
                     var map = data.data;
                     var rate = map['rate'];
+                    var record = map['record'];
                     var dailyViewList = map['dailyViewList'];
                     let isOpen = 0
                     this.progressbar.getComponent(ProgressBar).progress = rate / 100
@@ -72,9 +73,18 @@ export class DailyView extends Component {
 
                     for (let index = 1; index <= 4; index++) {
                         let box = this.boxLayout.getChildByName("box" + index)
+                        box.off("click")
+                        box.getComponent(Button).interactable = false
                         let boxIcon = box.getChildByName("boxIcon")
                         Tween.stopAllByTarget(boxIcon)
                         if (rate >= 25 * index) {
+                            var giftCode = 25 * index
+                            var item = record.find(item => item.giftCode === "lively_" + giftCode);
+                            if (item) {
+                                isOpen = 1
+                            }else {
+                                isOpen = 0
+                            }
                             if (isOpen == 1) {
                                 boxIcon.getComponent(Sprite).spriteFrame =
                                     await util.bundle.load("image/ui/boxopen/spriteFrame", SpriteFrame)
@@ -87,7 +97,7 @@ export class DailyView extends Component {
                                 }).delay(1).union().repeatForever().start()
                                 boxIcon.getComponent(Sprite).spriteFrame =
                                     await util.bundle.load("image/ui/boxclose/spriteFrame", SpriteFrame)
-
+                                box.getComponent(Button).interactable = true
                             }
                         } else {
                             box.getChildByName("boxlight").active = false
@@ -156,23 +166,6 @@ export class DailyView extends Component {
                             btn.active = false
                         }
 
-                        // } else if (curState.ftime >= data.needNum) {
-                        //     this.assetImpl.spriteFrame(btn.getComponent(cc.Sprite), "frames/common/anjian1")
-                        //     btnLabel.getComponent(cc.Label).string = ""
-                        //     ViewUtil.addButtonHander(btn, this.node, "DailyView", "receiveDailyClick", data)
-                        // if (receive == 1) {
-
-                        // } else {
-                        //     btn.getComponent(Sprite).spriteFrame =
-                        //         await util.bundle.load("image/ui/anjian5/spriteFrame", SpriteFrame)
-                        //     btnLabel.getComponent(Label).string = "前往"
-                        //     if (i == 0) {
-                        //         btn.on("click", () => { this.clickFun() })
-                        //     } else {
-                        //         btn.on("click", () => { this.clickFun2() })
-                        //     }
-
-                        // }
                         this.ContentNode.addChild(item)
                     }
 
@@ -185,46 +178,65 @@ export class DailyView extends Component {
             }
             );
     }
+    openbox(event: Event, index: string) {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+            str: "lively_" + parseInt(index) * 25
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "livelyReceive", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                //console.log(data); // 处理响应数据
+                if (data.success == '1') {
+                    let box = this.boxLayout.getChildByName("box" + index)
+                    let boxIcon = box.getChildByName("boxIcon")
+                    boxIcon.getComponent(Sprite).spriteFrame =
+                        await util.bundle.load("image/ui/boxopen/spriteFrame", SpriteFrame)
+                    box.getChildByName("boxlight").active = false
+                    boxIcon.y = 7
+                    box.getComponent(Button).interactable = false
+                    var map = data.data;
+                    var userInfo = map['user'];
+                    var reward = map["rewards"];
+                    config.userData.gold = userInfo.gold
+                    config.userData.diamond = userInfo.diamond
+                    config.userData.soul = userInfo.soul
+                    config.userData.characters = userInfo.characterList
+                    config.userData.bronze = userInfo.bronze
+                    config.userData.darkSteel = userInfo.darkSteel
+                    config.userData.purpleGold = userInfo.purpleGold
+                    localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    const rewardsFab = await util.bundle.load("prefab/rewards", Prefab)
+                    const rewards = instantiate(rewardsFab)
+                    this.node.parent.addChild(rewards)
+                    await rewards
+                        .getComponent(Rewards)
+                        .read(reward)
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+    }
 
 
-    // initItem(item1, data, node) {
-    // let item = item1.node
-    // item.getChildByName("infolabel").getComponent(cc.Label).string = data.txt
-    // let curState = UserMgr.ins().getDailyTaskState(data.id)
-    // item.getChildByName("barLabel").getComponent(cc.Label).string = Math.min(curState.ftime, data.needNum) + "/" + data.needNum
-
-    // let progressNode = item.getChildByName("ProgressBar")
-    // progressNode.getComponent(cc.ProgressBar).progress = Math.min(curState.ftime, data.needNum) / data.needNum
-
-    // let layout = item.getChildByName("Layout")
-    // let rewardArr = data.award
-    // layout.removeAllChildren()
-    // for (let index = 0; index < rewardArr.length; index++) {
-    //     let item = cc.instantiate(this.rewardItem)
-    //     layout.addChild(item)
-    //     item.position = cc.v2(0, 0)
-    //     let jxitem = item.getChildByName("JXItem")
-    //     let equip = new RJXItem(rewardArr[index]);
-    //     this.assetImpl.spriteAtlasFrame(item.getComponent(cc.Sprite), Res.texture.views.common, "equip_" + equip.raw.quality);
-    //     jxitem.getComponent(JXItem).setView(equip, ITEM_DETAIL_FLAG.SHOWNUM | ITEM_DETAIL_FLAG.BAG | ITEM_DETAIL_FLAG.NO_BG | ITEM_DETAIL_FLAG.SCALEICON | ITEM_DETAIL_FLAG.STOREHERO);
-    // }
-
-    // let btn = item.getChildByName("anjian2")
-    // let btnLabel = btn.getChildByName("Label")
-    // if (curState.receive == 1) {
-    //     this.assetImpl.spriteFrame(btn.getComponent(cc.Sprite), "frames/common/anjian3")
-    //     btnLabel.getComponent(cc.Label).string = ""
-    //     btn.removeComponent(cc.Button)
-    // } else if (curState.ftime >= data.needNum) {
-    //     this.assetImpl.spriteFrame(btn.getComponent(cc.Sprite), "frames/common/anjian1")
-    //     btnLabel.getComponent(cc.Label).string = ""
-    //     ViewUtil.addButtonHander(btn, this.node, "DailyView", "receiveDailyClick", data)
-    // } else {
-    //     this.assetImpl.spriteFrame(btn.getComponent(cc.Sprite), "frames/common/anjian5")
-    //     btnLabel.getComponent(cc.Label).string = data.btnText
-    //     ViewUtil.addButtonHander(btn, this.node, "DailyView", "doDailyClick", data)
-    // }
-    // }
     async initItem() {
 
         return
@@ -292,15 +304,7 @@ export class DailyView extends Component {
     // }
 
 
-    openBox(event, data) {
-        AudioMgr.inst.playOneShot("sound/other/click");
-        // let index = parseInt(data)
-        // let num = 70
-        // let isOpen = 1
-        // if (isOpen != 1 && (num >= 25 * index)) {
-        //     this.initBoxState()
-        // }
-    }
+
 }
 
 
