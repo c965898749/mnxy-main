@@ -6,6 +6,7 @@ import { util } from 'db://assets/script/util/util';
 import { SelectCardCtrl } from '../qianghua/SelectCardCtrl';
 import { RecuitCardItem } from '../RecruitCard/RecuitCardItem';
 import { CharacterEnum } from 'db://assets/script/game/fight/character/CharacterEnum';
+import { questionCrtl } from '../questionCrtl/questionCrtl';
 const { ccclass, property } = _decorator;
 
 @ccclass('synthesisCtrl')
@@ -518,6 +519,25 @@ export class synthesisCtrl extends Component {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.others.active = false
     }
+
+        async questry() {
+            var message = `<size=28><color=#FFD700>卡牌合成规则说明</color></size><br/><br/>
+
+<size=24><color=#FFFFFF>一、通用合成前提</color><br/>
+<color=#E0E0E0>所有合成玩法统一要求：消耗5张满级卡牌作为素材</color><br/><br/>
+
+<size=24><color=#FFFFFF>二、普通合成规则</color><br/>
+<color=#E0E0E0>1. 素材星级全部相同：合成产出高半星级卡牌</color><br/>
+<color=#E0E0E0>2. 素材星级不一致：合成产出素材内最高星级卡牌</color><br/>
+<color=#FF4444>备注：普通合成使用飞升卡作为素材，不返还经验珠</color><br/><br/>
+
+<size=24><color=#FFFFFF>三、图谱合成规则</color><br/>
+<color=#E0E0E0>1. 必须消耗5张图谱指定的满级卡牌才可合成</color><br/>
+<color=#FF4444>备注：图谱合成消耗飞升卡素材，返还20%对应经验珠</color>`
+            await this.node.parent.getChildByName("questionCrtl")
+                .getComponent(questionCrtl)
+                .read(message)
+        }
 
 }
 

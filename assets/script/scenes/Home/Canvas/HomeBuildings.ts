@@ -1,6 +1,6 @@
 import { _decorator, AudioClip, AudioSource, Component, director, EventTouch, find, instantiate, Label, math, Node, Prefab, screen, Sprite, SpriteFrame, tween, UITransform, v3, Vec3 } from 'cc';
 import { util } from '../../../util/util';
-import { getConfig, getToken} from '../../../common/config/config';
+import { getConfig, getToken } from '../../../common/config/config';
 import { AudioMgr } from "../../../util/resource/AudioMgr";
 import { CharacterState, CharacterStateCreate } from '../../../game/fight/character/CharacterState';
 import { LCoin } from '../../../common/common/Language';
@@ -55,6 +55,10 @@ export class HomeBuildings extends Component {
     @property({ tooltip: "固定尺寸" })
     energy = 0
     huoliEnergy = 0
+    @property(Node)
+    introduceBack: Node
+    @property(Node)
+    introduceBack2: Node
     // onLoad() {
     //     let nodesToKeep = game.getPersistRootNodes() // 获取所有持久化节点
     //     nodesToKeep.forEach(node => {
@@ -200,7 +204,7 @@ export class HomeBuildings extends Component {
                     config.userData.darkSteel = user.darkSteel
                     config.userData.purpleGold = user.purpleGold
                     config.userData.crystal = user.crystal
-                    config.userData.characters= user.characterList
+                    config.userData.characters = user.characterList
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
                     const rewardsFab = await util.bundle.load("prefab/rewards", Prefab)
                     const rewards = instantiate(rewardsFab)
@@ -759,6 +763,67 @@ export class HomeBuildings extends Component {
     openCeremonialGiftView() {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.parent.getChildByName("CeremonialGiftView").active = true
+    }
+
+    closentroduceBack() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.introduceBack.active = false
+    }
+    openIntroduce() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.introduceBack.active = true
+    }
+    closentroduceBack2() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.introduceBack2.active = false
+    }
+    openIntroduce2() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.introduceBack2.active = true
+    }
+
+    clickUseFun(event: Event, itemId: string) {
+        // useBagItem
+        AudioMgr.inst.playOneShot("sound/other/click");
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            id: itemId,
+            userId: config.userData.userId
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "useBagItem", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    const userInfo = data.data;
+                    config.userData.gold = userInfo.gold
+                    config.userData.characters = userInfo.characterList
+                    localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    localStorage.setItem('Leave_EnergyNumber2', userInfo.tiliCount + "");
+                    localStorage.setItem('LastGetTime1', userInfo.tiliCountTime + "");
+                    localStorage.setItem('LastGetHuoliTime1', userInfo.huoliCountTime + "");
+                    localStorage.setItem('Leave_EnergyHuoliNumber2', userInfo.huoliCount + "");
+                    // const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+                this.refresh()
+            })
+            .catch(error => {
+                //console.error('There was a problem with the fetch operation:', error);
+            }
+            );
     }
 }
 

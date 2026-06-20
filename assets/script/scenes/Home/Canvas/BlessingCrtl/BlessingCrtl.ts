@@ -1,5 +1,5 @@
 import { _decorator, Component, Label, Node, Prefab, Sprite, SpriteFrame } from 'cc';
-import { getConfig, getToken } from 'db://assets/script/common/config/config';
+import { getConfig, getToken, updateTiAndHuoli } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 const { ccclass, property } = _decorator;
@@ -118,10 +118,7 @@ export class blessingCrtl extends Component {
                     // this.refresh()
                     item.getChildByName("huizhu").active = false
                     const userInfo = data.data;
-                    localStorage.setItem('Leave_EnergyNumber2', userInfo.tiliCount + "");
-                    localStorage.setItem('LastGetTime1', userInfo.tiliCountTime + "");
-                    localStorage.setItem('LastGetHuoliTime1', userInfo.huoliCountTime + "");
-                    localStorage.setItem('Leave_EnergyHuoliNumber2', userInfo.huoliCount + "");
+                    updateTiAndHuoli(userInfo);
                     const close = util.message.confirm({ message: data.errorMsg || "祝福成功" })
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
@@ -134,40 +131,12 @@ export class blessingCrtl extends Component {
             );
     }
     //体力
-    GetLeaveEnergy() {
-        var key = 'Leave_EnergyNumber2';
-        var str = localStorage.getItem(key);
-        if (str) {
-            return parseInt(str);
-        }
-        return 0;
-    }
-    GetLeaveHuoliEnergy() {
-        var key = 'Leave_EnergyHuoliNumber2';
-        var str = localStorage.getItem(key);
-        if (str) {
-            return parseInt(str);
-        }
-        return 0;
-    }
-    SetLeaveEnergy(i) {
-        var key = 'Leave_EnergyNumber2';
-        var value = i + "";
-        localStorage.setItem(key, value);
-    }
-    SetLeaveHuoliEnergy(i) {
-        var key = 'Leave_EnergyHuoliNumber2';
-        var value = i + "";
-        localStorage.setItem(key, value);
-    }
     nj() {
         AudioMgr.inst.playOneShot("sound/other/click");
         const config = getConfig()
         const token = getToken()
         const postData = {
             token: token,
-            tiLi: this.GetLeaveEnergy(),
-            huoLi: this.GetLeaveHuoliEnergy(),
             userId: config.userData.userId
         };
         const options = {
@@ -186,8 +155,7 @@ export class blessingCrtl extends Component {
                 //console.log(data); // 处理响应数据
                 if (data.success == '1') {
                     this.countNode.getComponent(Label).string = 0 + ""
-                    this.SetLeaveEnergy(data.data["tiLi"])
-                    this.SetLeaveHuoliEnergy(data.data["huoLi"])
+                    updateTiAndHuoli(data.data);
                     const close = util.message.confirm({ message: data.errorMsg || "祝福成功" })
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })

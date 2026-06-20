@@ -34,21 +34,26 @@ export class Loginpel extends Component {
     serverList = [{ "id": 1, "name": "梦回西游", "url": "http://127.0.0.1:8889/" }]
     url = localStorage.getItem("url") ?? this.serverList[0].url;
     //更新公告内容
-    content = `
-<size=32><color=#FFD700>✨QQ神仙版本更新公告✨</color></size>
+    content = `<color=#FFFFFF><size=20>各位道友：</size>
+<color=#FFA500><size=19>全新五星限定卡牌、全新矿场玩法、属性上限增益重磅上线，助力各位道友潜心修炼、纵横三界，具体更新详情如下：</size>
 
-<size=26><color=#FFFFFF>各位修仙道友速速围观！仙界大更新来袭</color></size>
+<color=#FFFF00><size=18>▶ 全新五星卡牌：太上老君限定魂魄来袭</size><color=#FFFF00><size=18>▶ 魂魄获取方式：完成每日任务，开启活跃宝箱即可100%获取太上老君五星卡魂魄</size>
+<color=#FFFF00><size=18>▶ 卡牌合成规则：集齐180个太上老君五星魂魄，即可合成完整五星太上老君卡牌</size>
+<color=#FFA500><size=19>全新修炼玩法更新：</size>
+<color=#FFFFFF><size=17>1. 新增矿场抢夺玩法，道友可通过矿场挑战抢夺海量修炼资源，大幅提升修炼速度</size>
+<color=#FFFFFF><size=17>2. 全方位优化修炼体系，解锁全新资源获取渠道，告别修炼停滞，提速进阶</size>
+<color=#FFFFFF><size=17>3. 大幅度提升全服玩家活力上限、体力上限，解锁更多玩法次数，自由探索三界</size>
+<color=#FFFFFF><size=17>4. 活力、体力上限为永久增益，所有道友上线即可自动生效，无需手动激活</size>
+<color=#FF6347><size=19>五星太上老君卡牌专属优势：</size><color=#FF4500><size=18>★ 顶级五星仙卡资质，附带专属仙法buff，战力大幅跃升</size>
+<color=#FF4500><size=18>★ 契合修炼体系特性，搭配矿场玩法可额外提升资源获取效率</size><color=#FF4500><size=18>★ 稀有永久卡牌，属性稳定增益，助力道友登顶武道巅峰</size>
 
-<size=28><color=#00FF00>【庆典福利反馈活动开启】</color></size>
-<size=24><color=#F5F5F5>修仙一路辛苦打拼，专属福利重磅派送，海量豪礼免费领取，轻松薅尽仙界好福利</color></size>
+<color=#87CEFA><size=18>玩法问题咨询渠道：</size>
+<color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size>
+<color=#FFFFFF><size=16>▶ 官方①QQ群：1092641657</size>
+<color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size>
 
-<size=28><color=#00BFFF>【全新趣味任务系统上线】</color></size>
-<size=24><color=#F5F5F5>告别佛系闲逛摸鱼，日常趣味任务超多，随手做完就能领丰厚资源，升级变强一路畅通</color></size>
-
-<size=28><color=#FF4500>【第八章血色禁地副本开放】</color></size>
-<size=24><color=#F5F5F5>秘境危机四伏妖魔横行，闯关激战收获满满，通关高概率掉落极品宝石，打造神装再也不愁</color></size>
-
-<size=26><color=#FFA500>祝诸位道友运气爆棚，宝石狂爆，战力一路狂飙！</color></size>`
+<color=#FF69B4><size=18>仙卡现世助力修行，矿场争锋问鼎仙途，各位道友速速启程！</size>
+<color=#CCCCCC><size=14>【QQ神仙依梦工作室】2026年6月19日</size> `
 
     checkUpdateToday = false;
     @property(Label)
