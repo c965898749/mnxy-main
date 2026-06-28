@@ -1,5 +1,5 @@
 import { _decorator, Component, find, instantiate, Label, Node, Prefab, Sprite, SpriteFrame } from 'cc';
-import { getConfig, getToken } from 'db://assets/script/common/config/config';
+import { battleCache, BattleLogItem, getConfig, getToken } from 'db://assets/script/common/config/config';
 import { util } from 'db://assets/script/util/util';
 import { FightMap } from '../../../Fight/Canvas/FightMap';
 import { HomeCanvas } from '../../HomeCanvas';
@@ -156,7 +156,13 @@ export class SevenLuminariesCtrl extends Component {
                     var map = data.data;
                     var user = map['user'];
                     const battle = map['battle'];
-                    // const pveDetail = map['pveDetail'];
+                    // 3. 存入本地缓存
+                    const saveItem: BattleLogItem = {
+                        battleId: battle.id,
+                        saveTime: Date.now(),
+                        battleData: battle.json
+                    };
+                    battleCache.saveBattleItem(saveItem);
                     const rewards = map["rewards"];
                     const levelUp = map["levelUp"]
                     config.userData.exp = user.exp

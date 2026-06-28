@@ -1,5 +1,5 @@
 import { _decorator, Component, find, instantiate, Label, Node, Prefab, Sprite, SpriteFrame } from 'cc';
-import { battleCache, BattleLogItem, getConfig, getToken } from 'db://assets/script/common/config/config';
+import { battleCache, BattleLogItem, getConfig, getToken, updateTiAndHuoli } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 import { FightMap } from '../../../Fight/Canvas/FightMap';
@@ -197,20 +197,24 @@ export class RankingCrtl extends Component {
             .then(async data => {
                 //console.log(data); // 处理响应数据
                 if (data.success == '1') {
+                   var map = data.data;
+                    var user = map['user'];
+                    const battle = map['battle'];
                     // 3. 存入本地缓存
                     const saveItem: BattleLogItem = {
-                        battleId: data.data.id,
+                        battleId: battle.id,
                         saveTime: Date.now(),
-                        battleData: data.data.json
+                        battleData: battle.json
                     };
                     battleCache.saveBattleItem(saveItem);
+                    updateTiAndHuoli(user);
                     this.refresh()
                     const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
                     const holAnimationNode = instantiate(holAnimationPrefab)
                     this.node.parent.addChild(holAnimationNode)
                     await holAnimationNode
                         .getComponent(FightMap)
-                        .render(data.data.id, null, null)
+                        .render(battle.id, null, null)
                     find('Canvas').getComponent(HomeCanvas).audioSource.pause()
                     this.node.parent.getChildByName("FightMap").active = true
                 } else {
