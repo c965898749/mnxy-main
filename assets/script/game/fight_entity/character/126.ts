@@ -59,7 +59,7 @@ export class Character extends CharacterMetaState {
     PassiveIntroduceThree: string = `
     
     复仇飞弹 Lv1
-    我方单位死亡时，对场上敌方造成1305点飞弹伤害。 
+    我方单位死亡时，对场上敌方造成430点飞弹伤害。 
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `

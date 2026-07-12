@@ -41,8 +41,7 @@ export class otherCtrl extends Component {
     }
     public async WebViewManager() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        return await util.message.prompt({ message: "暂未开放" })
-        // this.node.parent.getChildByName("WebViewManager").active = true
+        this.node.parent.getChildByName("VideoCrtl").active = true
     }
     openBlessing() {
         AudioMgr.inst.playOneShot("sound/other/click");

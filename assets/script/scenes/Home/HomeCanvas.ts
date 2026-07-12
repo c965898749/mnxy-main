@@ -1,5 +1,5 @@
 import { _decorator, AudioClip, AudioSource, Component, director, EventTouch, math, Node, screen, Slider } from 'cc';
-import { getConfig, getToken } from '../../common/config/config';
+import { chatCache, getConfig, getToken } from '../../common/config/config';
 import { util } from '../../util/util';
 import { AudioMgr } from '../../util/resource/AudioMgr';
 const { ccclass, property } = _decorator;
@@ -44,6 +44,10 @@ export class HomeCanvas extends Component {
                             close()
                         })
                         director.loadScene("login")
+                    }else  {
+                        let map=data.data
+                        let list=map["world"]
+                        chatCache.saveToLocals(list)
                     }
                 })
                 .catch(error => {

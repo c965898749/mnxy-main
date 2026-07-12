@@ -1,4 +1,4 @@
-import { _decorator, Component, find, instantiate, Node, Prefab, RichText, Sprite, SpriteFrame } from 'cc';
+import { _decorator, Component, find, instantiate, Label, Node, Prefab, RichText, Sprite, SpriteFrame } from 'cc';
 import { getConfig, getToken } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
@@ -22,6 +22,11 @@ export class VideoCrtl extends Component {
             this.refresh()
         }
 
+    }
+    goBack() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.active = false
+        this.node.parent.getChildByName("otherCtrl").active = true
     }
 
     refresh() {
@@ -47,13 +52,11 @@ export class VideoCrtl extends Component {
                 let messageDetails = data.data
                 this.node.active = true
                 const nodePool = util.resource.getNodePool(
-                    await util.bundle.load("prefab/messageDetail", Prefab)
+                    await util.bundle.load("prefab/VideoDetail", Prefab)
                 )
                 const childrens = [...this.ContentNode.children]
                 for (let i = 0; i < childrens.length; i++) {
                     const node = childrens[i];
-                    node.getChildByName("regitPlaye").off("click")
-                    node.getChildByName("getRewards").off("click")
                     node.getChildByName("fEsmZCGbB").off("click")
                     node.getChildByName("fEsnbpxoT").off("click")
                     nodePool.put(node)
@@ -62,50 +65,49 @@ export class VideoCrtl extends Component {
                 for (let i = 0; i < messageDetails.length; i++) {
                     let messageDetail = messageDetails[i]
                     let item = nodePool.get()
-
-                    item.getChildByName("regitPlaye").active = true
-                    item.getChildByName("fEsmZCGbB").active = false
-                    item.getChildByName("fEsnbpxoT").active = false
-                    item.getChildByName("getRewards").active = false
-                    item.getChildByName("regitPlaye").on("click", () => { this.clickFun(messageDetail.battleId) })
-                    item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
-                        await util.bundle.load(messageDetail.img, SpriteFrame)
-
-                    let content = null;
-                    if (messageDetail.type == "0") {
-                        //副本pk
-                        content = `<color=#E36F1A>${messageDetail.timeStr} <color=#EEE365>我 </color>探索了关卡<color=#EEE365>${messageDetail.toUserName}</color>，激烈战斗后最终<color=#00BCD4>${messageDetail.isWin == 0 ? '获胜' : '落败'}</color>。</color>`
-                    } else if (messageDetail.type == "1") {
-                        if (config.userData.userId != messageDetail.userId) {
-                            content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>竞技场</color>遭到<color=#EEE365>${messageDetail.userName}</color>偷袭，毫无防备最终<color=#00BCD4>${messageDetail.isWin == 1 ? '获胜' : '落败'}</color>。</color>`
-
-                        } else {
-                            content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>竞技场</color>攻击了<color=#EEE365>${messageDetail.toUserName}</color>，激烈战斗后最终<color=#00BCD4>${messageDetail.isWin == 0 ? '获胜' : '落败'}</color>。</color>`
-                        }
-                    } else if (messageDetail.type == "3") {
-                        if (config.userData.userId != messageDetail.userId) {
-                            content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>好友挑战</color>遭到<color=#EEE365>${messageDetail.userName}</color>偷袭，毫无防备最终<color=#00BCD4>${messageDetail.isWin == 1 ? '获胜' : '落败'}</color>。</color>`
-
-                        } else {
-                            content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>好友挑战</color>攻击了<color=#EEE365>${messageDetail.toUserName}</color>，激烈战斗后最终<color=#00BCD4>${messageDetail.isWin == 0 ? '获胜' : '落败'}</color>。</color>`
-                        }
-                    } else if (messageDetail.type == "4") {
-                        content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>${messageDetail.userName}</color>在<color=#EEE365>擂台赛</color>攻击了<color=#EEE365>${messageDetail.toUserName}</color>，激烈战斗后最终<color=#00BCD4>${messageDetail.isWin == 0 ? '获胜' : '落败'}</color>。</color>`
-
-                    } else if (messageDetail.type == "7") {
-                        if (config.userData.userId != messageDetail.userId) {
-                            content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>矿场抢夺</color>遭到<color=#EEE365>${messageDetail.userName}</color>偷袭，毫无防备最终<color=#00BCD4>${messageDetail.isWin == 1 ? '获胜' : '落败'}</color>。</color>`
-
-                        } else {
-                            content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>我 </color>在<color=#EEE365>矿场抢夺</color>攻击了<color=#EEE365>${messageDetail.toUserName}</color>，激烈战斗后最终<color=#00BCD4>${messageDetail.isWin == 0 ? '获胜' : '落败'}</color>。</color>`
-                        }
-
+                    item.getChildByName("fEsmZCGbB").on("click", () => { this.clickFun(messageDetail.id) })
+                    item.getChildByName("fEsnbpxoT").on("click", () => { this.clickFun2(messageDetail.id) })
+                    item.getChildByName("timeStr").getComponent(Label).string = messageDetail.timeStr
+                    item.getChildByName("name0").getComponent(Label).string = messageDetail.userName
+                    item.getChildByName("name1").getComponent(Label).string = messageDetail.toUserName
+                    if (messageDetail.win == 1) {
+                        item.getChildByName("win0").active = true
+                        item.getChildByName("win1").active = false
+                    } else {
+                        item.getChildByName("win0").active = false
+                        item.getChildByName("win1").active = true
                     }
-                    item.getChildByName("RichText").getComponent(RichText).string = content
-
                     this.ContentNode.addChild(item)
                     continue
                 }
+            })
+            .catch(error => {
+                //console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+    }
+    clickFun2(id) {
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+            id: id
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "deleteVideo", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                this.refresh()
             })
             .catch(error => {
                 //console.error('There was a problem with the fetch operation:', error);

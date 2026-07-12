@@ -238,7 +238,7 @@ export class FightMap extends Component {
     // 战斗开始
     private async fightStart(): Promise<boolean> {
         // await new Promise(res => setTimeout(res, 500 / this.timeScale))
-        let cc = [
+        var cc = [
             // 1. 普通（浅灰）- 与银白背景区分开，不泛白
             new Color(200, 200, 200, 200),
             // 2. 优秀（翠绿）- 高饱和绿，避开金/银色调
@@ -258,7 +258,27 @@ export class FightMap extends Component {
             // 9. 暗金（古铜）- 深铜色，与亮金背景拉开层次
             new Color(180, 100, 0, 200),
             // 10. 神级（亮白）- 加了极浅蓝调，避开银白背景泛白
-            new Color(255, 255, 255, 200)
+            new Color(255, 255, 255, 200),
+            // 11. 冰晶（冰青）- 清冷浅青蓝，通透冷调
+            new Color(80, 220, 240, 200),
+            // 12. 幽翠（墨绿）- 暗调森林绿，沉稳高级
+            new Color(0, 110, 60, 200),
+            // 13. 琥珀（橘棕）- 暖调琥珀，区别橙红古铜
+            new Color(240, 130, 20, 200),
+            // 14. 星紫（薰衣草紫）- 浅柔紫，和深紫分层
+            new Color(180, 100, 255, 200),
+            // 15. 焰金（赤金）- 红调鎏金，区分亮金暗金
+            new Color(255, 160, 40, 200),
+            // 16. 苍蓝（深海蓝）- 暗藏青，比宝蓝更深沉
+            new Color(0, 40, 160, 200),
+            // 17. 桃绯（水蜜桃粉）- 柔和粉调，区别玫紫
+            new Color(255, 100, 160, 200),
+            // 18. 墨银（冷灰银）- 冷调深灰，区分浅普通灰
+            new Color(130, 140, 160, 200),
+            // 19. 碧玺（青柠绿）- 浅亮嫩绿，和翠绿分层
+            new Color(100, 240, 80, 200),
+            // 20. 曜黑（暗曜）- 深哑光黑，高对比稀有深色
+            new Color(20, 20, 30, 200)
         ];
         // try {
         for (var i = 0; i < this.fightProcess.length; i++) {
@@ -549,9 +569,9 @@ export class FightMap extends Component {
 
                             } else if (effectType == 'POISON_RESIST_BOOST_PRET') {
 
-                                await this.showString(1, itemNode, new math.Color(0, 255, 0), "中毒-" + targetBattleData.value+"%")
+                                await this.showString(1, itemNode, new math.Color(0, 255, 0), "中毒-" + targetBattleData.value + "%")
 
-                            }else if (effectType == 'MAX_HP_DOWN') {
+                            } else if (effectType == 'MAX_HP_DOWN') {
                                 if (fightProcess.sourceUnitId == 'A1101' || fightProcess.sourceUnitId == 'B1101') {
                                     await this.showString(1, itemNode, new math.Color(255, 0, 0), "飞弹抗性 -" + targetBattleData.value)
                                 } else {

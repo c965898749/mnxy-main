@@ -1,5 +1,5 @@
 import { _decorator, Component, find, instantiate, Node, Prefab, RichText, Sprite, SpriteFrame } from 'cc';
-import { getConfig, getToken } from 'db://assets/script/common/config/config';
+import { battleCache, getConfig, getToken } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 import { FightMap } from '../../../Fight/Canvas/FightMap';
@@ -17,6 +17,8 @@ export class MessageCrtl extends Component {
     rew: Node
     initialized: boolean = false
     type = 1;
+    isChongzhi=false
+    
     start() {
         this.refresh()
     }
@@ -59,6 +61,7 @@ export class MessageCrtl extends Component {
                 for (let i = 0; i < childrens.length; i++) {
                     const node = childrens[i];
                     node.getChildByName("regitPlaye").off("click")
+                    node.getChildByName("savePlay").off("click")
                     node.getChildByName("getRewards").off("click")
                     node.getChildByName("fEsmZCGbB").off("click")
                     node.getChildByName("fEsnbpxoT").off("click")
@@ -71,10 +74,12 @@ export class MessageCrtl extends Component {
 
                     if (this.type == 1) {
                         item.getChildByName("regitPlaye").active = true
+                        item.getChildByName("savePlay").active = true
                         item.getChildByName("fEsmZCGbB").active = false
                         item.getChildByName("fEsnbpxoT").active = false
                         item.getChildByName("getRewards").active = false
                         item.getChildByName("regitPlaye").on("click", () => { this.clickFun(messageDetail.battleId) })
+                        item.getChildByName("savePlay").on("click", () => { this.clickFun2(messageDetail.battleId) })
                         item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
                             await util.bundle.load(messageDetail.img, SpriteFrame)
 
@@ -111,6 +116,7 @@ export class MessageCrtl extends Component {
                         item.getChildByName("RichText").getComponent(RichText).string = content
                     } else if (this.type == 2) {
                         item.getChildByName("regitPlaye").active = false
+                        item.getChildByName("savePlay").active = false
                         item.getChildByName("getRewards").active = false
                         item.getChildByName("fEsmZCGbB").active = true
                         item.getChildByName("fEsnbpxoT").active = true
@@ -124,6 +130,7 @@ export class MessageCrtl extends Component {
                         item.getChildByName("RichText").getComponent(RichText).string = content
                     } else if (this.type == 3) {
                         item.getChildByName("regitPlaye").active = false
+                        item.getChildByName("savePlay").active = false
                         item.getChildByName("fEsmZCGbB").active = false
                         item.getChildByName("fEsnbpxoT").active = false
                         item.getChildByName("getRewards").active = true
@@ -157,6 +164,54 @@ export class MessageCrtl extends Component {
             .render(id, null, null)
         find('Canvas').getComponent(HomeCanvas).audioSource.pause()
         this.node.parent.getChildByName("FightMap").active = true
+    }
+    async clickFun2(fightId) {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        if (!this.isChongzhi) {
+            const result = await util.message.confirm({
+                message: "确定使用100灵石留影吗?"
+            })
+            // 是否确定
+            if (result === false) return
+        }
+        this.isChongzhi = true
+        const battleInfo = await battleCache.getBattleFullInfo(fightId);
+        const config = getConfig()
+        const postData = {
+            token: battleInfo.name0,
+            str: JSON.stringify(battleInfo),
+            userId: config.userData.userId,
+            id: fightId,
+            finalLevel: battleInfo.isWin,
+            difficultyLevel: battleInfo.name1
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "savePlay", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    let userInfo = data.data;
+                    config.userData.diamond = userInfo.diamond
+                    localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+                this.refresh()
+            })
+            .catch(error => {
+                //console.error('There was a problem with the fetch operation:', error);
+            }
+            );
     }
     fEsmZCGbB(id) {
         AudioMgr.inst.playOneShot("sound/other/click");

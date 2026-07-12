@@ -41,7 +41,11 @@ export class Loginpel extends Component {
     isSendingCode: boolean = false;
     @property({ type: Node, tooltip: "任务列表" }) ContentNode2: Node = null;
     // redis-server.exe redis.windows.conf
-    serverList = [{ "id": 1, "name": "梦回西游", "url": "http://127.0.0.1:8889/" }]
+    // serverList = [{ "id": 1, "name": "梦回西游", "url": "http://127.0.0.1:8889/" }]
+    serverList = [
+        { "id": 1, "name": "梦回西游", "url": "https://czx.yimem.com:3002/" },
+        { "id": 2, "name": "再续前缘", "url": "https://czx.yimem.com:3004/" },
+    ]
     url = localStorage.getItem("url") ?? this.serverList[0].url;
     //更新公告内容
     content = `<color=#FFFFFF><size=20>各位道友：</size>
@@ -123,13 +127,13 @@ export class Loginpel extends Component {
                 // case sys.OS.OPENHARMONY:
                 //     packageUrl = `https://raw.githubusercontent.com/zhitaocai/cocos-creator-gg-hot-update-demo/v6/build/harmonyos-next/data-gg-hot-update`;
                 //     break;
-                case sys.OS.WINDOWS:
-                    packageUrl = `http://czx.yimem.com:5502/data-gg-hot-update`;
-                    this.serverList = [
-                        { "id": 1, "name": "梦回西游", "url": "http://czx.yimem.com:3000/" },
-                        { "id": 2, "name": "再续前缘", "url": "http://czx.yimem.com:3003/" },
-                    ]
-                    break;
+                // case sys.OS.WINDOWS:
+                //     packageUrl = `http://czx.yimem.com:5502/data-gg-hot-update`;
+                //     this.serverList = [
+                //         { "id": 1, "name": "梦回西游", "url": "http://czx.yimem.com:3000/" },
+                //         { "id": 2, "name": "再续前缘", "url": "http://czx.yimem.com:3003/" },
+                //     ]
+                //     break;
                 case sys.OS.IOS:
                     packageUrl = `https://czx.yimem.com:5508/data-gg-hot-update`;
                     this.serverList = [

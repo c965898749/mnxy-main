@@ -72,7 +72,7 @@ export class RankingCrtl extends Component {
                         // 绑定事件
                         item.getChildByName("name").getComponent(Label).string = userlist[i].nickname
                         item.getChildByName("Count").getComponent(Label).string = "胜 " + userlist[i].winCount
-                        item.getChildByName("ranking").getChildByName("num").getComponent(Label).string = userlist[i].gameRanking
+                        item.getChildByName("ranking").getChildByName("num").getComponent(Label).string = i + 1 + ""
                         item.getChildByName("yxjm_df_txk").getChildByName("header").getComponent(Sprite).spriteFrame =
                             await util.bundle.load(userlist[i].gameImg, SpriteFrame)
                         this.ContentNode.addChild(item)

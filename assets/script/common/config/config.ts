@@ -365,3 +365,113 @@ export class BattleLogStorage {
 
 // 全局单例，所有外部直接导入这个实例
 export const battleCache = new BattleLogStorage();
+
+import { ChatMsg, ChannelType } from "./ChatMsg";
+
+export class ChatStorage {
+    // 每个频道本地存储key前缀
+    private readonly STORAGE_PREFIX = "chat_cache_";
+    // 单频道最大缓存条数，超出删除最早一条
+    private readonly MAX_STORE_COUNT = 100;
+    // 当前登录用户ID，外部初始化传入
+    private selfUserId: number = 0;
+
+    // 外部设置当前玩家ID
+    public setSelfId(uid: number) {
+        this.selfUserId = uid;
+    }
+
+    // 根据频道生成唯一localStorage key（世界独立key，数组存储多条）
+    private getStorageKey(channelType: ChannelType, targetId: number): string {
+        switch (channelType) {
+            case ChannelType.WORLD:
+                // 世界频道：chat_cache_world，内部存完整消息数组，多条
+                return this.STORAGE_PREFIX + "world";
+            case ChannelType.CAVE:
+                return this.STORAGE_PREFIX + "cave_" + targetId;
+            case ChannelType.PRIVATE:
+                const min = Math.min(this.selfUserId, targetId);
+                const max = Math.max(this.selfUserId, targetId);
+                return this.STORAGE_PREFIX + "private_" + min + "_" + max;
+            default:
+                throw new Error("未知聊天频道类型");
+        }
+    }
+
+    /** 读取当前频道本地缓存数组（所有频道统一数组存储，返回多条列表） */
+    public getAllLocalList(channelType: ChannelType, targetId: number): ChatMsg[] {
+        const key = this.getStorageKey(channelType, targetId);
+        const jsonStr = localStorage.getItem(key);
+        if (!jsonStr) return [];
+        try {
+            const list = JSON.parse(jsonStr);
+            // 强制校验为数组，防止脏数据单对象覆盖
+            return Array.isArray(list) ? list : [];
+        } catch (err) {
+            // JSON损坏直接清空，返回空数组
+            localStorage.removeItem(key);
+            return [];
+        }
+    }
+
+    /** 写入当前频道完整数组到本地持久化 */
+    private saveToLocal(channelType: ChannelType, targetId: number, list: ChatMsg[]) {
+        const key = this.getStorageKey(channelType, targetId);
+        const jsonStr = JSON.stringify(list);
+        localStorage.setItem(key, jsonStr);
+    }
+
+    /** 新增单条消息，插入数组头部，自动控100条上限（所有频道通用） */
+    public saveChatItem(msg: ChatMsg) {
+        let list = this.getAllLocalList(msg.channelType, msg.targetId);
+        // msgId去重，避免重复消息
+        list = list.filter(item => item.msgId !== msg.msgId);
+        // 新消息放最前面
+        list.unshift(msg);
+        // 超过上限删除最旧尾部数据
+        while (list.length > this.MAX_STORE_COUNT) {
+            list.pop();
+        }
+        this.saveToLocal(msg.channelType, msg.targetId, list);
+    }
+
+    /** 新增单条消息，插入数组尾部，自动控100条上限（所有频道通用） */
+    public saveChatItem2(msg: ChatMsg) {
+        let list = this.getAllLocalList(msg.channelType, msg.targetId);
+        // msgId去重，避免重复消息
+        list = list.filter(item => item.msgId !== msg.msgId);
+        // 新消息追加到数组最后面
+        list.push(msg);
+        // 超过上限删除头部最旧数据
+        while (list.length > this.MAX_STORE_COUNT) {
+            list.shift();
+        }
+        this.saveToLocal(msg.channelType, msg.targetId, list);
+    }
+
+    public saveToLocals(list: ChatMsg[]) {
+        for (const msg of list) {
+            this.saveChatItem(msg);
+        }
+    }
+
+    /** 清空单个频道本地全部数组缓存 */
+    public clearSingleChannel(channelType: ChannelType, targetId: number) {
+        const key = this.getStorageKey(channelType, targetId);
+        localStorage.removeItem(key);
+    }
+
+    /** 清空全部聊天本地缓存（切换账号调用） */
+    public clearAllChatCache() {
+        const removeKeys: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.startsWith(this.STORAGE_PREFIX)) {
+                removeKeys.push(k);
+            }
+        }
+        removeKeys.forEach(k => localStorage.removeItem(k));
+    }
+}
+// 全局单例，所有外部直接导入这个实例
+export const chatCache = new ChatStorage();

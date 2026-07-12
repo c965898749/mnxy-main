@@ -781,6 +781,28 @@ export class HomeBuildings extends Component {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.introduceBack2.active = true
     }
+    public openOther() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.getChildByName("other").active = !this.node.getChildByName("other").active
+    }
+
+
+    public openSet() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("SetCtrl").active = true
+        this.node.getChildByName("other").active = !this.node.getChildByName("other").active
+    }
+
+    public openChat() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("ChatCrtl").active = true
+        this.node.getChildByName("other").active = !this.node.getChildByName("other").active
+    }
+
+    openBag() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        director.loadScene("BagCrtl")
+    }
 
     clickUseFun(event: Event, itemId: string) {
         // useBagItem
