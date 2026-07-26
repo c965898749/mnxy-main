@@ -5,6 +5,7 @@ import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { SelectCardCtrl } from '../qianghua/SelectCardCtrl';
 import { util } from 'db://assets/script/util/util';
 import { questionCrtl } from '../questionCrtl/questionCrtl';
+import { LCoin } from 'db://assets/script/common/common/Language';
 const { ccclass, property } = _decorator;
 enum Style { 纯色描边, 透明衰减, 明暗衰减 }
 @ccclass('AscensionPillDetail')
@@ -255,7 +256,7 @@ let message = `<size=24><color=#FFD700><b>QQ神仙·飞升系统</b></color></si
                     var data = data.data
                     if (data) {
                         this.danyaoNum.getComponent(Label).string = "X" + data.dangyaoTotal2 + "(" + data.dangyaoTotal + ")"
-                        this.gold.getComponent(Label).string = data.gold
+                        this.gold.getComponent(Label).string =  LCoin(data.gold)
                         this.hearoNum.getComponent(Label).string = "X" + data.cardTotal2 + "(" + data.cardTotal + ")"
                     } else {
                         this.danyaoNum.getComponent(Label).string = ""

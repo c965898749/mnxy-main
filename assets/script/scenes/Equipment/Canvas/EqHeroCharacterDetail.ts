@@ -35,7 +35,7 @@ export class EqHeroCharacterDetail extends Component {
         this.node.parent.getChildByName("Floor").active = true
 
         const close = await util.message.load()
-        console.log(this.node.getChildByName("CharacterAnimation"), 99)
+        // console.log(this.node.getChildByName("CharacterAnimation"), 99)
         this.node.getChildByName("CharacterAnimation").children.forEach(element => {
             element.active = false
         });
@@ -53,7 +53,7 @@ export class EqHeroCharacterDetail extends Component {
         // const close = await util.message.load()
         const characterAnimationNode = this.node.getChildByName("CharacterAnimation")
         if (this.$lastaNimation) characterAnimationNode.removeChild(this.$lastaNimation)
-        console.log(create.id)
+        console.log(create.gemList, 999)
         const meta = EquipmentEnum[create.id]
         // const holAnimationPrefab = await util.bundle.load("prefab/HolAnimation", Prefab)
         // const holAnimationNode = instantiate(holAnimationPrefab)

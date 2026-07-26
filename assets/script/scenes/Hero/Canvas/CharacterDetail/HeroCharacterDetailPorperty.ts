@@ -39,6 +39,8 @@ export class HeroCharacterDetailPorperty extends Component {
     // 是否询问升级
     private $answerSell: boolean = true
 
+    private $answerCS: boolean = true
+
 
 
     // 渲染属性
@@ -443,6 +445,56 @@ export class HeroCharacterDetailPorperty extends Component {
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
                     AudioMgr.inst.playOneShot("sound/other/getCoin");
                     await util.message.prompt({ message: "获得金币：" + gold })
+                } else {
+                    AudioMgr.inst.playOneShot("sound/other/tantdoor");
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
+
+    }
+
+    async characterCS() {
+        // 是否询问
+        if (this.$answerCS) {
+            const result = await util.message.confirm({
+                message: "确定要重生吗?消耗洗髓丹重置初始状态（返还20%的经验和飞升丹）",
+                selectBoxMessage: "不再询问",
+                selectBoxCallback: (b: boolean) => { this.$answerCS = !b }
+            })
+            // 是否确定
+            if (result === false) return
+        }
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+            id: this.$state.create.id
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "characterCS", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    var map = data.data;
+                    let dto = map['dto'];
+                    config.userData.characters = dto.characters
+                    localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    AudioMgr.inst.playOneShot("sound/other/getCoin");
+                    await util.message.prompt({ message: "重置成功"})
                 } else {
                     AudioMgr.inst.playOneShot("sound/other/tantdoor");
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })

@@ -3,7 +3,13 @@ import { BasicState } from "../BasicState";
 import { EquipmentMetaState } from "./EquipmentMetaState";
 import { EquipmentEnum } from "./EquipmentEnum";
 import { CharacterState } from "../character/CharacterState";
-
+// 宝石镶嵌数据结构
+export type GemSlotInfo = {
+    itemId: string;     // 宝石id
+    slotIndex: number; // 镶嵌槽位置索引 0,1,2...
+    equipUniqueId: string;       // 装备id
+    icon: string;
+}
 export type EquipmentStateCreate = {
     // id
     id: string
@@ -72,6 +78,8 @@ export type EquipmentStateCreate = {
     dsDef: number
     fdDef: number
     zlDef: number
+       // 新增：装备镶嵌宝石列表
+    gemList?: GemSlotInfo[]
 
 }
 
@@ -132,7 +140,8 @@ export class EquipmentState extends BasicState<EquipmentMetaState> {
     dsDef: number
     fdDef: number
     zlDef: number
-
+    // 新增：宝石镶嵌列表
+    gemList: GemSlotInfo[]
     // 构造器
     constructor(create: EquipmentStateCreate, character: CharacterState) {
         const meta = EquipmentEnum[create.id]
@@ -171,7 +180,8 @@ export class EquipmentState extends BasicState<EquipmentMetaState> {
         this.dsDef = create.lv * create.dsDef
         this.fdDef = create.lv * create.fdDef
         this.zlDef = create.lv * create.zlDef
-
+        // 初始化宝石列表，不传则为空数组
+        this.gemList = create.gemList ?? [];
     }
 
     // 添加属性到角色

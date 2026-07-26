@@ -446,6 +446,10 @@ export class Loginpel extends Component {
                             "myCode": userInfo.myCode
                         },
                     }
+                    for (let i = 0; i < userInfo.eqCharactersList.length; i++) {
+                        console.log(userInfo.eqCharactersList[i].gemList, 999)
+                    }
+
                     this.SetLeaveEnergy(userInfo.tiliCount)
                     localStorage.setItem('LastGetTime1', userInfo.tiliCountTime + "");
                     localStorage.setItem('LastGetHuoliTime1', userInfo.huoliCountTime + "");

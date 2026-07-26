@@ -1,7 +1,7 @@
-import { _decorator, AudioSource, Component, find, Label, Node, sp, Sprite, SpriteFrame } from 'cc';
+import { _decorator, Component, Label, Node, Prefab, Sprite, SpriteFrame } from 'cc';
 import { util } from '../../../../util/util';
 import { CharacterEnum } from '../../../../game/fight/character/CharacterEnum';
-import { EquipmentState, EquipmentStateCreate } from 'db://assets/script/game/fight/equipment/EquipmentState';
+import { EquipmentStateCreate } from 'db://assets/script/game/fight/equipment/EquipmentState';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { getConfig, getToken } from 'db://assets/script/common/config/config';
 const { ccclass, property } = _decorator;
@@ -31,10 +31,14 @@ export class EqHeroCharacterDetailPorperty extends Component {
     // 是否询问升级
     private $answerSell: boolean = true
 
-
+    // 缓存宝石预制体，避免重复加载
+    private _gemPrefab: Prefab | null = null;
+    // 请求锁，防止连续重复点击发起多次网络请求
+    private _requestLock: boolean = false;
 
     // 渲染属性
     async renderProperty(create: EquipmentStateCreate, clickFun?: (characters: EquipmentStateCreate, node: Node) => any) {
+        console.log('renderProperty', create.gemList)
         this.$state = create
         this.node.getChildByName("Name").getComponent(Label).string = "名称: " + create.name
         this.node.getChildByName("Lv").getComponent(Label).string = "Lv: " + create.lv
@@ -137,6 +141,29 @@ export class EqHeroCharacterDetailPorperty extends Component {
                 starNode.children[i].children[1].active = true
             }
         }
+
+        const baos = this.node.getChildByName("team")
+        baos.children.forEach(n => {
+            n.active = false
+            n.off("click")
+            const spr = n.getChildByName("header_qitiandashen").getComponent(Sprite);
+            spr.spriteFrame = null;
+        })
+        for (let i = 0; i < create.star; i++) {
+            baos.children[i].active = true
+            const slotNode = baos.children[i];
+            slotNode.on("click", () => this.touchCancel(create, i))
+            const targetGem = create.gemList?.find(item => item.slotIndex === i);
+            const spr = slotNode.getChildByName("header_qitiandashen").getComponent(Sprite);
+            if (!targetGem) {
+                spr.spriteFrame = null;
+                continue;
+            }
+            util.bundle.load(targetGem.icon, SpriteFrame).then(sf => {
+                if (!slotNode.isValid) return;
+                spr.spriteFrame = sf;
+            });
+        }
         this.node.getChildByName("sell").off("click")
         if (create.goIntoNum != 0) {
             this.node.getChildByName("sell").active = true
@@ -144,6 +171,176 @@ export class EqHeroCharacterDetailPorperty extends Component {
         } else {
             this.node.getChildByName("sell").active = false
         }
+    }
+
+    /**
+     * 统一关闭宝石滚动面板，并回收所有Item节点
+     */
+    private async closeGemScrollView() {
+        if (!this._gemPrefab) {
+            this._gemPrefab = await util.bundle.load("prefab/baos", Prefab);
+        }
+        const scrollNode = this.node.getChildByName("ScrollView");
+        const contentNode = scrollNode.getChildByName("view").getChildByName("content");
+        const nodePool = util.resource.getNodePool(this._gemPrefab);
+
+        const childList = [...contentNode.children];
+        for (const child of childList) {
+            child.off("click");
+            nodePool.put(child);
+        }
+        scrollNode.active = false;
+    }
+
+    async touchCancel(create: EquipmentStateCreate, slotIndex: number) {
+        if (this._requestLock) return;
+        AudioMgr.inst.playOneShot("sound/other/click");
+        const scrollNode = this.node.getChildByName("ScrollView");
+
+        // 如果面板已经打开，直接关闭清空，防止重复并发请求
+        if (scrollNode.active) {
+            await this.closeGemScrollView();
+            return;
+        }
+
+        this._requestLock = true;
+
+        if (!this._gemPrefab) {
+            this._gemPrefab = await util.bundle.load("prefab/baos", Prefab);
+        }
+        const nodePool = util.resource.getNodePool(this._gemPrefab);
+        const contentNode = scrollNode.getChildByName("view").getChildByName("content");
+
+        // 打开前先清理残留
+        const oldChildren = [...contentNode.children];
+        for (const n of oldChildren) {
+            n.off("click");
+            nodePool.put(n);
+        }
+
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            id: create.uuid,
+            str: create.eqType,
+            userId: config.userData.userId,
+            finalLevel: slotIndex
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "bosList", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    let items = data.data
+                    scrollNode.active = true;
+
+                    for (let i = 0; i < items.length; i++) {
+                        let itemDetail = items[i]
+                        let item = nodePool.get()
+                        item.getChildByName("icon").getComponent(Sprite).spriteFrame =
+                            await util.bundle.load(itemDetail.icon, SpriteFrame)
+                        item.getChildByName("isBattle").active = itemDetail.isBind;
+                        if (itemDetail.itemCount > 0) {
+                            item.getChildByName("itemCount").getComponent(Label).string = itemDetail.itemCount + ''
+                        } else {
+                            item.getChildByName("itemCount").getComponent(Label).string = ''
+                        }
+                        item.on("click", () => {
+                            this.clickDiuFun(itemDetail, slotIndex)
+                        }, this)
+                        contentNode.addChild(item)
+                    }
+                } else {
+                    util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+                this._requestLock = false;
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+                this._requestLock = false;
+            });
+    }
+
+    async clickDiuFun(itemDetail, slotIndex: number) {
+        if (this._requestLock) return;
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this._requestLock = true;
+
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            id: itemDetail.itemId,
+            str: itemDetail.equipUniqueId,
+            userId: config.userData.userId,
+            finalLevel: slotIndex
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "toggleGem", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(async data => {
+                if (data.success == '1') {
+                    // 使用统一方法关闭并回收节点
+                    await this.closeGemScrollView();
+
+                    config.userData.equipments = data.data
+                    const create = config.userData.equipments.find(equip => equip.uuid === itemDetail.equipUniqueId);
+                    localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    const baos = this.node.getChildByName("team")
+
+                    // 全部清空解绑+清空贴图
+                    baos.children.forEach(n => {
+                        n.active = false
+                        n.off("click")
+                        const spr = n.getChildByName("header_qitiandashen").getComponent(Sprite);
+                        spr.spriteFrame = null;
+                    })
+
+                    // 重新渲染宝石槽
+                    for (let i = 0; i < create.star; i++) {
+                        const slotNode = baos.children[i];
+                        slotNode.active = true;
+                        slotNode.on("click", () => this.touchCancel(create, i));
+
+                        const spr = slotNode.getChildByName("header_qitiandashen").getComponent(Sprite);
+                        const targetGem = create.gemList?.find(item => item.slotIndex === i);
+                        if (!targetGem) {
+                            spr.spriteFrame = null;
+                            continue;
+                        }
+                        util.bundle.load(targetGem.icon, SpriteFrame).then(sf => {
+                            if (!slotNode.isValid) return;
+                            spr.spriteFrame = sf;
+                        });
+                    }
+                } else {
+                    util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+                this._requestLock = false;
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+                this._requestLock = false;
+            });
     }
 
     // 显示所有的属性
@@ -154,114 +351,6 @@ export class EqHeroCharacterDetailPorperty extends Component {
         message += `暂无开放\n\n`
         message += `技能\n`
         message += `无\n`
-        // message += `${create.PassiveIntroduceOne}\n`
-        // message += `${create.PassiveIntroduceTwo}\n`
-        // message += `${create.SkillIntroduce}\n`
-        // message += ` 攻击: ${Math.ceil(create.attack)}\n`
-        // message += ` 物抗: ${Math.ceil(create.defence)}\n`
-        // message += ` 速度: ${Math.ceil(create.speed)}\n`
-        // message += ` 真实: ${Math.ceil(create.pierce)}\n`
-        // message += ` 闪避率: ${Math.ceil(create.block)}%\n`
-        // message += ` 暴击率: ${Math.ceil(create.critical)}%\n`
-        // message += ` 免伤率: ${Math.ceil(create.FreeInjuryPercent * 100)}%\n`
-        // message += ` 最大能量: ${Math.ceil(create.maxEnergy)}\n`
         await util.message.introduce({ message })
     }
-
-
-
-
-    // // 英雄升级
-    // async characterLevelUp() {
-    //     this.node.getChildByName("Name").getComponent(Label).string = "名称: " + create.name
-    //     const config = getConfig()
-    //     // 是否询问
-    //     if (this.$answerLevelUp) {
-    //         const result = await util.message.confirm({
-    //             message: "确定要升级吗?",
-    //             selectBoxMessage: "不再询问",
-    //             selectBoxCallback: (b: boolean) => { this.$answerLevelUp = !b }
-    //         })
-    //         // 是否确定
-    //         if (result === false) return
-    //     }
-    //     // 资源不足
-    //     if (
-    //         config.userData.gold < levelUpNeedGold(create.create)
-    //         ||
-    //         config.userData.soul < levelUpNeedSoule(create.create)
-    //     ) return await util.message.prompt({ message: "资源不足" })
-    //     // 资源减少
-    //     config.userData.gold -= levelUpNeedGold(create.create)
-    //     config.userData.soul -= levelUpNeedSoule(create.create)
-    //     // 角色等级提升
-    //     create.create.lv++
-    //     // 重新渲染
-    //     await this.renderProperty(create.create)
-    //     find("Canvas/HolUserResource").getComponent(HolUserResource).render() // 资源渲染
-    //     const levelUpEffectSkeleton = this.node.getChildByName("LevelUp").getChildByName("LevelUpEffect").getComponent(sp.Skeleton)
-    //     //播放声音
-    //     const audioSource = levelUpEffectSkeleton.node.getComponent(AudioSource)
-    //     audioSource.volume = config.volume * config.volumeDetail.character
-    //     audioSource.play()
-    //     // 播放动画
-    //     levelUpEffectSkeleton.node.active = true
-    //     levelUpEffectSkeleton.node.children[0]?.getComponent(sp.Skeleton).setAnimation(0, "animation", false)
-    //     levelUpEffectSkeleton.setAnimation(0, "animation", false)
-    //     levelUpEffectSkeleton.setCompleteListener(() => levelUpEffectSkeleton.node.active = false)
-    // }
-
-    // async characteSell() {
-    //     // 是否询问
-    //     if (this.$answerSell) {
-    //         const result = await util.message.confirm({
-    //             message: "确定要出售吗?",
-    //             selectBoxMessage: "不再询问",
-    //             selectBoxCallback: (b: boolean) => { this.$answerSell = !b }
-    //         })
-    //         // 是否确定
-    //         if (result === false) return
-    //     }
-    //     const config = getConfig()
-    //     const token = getToken()
-    //     const postData = {
-    //         token: token,
-    //         userId: config.userData.userId,
-    //         id: create.create.id
-    //     };
-    //     const options = {
-    //         method: 'POST',
-    //         headers: { 'Content-Type': 'application/json' },
-    //         body: JSON.stringify(postData),
-    //     };
-    //     fetch(config.ServerUrl.url + "characteSell", options)
-    //         .then(response => {
-    //             if (!response.ok) {
-    //                 throw new Error('Network response was not ok');
-    //             }
-    //             return response.json(); // 解析 JSON 响应
-    //         })
-    //         .then(async data => {
-    //             if (data.success == '1') {
-    //                 var map = data.data;
-    //                 let dto = map['dto'];
-    //                 let user = map['user'];
-    //                 let gold = map['gold'];
-    //                 config.userData.characters = dto.characters
-    //                 config.userData.gold = user.gold
-    //                 localStorage.setItem("UserConfigData", JSON.stringify(config))
-    //                 AudioMgr.inst.playOneShot("sound/other/getCoin");
-    //                 await util.message.prompt({ message: "获得金币：" + gold })
-    //             } else {
-    //                 AudioMgr.inst.playOneShot("sound/other/tantdoor");
-    //                 const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
-    //             }
-    //         })
-    //         .catch(error => {
-    //             console.error('There was a problem with the fetch operation:', error);
-    //         }
-    //         );
-
-    // }
 }
-
