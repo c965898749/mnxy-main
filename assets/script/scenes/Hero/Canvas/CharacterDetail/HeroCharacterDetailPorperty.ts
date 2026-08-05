@@ -293,13 +293,14 @@ export class HeroCharacterDetailPorperty extends Component {
 
     // 显示所有的属性
     async showAllProperty() {
-        let message = ``
-        message += `${this.$state.meta.PassiveIntroduceOne}\n`
-        message += `${this.$state.meta.PassiveIntroduceTwo}\n`
-        if (this.$state.meta.PassiveIntroduceThree) {
-            message += `${this.$state.meta.PassiveIntroduceThree}\n`
-        }
-        message += `${this.$state.meta.SkillIntroduce}\n`
+        const message = this.$state.meta.getSkillDesc(this.$state)
+        // let message = ``
+        // message += `${this.$state.meta.PassiveIntroduceOne}\n`
+        // message += `${this.$state.meta.PassiveIntroduceTwo}\n`
+        // if (this.$state.meta.PassiveIntroduceThree) {
+        //     message += `${this.$state.meta.PassiveIntroduceThree}\n`
+        // }
+        // message += `${this.$state.meta.SkillIntroduce}\n`
         // message += ` 攻击力: ${Math.ceil(this.$state.attack)}\n`
         // message += ` 防御力: ${Math.ceil(this.$state.defence)}\n`
         // message += ` 速度值: ${Math.ceil(this.$state.speed)}\n`

@@ -8,6 +8,7 @@ import { RegisterCharacter } from "../../fight/character/CharacterEnum";
 import { CharacterMetaState } from "../../fight/character/CharacterMetaState";
 import { CharacterState } from "../../fight/character/CharacterState";
 import { BuffState } from "../../fight/buff/BuffState";
+import { CardSkillLevelUtil } from "../../../util/CardSkillLevelUtil";
 
 
 @RegisterCharacter({ id: "1012" })
@@ -46,20 +47,20 @@ export class Character extends CharacterMetaState {
 
     PassiveIntroduceOne: string = `
     
-    大地净化 Lv1
+    大地净化 Lv{skillLv}
     场上，每当敌方单位登场，驱散自身减益效果
     `.replace(/ /ig, "")
 
     PassiveIntroduceTwo: string = `
     
-    后土聚能 Lv1
-    场上，每回合提高自身生命上限197点、攻击67点，最多叠加99层
+    后土聚能 Lv{skillLv}
+    场上，每回合提高自身生命上限{healVal}点、攻击{healVal1}点，最多叠加99层
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `
     
-    燃灯道人协同 Lv1
-    与燃灯道人在同一队伍时，增加自身266点生命上限，88点，158点速度
+    燃灯道人协同 Lv{skillLv}
+    与燃灯道人在同一队伍时，增加自身{healVal}点生命上限，{healVal2}点攻击，{healVal3}点速度
     `.replace(/ /ig, "")
 
 
@@ -67,6 +68,36 @@ export class Character extends CharacterMetaState {
 
     skillValue: string = "大地净化  后土聚能  厚土之力"
 
+    public getSkillDesc(state: CharacterState): string {
+        const lv = state.lv; // 当前等级，来自 create 里的lv
+        const star = state.star;
+        // ========== 该角色专属数值公式，每个卡牌可以完全不一样 ==========
+        const [skill1, skill2, skill3, skill4] = CardSkillLevelUtil.calculateSkillLevels(lv, star);
 
-    
+        // 拼接基础文本，替换占位符
+        let msg = "";
+        msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "") + "\n";
+        if (skill2 > 0) {
+            msg += this.PassiveIntroduceTwo.replace("{skillLv}", skill2 + "")
+                .replace("{healVal}", Math.floor(197 * skill2) + "")
+                .replace("{healVal1}", Math.floor(67 * skill2) + "") + "\n";
+        } else {
+            msg += this.PassiveIntroduceTwo.replace("{skillLv}", "未开启")
+                .replace("{healVal}", Math.floor(197) + "")
+                .replace("{healVal1}", Math.floor(67) + "") + "\n";
+        }
+        if (skill3 > 0) {
+            msg += this.SkillIntroduce.replace("{skillLv}", skill3 + "")
+                .replace("{healVal}", Math.floor(266 * skill3) + "")
+                .replace("{healVal2}", Math.floor(88 * skill3) + "")
+                .replace("{healVal3}", Math.floor(158 * skill3) + "") + "\n";
+        } else {
+            msg += this.SkillIntroduce.replace("{skillLv}", "未开启")
+                .replace("{healVal}", Math.floor(266) + "")
+                .replace("{healVal2}", Math.floor(88) + "")
+                .replace("{healVal3}", Math.floor(158) + "") + "\n";
+        }
+        return msg;
+    }
+
 }

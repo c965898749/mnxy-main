@@ -8,6 +8,7 @@ import { RegisterCharacter } from "../../fight/character/CharacterEnum";
 import { CharacterMetaState } from "../../fight/character/CharacterMetaState";
 import { CharacterState } from "../../fight/character/CharacterState";
 import { BuffState } from "../../fight/buff/BuffState";
+import { CardSkillLevelUtil } from "../../../util/CardSkillLevelUtil";
 
 
 @RegisterCharacter({ id: "1060" })
@@ -67,6 +68,34 @@ export class Character extends CharacterMetaState {
     skillValue: string = `死雨风暴  死亡徘徊  大圣鸿威`
 
 
+      public getSkillDesc(state: CharacterState): string {
+          const lv = state.lv; // 当前等级，来自 create 里的lv
+          const star = state.star;
+          // ========== 该角色专属数值公式，每个卡牌可以完全不一样 ==========
+          const [skill1, skill2, skill3, skill4] = CardSkillLevelUtil.calculateSkillLevels(lv, star);
   
+          // 拼接基础文本，替换占位符
+          let msg = "";
+          msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "").replace("{healVal}", Math.floor(10 * skill1) + "") + "\n";
+          if (skill2 > 0) {
+              msg += this.PassiveIntroduceTwo.replace("{skillLv}", skill2 + "")
+                  .replace("{healVal}", Math.floor(70 * skill2) + "") + "\n";
+          } else {
+              msg += this.PassiveIntroduceTwo.replace("{skillLv}", "未开启")
+                  .replace("{healVal}", Math.floor(70) + "")+ "\n";
+          }
+          if (skill3 > 0) {
+              msg += this.SkillIntroduce.replace("{skillLv}", skill3 + "")
+                  .replace("{healVal}", Math.floor(705 * skill3) + "")
+                  .replace("{healVal2}", Math.floor(63 * skill3) + "")
+                  .replace("{healVal3}", Math.floor(176 * skill3) + "") + "\n";
+          } else {
+              msg += this.SkillIntroduce.replace("{skillLv}", "未开启")
+                  .replace("{healVal}", Math.floor(705) + "")
+                  .replace("{healVal2}", Math.floor(63) + "")
+                  .replace("{healVal3}", Math.floor(176) + "") + "\n";
+          }
+          return msg;
+      }
 
 }

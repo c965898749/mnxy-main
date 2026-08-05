@@ -8,6 +8,7 @@ import { RegisterCharacter } from "../../fight/character/CharacterEnum";
 import { CharacterMetaState } from "../../fight/character/CharacterMetaState";
 import { CharacterState } from "../../fight/character/CharacterState";
 import { BuffState } from "../../fight/buff/BuffState";
+import { CardSkillLevelUtil } from "../../../util/CardSkillLevelUtil";
 
 
 @RegisterCharacter({ id: "1" })
@@ -46,8 +47,8 @@ export class Character extends CharacterMetaState {
 
     PassiveIntroduceOne: string = `
     
-    此路是我开 Lv1
-    场上，每次普通攻击后对当前敌人造成36点火焰伤害
+    此路是我开 Lv{skillLv}
+    场上，每次普通攻击后对当前敌人造成{healVal}点火焰伤害
     `.replace(/ /ig, "")
 
 
@@ -66,6 +67,17 @@ export class Character extends CharacterMetaState {
     skillValue: string = `此路是我开`
 
 
-   
+    public getSkillDesc(state: CharacterState): string {
+        const lv = state.lv; // 当前等级，来自 create 里的lv
+        const star = state.star;
+        // ========== 该角色专属数值公式，每个卡牌可以完全不一样 ==========
+        const [skill1, skill2, skill3, skill4] = CardSkillLevelUtil.calculateSkillLevels(lv, star);
+
+        // 拼接基础文本，替换占位符
+        let msg = "";
+        msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "").replace("{healVal}", Math.floor(36 * skill1) + "") + "\n";
+       
+        return msg;
+    }
 
 }

@@ -115,7 +115,7 @@ export class PveCtrl extends Component {
                         this.page2.getComponent(Sprite).spriteFrame =
                             await util.bundle.load("image/PveCtrl/PvE_" + chapter + "/spriteFrame", SpriteFrame)
                     }
-                    var chapters = ["一", "二", "三", "四", "五", "六"]
+                    var chapters = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十"]
                     this.mapTitle.getComponent(Label).string = "第" + chapters[tribulation - 1] + "章·" + data.jieName
                     this.SpriteSplash.getComponent(Label).string = level + "/10" + "  " + data.guanName
                     this.introduce.getComponent(Label).string = data.introduce
@@ -340,7 +340,7 @@ export class PveCtrl extends Component {
                                             await util.bundle.load('game/texture/frames/hero/Header/' + pveBossDetails.bossId + '/spriteFrame', SpriteFrame)
                                     }
                                     const [chapter, tribulation, level] = pveDetail.id.split('-');
-                                    var chapters = ["一", "二", "三", "四", "五", "六"]
+                                    var chapters = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
                                     this.mapTitle.getComponent(Label).string = "第" + chapters[tribulation - 1] + "章·" + pveDetail.jieName
                                     this.SpriteSplash.getComponent(Label).string = level + "/10" + "  " + pveDetail.guanName
                                     this.introduce.getComponent(Label).string = pveDetail.introduce

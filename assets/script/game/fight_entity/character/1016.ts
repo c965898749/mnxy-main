@@ -8,6 +8,7 @@ import { RegisterCharacter } from "../../fight/character/CharacterEnum";
 import { CharacterMetaState } from "../../fight/character/CharacterMetaState";
 import { CharacterState } from "../../fight/character/CharacterState";
 import { BuffState } from "../../fight/buff/BuffState";
+import { CardSkillLevelUtil } from "../../../util/CardSkillLevelUtil";
 
 
 @RegisterCharacter({ id: "1016" })
@@ -44,20 +45,20 @@ export class Character extends CharacterMetaState {
 
     PassiveIntroduceOne: string = `
     
-    魂力飞弹 Lv1
-    场下，每当新单位入场时，对场上敌人造成178点飞弹伤害
+    魂力飞弹 Lv{skillLv}
+    场下，每当新单位入场时，对场上敌人造成{healVal}点飞弹伤害
     `.replace(/ /ig, "")
 
     PassiveIntroduceTwo: string = `
     
-    禁心咒 Lv1
+    禁心咒 Lv{skillLv}
     场下，每当有单位登场，有50%几率令场上英雄沉默2回合
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `
     
-    多宝道人同 Lv1
-    与多宝道人在同一队伍时，增加自身338点生命上限，88点攻击，260点速度
+    多宝道人同 Lv{skillLv}
+    与多宝道人在同一队伍时，增加自身{healVal}点生命上限，{healVal2}点攻击，{healVal3}点速度
     `.replace(/ /ig, "")
 
 
@@ -65,6 +66,32 @@ export class Character extends CharacterMetaState {
 
     skillValue: string = "魂力飞弹  禁心咒  多宝道人同"
 
-   
+    public getSkillDesc(state: CharacterState): string {
+        const lv = state.lv; // 当前等级，来自 create 里的lv
+        const star = state.star;
+        // ========== 该角色专属数值公式，每个卡牌可以完全不一样 ==========
+        const [skill1, skill2, skill3, skill4] = CardSkillLevelUtil.calculateSkillLevels(lv, star);
+
+        // 拼接基础文本，替换占位符
+        let msg = "";
+        msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "").replace("{healVal}", Math.floor(178 * skill1) + "") + "\n";
+        if (skill2 > 0) {
+            msg += this.PassiveIntroduceTwo.replace("{skillLv}", skill2 + "") + "\n";
+        } else {
+            msg += this.PassiveIntroduceTwo.replace("{skillLv}", "未开启") + "\n";
+        }
+        if (skill3 > 0) {
+            msg += this.SkillIntroduce.replace("{skillLv}", skill3 + "")
+                .replace("{healVal}", Math.floor(338 * skill3) + "")
+                .replace("{healVal2}", Math.floor(88 * skill3) + "")
+                .replace("{healVal3}", Math.floor(260 * skill3) + "") + "\n";
+        } else {
+            msg += this.SkillIntroduce.replace("{skillLv}", "未开启")
+                .replace("{healVal}", Math.floor(338) + "")
+                .replace("{healVal2}", Math.floor(88) + "")
+                .replace("{healVal3}", Math.floor(260) + "") + "\n";
+        }
+        return msg;
+    }
 
 }

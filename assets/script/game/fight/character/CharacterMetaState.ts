@@ -98,7 +98,8 @@ export class CharacterMetaState extends BasicMetaState {
     对一个敌人造成攻击力 130% 的伤害
     `
     PassiveIntroduceThree: any;
-
+    // 新增：抽象方法，由每个角色子类重写，传入角色实例计算动态文本
+    getSkillDesc(state: CharacterState): string;
     // 默认普通攻击
     GetOnAttack(): (self: CharacterState, actionState: ActionState, fightMap: FightMap) => Promise<any> {
         return async (self: CharacterState, actionState: ActionState, fightMap: FightMap) => {

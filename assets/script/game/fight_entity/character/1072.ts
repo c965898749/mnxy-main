@@ -8,6 +8,7 @@ import { RegisterCharacter } from "../../fight/character/CharacterEnum";
 import { CharacterMetaState } from "../../fight/character/CharacterMetaState";
 import { CharacterState } from "../../fight/character/CharacterState";
 import { BuffState } from "../../fight/buff/BuffState";
+import { CardSkillLevelUtil } from "../../../util/CardSkillLevelUtil";
 
 
 @RegisterCharacter({ id: "1072" })
@@ -46,27 +47,53 @@ export class Character extends CharacterMetaState {
 
     PassiveIntroduceOne: string = `
     
-    上古光明 Lv1
+    上古光明 Lv{skillLv}
     光环-敌我双方生命上限不会变化
     `.replace(/ /ig, "")
 
     PassiveIntroduceTwo: string = `
 
 
-    续命 Lv1
-    场下，每回合攻击前转移125点生命给我方场上，只能治疗仙界
+    续命 Lv{skillLv}
+    场下，每回合攻击前转移{healVal}点生命给我方场上，只能治疗仙界
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `
     
-    真武大帝协同 Lv1
-    与真武大帝在同一队伍时，增加自身1063点生命上限，319点攻击
+    真武大帝协同 Lv{skillLv}
+    与真武大帝在同一队伍时，增加自身{healVal}点生命上限，{healVal2}点攻击
     `.replace(/ /ig, "")
 
     introduce: string = "通天教主的大弟子，先天宝物收藏家"
 
     skillValue: string = `上古光明  续命  真武大帝协同`
 
+    public getSkillDesc(state: CharacterState): string {
+        const lv = state.lv; // 当前等级，来自 create 里的lv
+        const star = state.star;
+        // ========== 该角色专属数值公式，每个卡牌可以完全不一样 ==========
+        const [skill1, skill2, skill3, skill4] = CardSkillLevelUtil.calculateSkillLevels(lv, star);
 
+        // 拼接基础文本，替换占位符
+        let msg = "";
+        msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "")+ "\n";
+        if (skill2 > 0) {
+            msg += this.PassiveIntroduceTwo.replace("{skillLv}", skill2 + "")
+                .replace("{healVal}", Math.floor(125 * skill2) + "") + "\n";
+        } else {
+            msg += this.PassiveIntroduceTwo.replace("{skillLv}", "未开启")
+                .replace("{healVal}", Math.floor(125) + "")+ "\n";
+        }
+        if (skill3 > 0) {
+            msg += this.SkillIntroduce.replace("{skillLv}", skill3 + "")
+                .replace("{healVal}", Math.floor(1063 * skill3) + "")
+                .replace("{healVal2}", Math.floor(319 * skill3) + "")+ "\n";
+        } else {
+            msg += this.SkillIntroduce.replace("{skillLv}", "未开启")
+                .replace("{healVal}", Math.floor(1063) + "")
+                .replace("{healVal2}", Math.floor(319) + "") + "\n";
+        }
+        return msg;
+    }
   
 }

@@ -8,6 +8,7 @@ import { RegisterCharacter } from "../../fight/character/CharacterEnum";
 import { CharacterMetaState } from "../../fight/character/CharacterMetaState";
 import { CharacterState } from "../../fight/character/CharacterState";
 import { BuffState } from "../../fight/buff/BuffState";
+import { CardSkillLevelUtil } from "../../../util/CardSkillLevelUtil";
 
 
 @RegisterCharacter({ id: "1069" })
@@ -46,8 +47,8 @@ export class Character extends CharacterMetaState {
 
     PassiveIntroduceOne: string = `
     
-    天兆神火 Lv1
-    登场时 对对方全体造成35点火 焰伤害。 
+    天兆神火 Lv{skillLv}
+    登场时 对对方全体造成{healVal}点火焰伤害。 
     `.replace(/ /ig, "")
 
     PassiveIntroduceTwo: string = `
@@ -56,8 +57,8 @@ export class Character extends CharacterMetaState {
 
     SkillIntroduce: string = `
     
-    赛太岁协同 Lv1
-    与赛太岁在同一队伍时，增加自身200点生命上限，53点攻击，53点速度。
+    赛太岁协同 Lv{skillLv}
+    与赛太岁在同一队伍时，增加自身{healVal}点生命上限，{healVal2}点攻击，{healVal3}点速度。
     `.replace(/ /ig, "")
 
     introduce: string = "天狗有吞食太阳与月亮的能力，直到现在仍在流传。"
@@ -65,118 +66,28 @@ export class Character extends CharacterMetaState {
     skillValue: string = `天兆神火  赛太岁协同`
 
 
-    OnCreateState(self: CharacterState): void {
-        if (self.star >= 2) {
-            self.attack *= 1.2
-            self.pierce *= 1.2
-        }
-        if (self.star >= 4) {
-            self.attack *= 1.15
-        }
-    }
+    public getSkillDesc(state: CharacterState): string {
+        const lv = state.lv; // 当前等级，来自 create 里的lv
+        const star = state.star;
+        // ========== 该角色专属数值公式，每个卡牌可以完全不一样 ==========
+        const [skill1, skill2, skill3, skill4] = CardSkillLevelUtil.calculateSkillLevels(lv, star);
 
-    GetOnAttack(): (self: BasicState<any>, actionState: ActionState, fightMap: FightMap) => Promise<any> {
-        return async (self: CharacterState, actionState: ActionState, fightMap: FightMap) => {
-            let enemies = self.component.getEnimies(fightMap.allLiveCharacter)
-            if (enemies.length <= 0) return
-            enemies = enemies.sort((a, b) => a.coordinate.col - b.coordinate.col)
-            actionState.targets.push(enemies[0].state)
-            // 播放动画
-            if (fightMap.isPlayAnimation) {
-                await util.sundry.moveNodeToPosition(
-                    self.component.node,
-                    {
-                        targetPosition: GetCharacterCoordinatePosition(
-                            actionState.targets[0].component.direction,
-                            "attack"
-                        ),
-                        moveCurve: true,
-                        moveTimeScale: actionState.targets[0].component.holAnimation.timeScale
-                    }
-                )
-                await self.component.holAnimation.playAnimation("attack", 1, self.component.defaultState)
-            }
-            // 结算
-            for (const target of actionState.targets) {
-                // // 添加恐惧
-                // if (self.star >= 4 && Math.random() < 0.2) {
-                //     const fearBuff = new BuffState({ id: "fear" })
-                //     target.component.addBuff(self.component, fearBuff)
-                //     fightMap.listenRoundEvent(2, () => target.component.deleteBuff(fearBuff))
-                // }
-                // 攻击
-                fightMap.actionAwaitQueue.push(
-                    self.component.attack(self.attack * 1, target.component)
-                )
-            }
-            // 播放动画
-            if (fightMap.isPlayAnimation) {
-                await util.sundry.moveNodeToPosition(
-                    self.component.node,
-                    {
-                        targetPosition: GetCharacterCoordinatePosition(
-                            self.component.direction,
-                            "ordinary"
-                        ),
-                        moveCurve: true,
-                        moveTimeScale: self.component.holAnimation.timeScale
-                    }
-                )
-            }
-            return
-        }
-    }
+        // 拼接基础文本，替换占位符
+        let msg = "";
+        msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "").replace("{healVal}", Math.floor(35 * skill1) + "") + "\n";
 
-    GetOnSkill(): (self: BasicState<any>, actionState: ActionState, fightMap: FightMap) => Promise<any> {
-        return async (self: CharacterState, actionState: ActionState, fightMap: FightMap) => {
-            let enemies = self.component.getEnimies(fightMap.allLiveCharacter)
-            if (enemies.length <= 0) return
-            actionState.targets.push(enemies[Math.floor(enemies.length * Math.random())].state)
-            // 播放动画
-            if (fightMap.isPlayAnimation) {
-                await util.sundry.moveNodeToPosition(
-                    self.component.node,
-                    {
-                        targetPosition: GetCharacterCoordinatePosition(
-                            actionState.targets[0].component.direction,
-                            "attack"
-                        ),
-                        moveCurve: false,
-                        moveTimeScale: actionState.targets[0].component.holAnimation.timeScale
-                    }
-                )
-                await self.component.holAnimation.playAnimation("skill", 1, self.component.defaultState)
-            }
-            // 结算
-            for (const target of actionState.targets) {
-                // 添加流血 TODO
-                const bleedBuff = new BuffState({ id: "bleed" }, {
-                    roundReduceBleed: self.attack * 0.5
-                })
-                target.component.addBuff(self.component, bleedBuff)
-                // 两回合后去掉
-                fightMap.listenRoundEvent(2, () => target.component.deleteBuff(bleedBuff))
-                // 攻击
-                fightMap.actionAwaitQueue.push(
-                    self.component.attack(self.attack * 1.5, target.component)
-                )
-            }
-            // 播放动画
-            if (fightMap.isPlayAnimation) {
-                await util.sundry.moveNodeToPosition(
-                    self.component.node,
-                    {
-                        targetPosition: GetCharacterCoordinatePosition(
-                            self.component.direction,
-                            "ordinary"
-                        ),
-                        moveCurve: true,
-                        moveTimeScale: self.component.holAnimation.timeScale
-                    }
-                )
-            }
-            return
+        if (skill3 > 0) {
+            msg += this.SkillIntroduce.replace("{skillLv}", skill3 + "")
+                .replace("{healVal}", Math.floor(200 * skill3) + "")
+                .replace("{healVal2}", Math.floor(53 * skill3) + "")
+                .replace("{healVal3}", Math.floor(53 * skill3) + "") + "\n";
+        } else {
+            msg += this.SkillIntroduce.replace("{skillLv}", "未开启")
+                .replace("{healVal}", Math.floor(200) + "")
+                .replace("{healVal2}", Math.floor(53) + "")
+                .replace("{healVal3}", Math.floor(53) + "") + "\n";
         }
+        return msg;
     }
 
 }

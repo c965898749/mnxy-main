@@ -8,6 +8,7 @@ import { RegisterCharacter } from "../../fight/character/CharacterEnum";
 import { CharacterMetaState } from "../../fight/character/CharacterMetaState";
 import { CharacterState } from "../../fight/character/CharacterState";
 import { BuffState } from "../../fight/buff/BuffState";
+import { CardSkillLevelUtil } from "../../../util/CardSkillLevelUtil";
 
 
 @RegisterCharacter({ id: "1018" })
@@ -45,20 +46,20 @@ export class Character extends CharacterMetaState {
 
     PassiveIntroduceOne: string = `
     
-    绝地反击 Lv1
-    被攻击时，对场上敌方造成相当于敌方攻击的10%的伤害
+    绝地反击 Lv{skillLv}
+    被攻击时，对场上敌方造成相当于敌方攻击的{healVal}%的伤害
     `.replace(/ /ig, "")
 
     PassiveIntroduceTwo: string = `
     
-    不动如山 Lv1
-    在第2位时，增加自身生命上限553点
+    不动如山 Lv{skillLv}
+    在第2位时，增加自身生命上限{healVal}点
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `
     
-    南华真人协同 Lv1
-    与南华真人在同一队伍时，增加自身279点生命上限，181点速度
+    南华真人协同 Lv{skillLv}
+    与南华真人在同一队伍时，增加自身{healVal}点生命上限，{healVal2}点速度
     `.replace(/ /ig, "")
 
 
@@ -66,5 +67,31 @@ export class Character extends CharacterMetaState {
 
     skillValue: string = "绝地反击  不动如山  南华真人协同"
 
-  
+    public getSkillDesc(state: CharacterState): string {
+        const lv = state.lv; // 当前等级，来自 create 里的lv
+        const star = state.star;
+        // ========== 该角色专属数值公式，每个卡牌可以完全不一样 ==========
+        const [skill1, skill2, skill3, skill4] = CardSkillLevelUtil.calculateSkillLevels(lv, star);
+
+        // 拼接基础文本，替换占位符
+        let msg = "";
+        msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "").replace("{healVal}", Math.floor(10 * skill1) + "") + "\n";
+        if (skill2 > 0) {
+            msg += this.PassiveIntroduceTwo.replace("{skillLv}", skill2 + "")
+                .replace("{healVal}", Math.floor(553 * skill2) + "") + "\n";
+        } else {
+            msg += this.PassiveIntroduceTwo.replace("{skillLv}", "未开启")
+                .replace("{healVal}", Math.floor(553) + "")+"\n";
+        }
+        if (skill3 > 0) {
+            msg += this.SkillIntroduce.replace("{skillLv}", skill3 + "")
+                .replace("{healVal}", Math.floor(279 * skill3) + "")
+                .replace("{healVal2}", Math.floor(181 * skill3) + "")+ "\n";
+        } else {
+            msg += this.SkillIntroduce.replace("{skillLv}", "未开启")
+                .replace("{healVal}", Math.floor(279) + "")
+                .replace("{healVal2}", Math.floor(181) + "")+"\n";
+        }
+        return msg;
+    }
 }

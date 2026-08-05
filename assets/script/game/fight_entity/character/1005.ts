@@ -8,6 +8,7 @@ import { RegisterCharacter } from "../../fight/character/CharacterEnum";
 import { CharacterMetaState } from "../../fight/character/CharacterMetaState";
 import { CharacterState } from "../../fight/character/CharacterState";
 import { BuffState } from "../../fight/buff/BuffState";
+import { CardSkillLevelUtil } from "../../../util/CardSkillLevelUtil";
 
 
 @RegisterCharacter({ id: "1005" })
@@ -44,20 +45,20 @@ export class Character extends CharacterMetaState {
 
     PassiveIntroduceOne: string = `
     
-    妖狐蔽天 Lv1
+    妖狐蔽天 Lv{skillLv}
     场下，每回合开始有35%几率使当前敌人眩晕，持续1回合
     `.replace(/ /ig, "")
 
     PassiveIntroduceTwo: string = `
     
-    谄媚噬魂 Lv1
-    场下，每回合令随机一名敌方中毒，每回合损失7点生命
+    谄媚噬魂 Lv{skillLv}
+    场下，每回合令随机一名敌方中毒，每回合损失{healVal}点生命
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `
     
-    众妖皆狂 Lv1
-    与白素贞在同一队伍时，增加自身453点生命上限，158点攻击，158点速度
+    众妖皆狂 Lv{skillLv}
+    与白素贞在同一队伍时，增加自身{healVal}点生命上限，{healVal2}点攻击，{healVal3}点速度
     `.replace(/ /ig, "")
 
 
@@ -65,4 +66,31 @@ export class Character extends CharacterMetaState {
 
     skillValue: string = "妖狐蔽天  谄媚噬魂  众妖皆狂"
 
+    public getSkillDesc(state: CharacterState): string {
+        const lv = state.lv; // 当前等级，来自 create 里的lv
+        const star = state.star;
+        // ========== 该角色专属数值公式，每个卡牌可以完全不一样 ==========
+        const [skill1, skill2, skill3, skill4] = CardSkillLevelUtil.calculateSkillLevels(lv, star);
+
+        // 拼接基础文本，替换占位符
+        let msg = "";
+        msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "") + "\n";
+        if (skill2 > 0) {
+            msg += this.PassiveIntroduceTwo.replace("{skillLv}", skill2 + "").replace("{healVal}", Math.floor(7 * skill2) + "") + "\n";
+        }else {
+             msg += this.PassiveIntroduceTwo.replace("{skillLv}",  "未开启").replace("{healVal}", Math.floor(7) + "") + "\n";
+        }
+        if (skill3 > 0) {
+            msg += this.SkillIntroduce.replace("{skillLv}", skill3 + "")
+            .replace("{healVal}", Math.floor(453 * skill3) + "")
+            .replace("{healVal2}", Math.floor(158 * skill3) + "")
+            .replace("{healVal3}", Math.floor(158 * skill3) + "") + "\n";
+        }else {
+             msg += this.SkillIntroduce.replace("{skillLv}",  "未开启")
+            .replace("{healVal}", Math.floor(453) + "")
+            .replace("{healVal2}", Math.floor(158) + "")
+            .replace("{healVal3}", Math.floor(158) + "") + "\n";
+        }
+        return msg;
+    }
 }

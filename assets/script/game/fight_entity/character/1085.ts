@@ -8,64 +8,87 @@ import { RegisterCharacter } from "../../fight/character/CharacterEnum";
 import { CharacterMetaState } from "../../fight/character/CharacterMetaState";
 import { CharacterState } from "../../fight/character/CharacterState";
 import { BuffState } from "../../fight/buff/BuffState";
+import { CardSkillLevelUtil } from "../../../util/CardSkillLevelUtil";
 
 
 @RegisterCharacter({ id: "1085" })
 export class Character extends CharacterMetaState {
 
-    name: string = "银角大王"
+  name: string = "银角大王"
 
-    AnimationDir: string = "game/fight_entity/character/1085"
+  AnimationDir: string = "game/fight_entity/character/1085"
 
 
-    AvatarPath: string = "game/texture/frames/hero/1085/spriteFrame"
+  AvatarPath: string = "game/texture/frames/hero/1085/spriteFrame"
 
-    HeaderPath: string = "game/texture/frames/hero/Header/1085/spriteFrame"
+  HeaderPath: string = "game/texture/frames/hero/Header/1085/spriteFrame"
 
-    AnimationType: "DrangonBones" | "Spine" = "Spine"
+  AnimationType: "DrangonBones" | "Spine" = "Spine"
 
   AnimationScale: number = 1
 
-    HpGrowth: number = 45
+  HpGrowth: number = 45
 
-    AttackGrowth: number = 30
+  AttackGrowth: number = 30
 
-    DefenceGrowth: number = 15
+  DefenceGrowth: number = 15
 
-    PierceGrowth: number = 15
+  PierceGrowth: number = 15
 
-    SpeedGrowth: number = 17
+  SpeedGrowth: number = 17
 
-    Energy: number = 90
+  Energy: number = 90
 
-    CharacterCamp: "ordinary" | "nature" | "abyss" | "dark" | "machine" | "sacred" = "dark"
+  CharacterCamp: "ordinary" | "nature" | "abyss" | "dark" | "machine" | "sacred" = "dark"
 
-   position = 2
+  position = 2
 
-    CharacterQuality: number = 4
+  CharacterQuality: number = 4
 
-    PassiveIntroduceOne: string = `
+  PassiveIntroduceOne: string = `
     
-    紫金葫芦 Lv1
-    攻击后对 全体敌方造成22点火焰伤害。 
+    紫金葫芦 Lv{skillLv}
+    攻击后对 全体敌方造成{healVal}点火焰伤害。 
     `.replace(/ /ig, "")
 
-    
-    PassiveIntroduceTwo: string = `
+
+  PassiveIntroduceTwo: string = `
 
 
     `.replace(/ /ig, "")
 
-    SkillIntroduce: string = `
+  SkillIntroduce: string = `
     
-    金角大王协同 Lv1
-    与金角大王在同一队伍时，增加自身200点生命上限，50点攻击， 50点速度。
+    金角大王协同 Lv{skillLv}
+    与金角大王在同一队伍时，增加自身{healVal}点生命上限，{healVal2}点攻击， {healVal3}点速度。
     `.replace(/ /ig, "")
 
-    introduce: string = "太上老君座下看守炼丹炉的童子，手持紫金葫芦。"
+  introduce: string = "太上老君座下看守炼丹炉的童子，手持紫金葫芦。"
 
-    skillValue: string = `紫金葫芦   金角大王协同`
+  skillValue: string = `紫金葫芦   金角大王协同`
 
 
-    
+  public getSkillDesc(state: CharacterState): string {
+    const lv = state.lv; // 当前等级，来自 create 里的lv
+    const star = state.star;
+    // ========== 该角色专属数值公式，每个卡牌可以完全不一样 ==========
+    const [skill1, skill2, skill3, skill4] = CardSkillLevelUtil.calculateSkillLevels(lv, star);
+
+    // 拼接基础文本，替换占位符
+    let msg = "";
+    msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "").replace("{healVal}", Math.floor(22 * skill1) + "") + "\n";
+   
+    if (skill3 > 0) {
+      msg += this.SkillIntroduce.replace("{skillLv}", skill3 + "")
+        .replace("{healVal}", Math.floor(200 * skill3) + "")
+        .replace("{healVal2}", Math.floor(50 * skill3) + "")
+        .replace("{healVal3}", Math.floor(50 * skill3) + "") + "\n";
+    } else {
+      msg += this.SkillIntroduce.replace("{skillLv}", "未开启")
+        .replace("{healVal}", Math.floor(200) + "")
+        .replace("{healVal2}", Math.floor(50) + "")
+        .replace("{healVal3}", Math.floor(50) + "") + "\n";
+    }
+    return msg;
+  }
 }

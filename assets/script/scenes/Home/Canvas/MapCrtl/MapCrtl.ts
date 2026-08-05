@@ -15,9 +15,9 @@ export class MapCrtl extends Component {
     Map: Node
     index: number = 0
     initialized = false;
-    tiles = ["踏上旅途", "冲向妖界", "龙宫探宝", "地府改命", "大闹天宫","西天取经","修成正果","血色禁地","极西之地"]
+    tiles = ["踏上旅途", "冲向妖界", "龙宫探宝", "地府改命", "大闹天宫","西天取经","修成正果","血色禁地","极西之地","不周山下"]
     start() {
-        this.Title.getComponent(Label).string = "踏上旅途 1/9"
+        this.Title.getComponent(Label).string = "踏上旅途 1/10"
         this.refresh()
     }
     onEnable() {
@@ -39,11 +39,11 @@ export class MapCrtl extends Component {
         // 验证关卡格式是否正确
         if (
             isNaN(currentChapter) || isNaN(currentCalamity) || isNaN(currentStage) ||
-            currentChapter < 1 || currentChapter > 9 ||
+            currentChapter < 1 || currentChapter > 10 ||
             currentCalamity < 1 || currentCalamity > 6 ||
             currentStage < 1 || currentStage > 10
         ) {
-            throw new Error('关卡格式不正确，请使用"章-劫-关"格式，如"1-1-1"，且范围为9章6劫10关');
+            throw new Error('关卡格式不正确，请使用"章-劫-关"格式，如"1-1-1"，且范围为10章6劫10关');
         }
 
         // 遍历所有前面的章
@@ -87,10 +87,10 @@ export class MapCrtl extends Component {
             .to(0.5, { position: v3(-640, 0) })
             .start();
         this.index++
-        if (this.index >= 9) {
+        if (this.index >= 10) {
             this.index = 0
         }
-        this.Title.getComponent(Label).string = this.tiles[this.index] + (this.index + 1) + "/9"
+        this.Title.getComponent(Label).string = this.tiles[this.index] + (this.index + 1) + "/10"
         this.Map.children[this.index].setPosition(640, 0, 0)
         tween(this.Map.children[this.index])
             .to(0.5, { position: v3(0, 0) })
@@ -103,9 +103,9 @@ export class MapCrtl extends Component {
             .start();
         this.index--
         if (this.index < 0) {
-            this.index = 8
+            this.index = 9
         }
-        this.Title.getComponent(Label).string = this.tiles[this.index] + (this.index + 1) + "/9"
+        this.Title.getComponent(Label).string = this.tiles[this.index] + (this.index + 1) + "/10"
         this.Map.children[this.index].setPosition(-640, 0, 0)
         tween(this.Map.children[this.index])
             .to(0.5, { position: v3(0, 0) })

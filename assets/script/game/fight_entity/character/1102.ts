@@ -8,6 +8,7 @@ import { RegisterCharacter } from "../../fight/character/CharacterEnum";
 import { CharacterMetaState } from "../../fight/character/CharacterMetaState";
 import { CharacterState } from "../../fight/character/CharacterState";
 import { BuffState } from "../../fight/buff/BuffState";
+import { CardSkillLevelUtil } from "../../../util/CardSkillLevelUtil";
 
 
 @RegisterCharacter({ id: "1102" })
@@ -46,15 +47,15 @@ export class Character extends CharacterMetaState {
 
     PassiveIntroduceOne: string = `
     
-    续命 Lv1
-    每回合转移40生命给场上我方，只能治疗仙界
+    续命 Lv{skillLv}
+    每回合转移{healVal}生命给场上我方，只能治疗仙界
     `.replace(/ /ig, "")
 
 
     PassiveIntroduceTwo: string = `
 
-    金甲神 协同 lv1
-    与金甲神在同一队伍时，增加自身108生命上限，105攻击，47速度
+    金甲神 协同 lv{skillLv}
+    与金甲神在同一队伍时，增加自身{healVal}生命上限，{healVal2}攻击，{healVal3}速度
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `
@@ -65,5 +66,27 @@ export class Character extends CharacterMetaState {
 
     skillValue: string = `红水阵法 斩妖剑 法宝反噬`
 
+    public getSkillDesc(state: CharacterState): string {
+        const lv = state.lv; // 当前等级，来自 create 里的lv
+        const star = state.star;
+        // ========== 该角色专属数值公式，每个卡牌可以完全不一样 ==========
+        const [skill1, skill2, skill3, skill4] = CardSkillLevelUtil.calculateSkillLevels(lv, star);
 
+        // 拼接基础文本，替换占位符
+        let msg = "";
+        msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "").replace("{healVal}", Math.floor(40 * skill1) + "") + "\n";
+
+        if (skill3 > 0) {
+            msg += this.SkillIntroduce.replace("{skillLv}", skill3 + "")
+                .replace("{healVal}", Math.floor(108* skill3) + "")
+                .replace("{healVal2}", Math.floor(105 * skill3) + "")
+                .replace("{healVal3}", Math.floor(47 * skill3) + "") + "\n";
+        } else {
+            msg += this.SkillIntroduce.replace("{skillLv}", "未开启")
+                .replace("{healVal}", Math.floor(108) + "")
+                .replace("{healVal2}", Math.floor(105) + "")
+                .replace("{healVal3}", Math.floor(47) + "") + "\n";
+        }
+        return msg;
+    }
 }

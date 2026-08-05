@@ -8,65 +8,94 @@ import { RegisterCharacter } from "../../fight/character/CharacterEnum";
 import { CharacterMetaState } from "../../fight/character/CharacterMetaState";
 import { CharacterState } from "../../fight/character/CharacterState";
 import { BuffState } from "../../fight/buff/BuffState";
+import { CardSkillLevelUtil } from "../../../util/CardSkillLevelUtil";
 
 
 @RegisterCharacter({ id: "1048" })
 export class Character extends CharacterMetaState {
 
-    name: string = "西岳大帝"
+  name: string = "西岳大帝"
 
-    AnimationDir: string = "game/fight_entity/character/1048"
+  AnimationDir: string = "game/fight_entity/character/1048"
 
 
-    AvatarPath: string = "game/texture/frames/hero/1048/spriteFrame"
+  AvatarPath: string = "game/texture/frames/hero/1048/spriteFrame"
 
-    HeaderPath: string = "game/texture/frames/hero/Header/1048/spriteFrame"
+  HeaderPath: string = "game/texture/frames/hero/Header/1048/spriteFrame"
 
-    AnimationType: "DrangonBones" | "Spine" = "Spine"
+  AnimationType: "DrangonBones" | "Spine" = "Spine"
 
   AnimationScale: number = 1
 
-    HpGrowth: number = 45
+  HpGrowth: number = 45
 
-    AttackGrowth: number = 30
+  AttackGrowth: number = 30
 
-    DefenceGrowth: number = 15
+  DefenceGrowth: number = 15
 
-    PierceGrowth: number = 15
+  PierceGrowth: number = 15
 
-    SpeedGrowth: number = 17
+  SpeedGrowth: number = 17
 
-    Energy: number = 90
+  Energy: number = 90
 
-    CharacterCamp: "ordinary" | "nature" | "abyss" | "dark" | "machine" | "sacred" = "sacred"
+  CharacterCamp: "ordinary" | "nature" | "abyss" | "dark" | "machine" | "sacred" = "sacred"
 
-   position = 2
+  position = 2
 
-    CharacterQuality: number = 4
+  CharacterQuality: number = 4
 
-    PassiveIntroduceOne: string = `
+  PassiveIntroduceOne: string = `
     
-    灵力飞弹 Lv1
-    每当新单位入场时，对场上敌方造成84点飞弹伤害
+    灵力飞弹 Lv{skillLv}
+    每当新单位入场时，对场上敌方造成{healVal}点飞弹伤害
     `.replace(/ /ig, "")
 
-    PassiveIntroduceTwo: string = `
+  PassiveIntroduceTwo: string = `
 
-    策兵奇袭 Lv1
-    场下，每回合增加自身16点飞弹伤害，最多叠加5层
+    策兵奇袭 Lv{skillLv}
+    场下，每回合增加自身{healVal}点飞弹伤害，最多叠加5层
     `.replace(/ /ig, "")
 
-    SkillIntroduce: string = `
+  SkillIntroduce: string = `
     
-    大帝协同 Lv1
-    与北岳大帝在同一队伍时，增加自身604点生命上限上限，159点攻击，211点速度
+    大帝协同 Lv{skillLv}
+    与北岳大帝在同一队伍时，增加自身{healVal}点生命上限上限，{healVal2}点攻击，{healVal3}点速度
     `.replace(/ /ig, "")
 
-    introduce: string = "西岳大帝是五岳大帝之一，主管西岳华山。"
+  introduce: string = "西岳大帝是五岳大帝之一，主管西岳华山。"
 
-    skillValue: string = `灵力飞弹  策兵奇袭  大帝协同`
+  skillValue: string = `灵力飞弹  策兵奇袭  大帝协同`
 
 
-   
+  public getSkillDesc(state: CharacterState): string {
+    const lv = state.lv; // 当前等级，来自 create 里的lv
+    const star = state.star;
+    // ========== 该角色专属数值公式，每个卡牌可以完全不一样 ==========
+    const [skill1, skill2, skill3, skill4] = CardSkillLevelUtil.calculateSkillLevels(lv, star);
+
+    // 拼接基础文本，替换占位符
+    let msg = "";
+    msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "").replace("{healVal}", Math.floor(84 * skill1) + "") + "\n";
+    if (skill2 > 0) {
+      msg += this.PassiveIntroduceTwo.replace("{skillLv}", skill2 + "")
+        .replace("{healVal}", Math.floor(16 * skill2) + "") + "\n";
+    } else {
+      msg += this.PassiveIntroduceTwo.replace("{skillLv}", "未开启")
+        .replace("{healVal}", Math.floor(16) + "") + "\n";
+    }
+    if (skill3 > 0) {
+      msg += this.SkillIntroduce.replace("{skillLv}", skill3 + "")
+        .replace("{healVal}", Math.floor(604 * skill3) + "")
+        .replace("{healVal2}", Math.floor(159 * skill3) + "")
+        .replace("{healVal3}", Math.floor(211 * skill3) + "") + "\n";
+    } else {
+      msg += this.SkillIntroduce.replace("{skillLv}", "未开启")
+        .replace("{healVal}", Math.floor(604) + "")
+        .replace("{healVal2}", Math.floor(159) + "")
+        .replace("{healVal3}", Math.floor(211) + "") + "\n";
+    }
+    return msg;
+  }
 
 }

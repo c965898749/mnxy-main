@@ -116,8 +116,8 @@ export class CharacterState extends BasicState<CharacterMetaState> {
         this.onStage = create.onStage
 
         this.maxEnergy = meta.Energy
-        this.maxHp = create.maxHp 
-        this.attack = create.attack 
+        this.maxHp = create.maxHp
+        this.attack = create.attack
         this.defence = create.defence
         this.speed = create.speed
         this.pierce = create.pierce

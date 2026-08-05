@@ -8,6 +8,7 @@ import { RegisterCharacter } from "../../fight/character/CharacterEnum";
 import { CharacterMetaState } from "../../fight/character/CharacterMetaState";
 import { CharacterState } from "../../fight/character/CharacterState";
 import { BuffState } from "../../fight/buff/BuffState";
+import { CardSkillLevelUtil } from "../../../util/CardSkillLevelUtil";
 
 
 @RegisterCharacter({ id: "1063" })
@@ -46,14 +47,14 @@ export class Character extends CharacterMetaState {
 
     PassiveIntroduceOne: string = `
     
-    百毒感染 Lv1
-    登场时令敌方全体中毒，每回合损失20
+    百毒感染 Lv{skillLv}
+    登场时令敌方全体中毒，每回合损失{healVal}点生命
     `.replace(/ /ig, "")
 
     PassiveIntroduceTwo: string = `
     
-    白晶晶协同 Lv1
-    与白晶晶在同一队伍时，增加自身350点生命上限，88点攻击，88点速度。
+    白晶晶协同 Lv{skillLv}
+    与白晶晶在同一队伍时，增加自身{healVal}点生命上限，{healVal2}点攻击，{healVal3}点速度。
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `
@@ -65,15 +66,28 @@ export class Character extends CharacterMetaState {
     skillValue: string = `百毒感染  白晶晶协同`
 
 
-    OnCreateState(self: CharacterState): void {
-        if (self.star >= 2) {
-            self.attack *= 1.2
-            self.pierce *= 1.2
-        }
-        if (self.star >= 4) {
-            self.attack *= 1.15
-        }
-    }
+    public getSkillDesc(state: CharacterState): string {
+        const lv = state.lv; // 当前等级，来自 create 里的lv
+        const star = state.star;
+        // ========== 该角色专属数值公式，每个卡牌可以完全不一样 ==========
+        const [skill1, skill2, skill3, skill4] = CardSkillLevelUtil.calculateSkillLevels(lv, star);
 
+        // 拼接基础文本，替换占位符
+        let msg = "";
+        msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "").replace("{healVal}", Math.floor(20 * skill1) + "") + "\n";
+
+        if (skill3 > 0) {
+            msg += this.PassiveIntroduceTwo.replace("{skillLv}", skill3 + "")
+                .replace("{healVal}", Math.floor(350 * skill3) + "")
+                .replace("{healVal2}", Math.floor(88 * skill3) + "")
+                .replace("{healVal3}", Math.floor(221 * skill3) + "") + "\n";
+        } else {
+            msg += this.PassiveIntroduceTwo.replace("{skillLv}", "未开启")
+                .replace("{healVal}", Math.floor(350) + "")
+                .replace("{healVal2}", Math.floor(88) + "")
+                .replace("{healVal3}", Math.floor(221) + "") + "\n";
+        }
+        return msg;
+    }
   
 }
