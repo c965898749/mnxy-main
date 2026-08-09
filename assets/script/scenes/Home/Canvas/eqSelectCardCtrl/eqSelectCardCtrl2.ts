@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Node, Prefab, Sprite, SpriteFrame, Toggle } from 'cc';
+import { _decorator, Color, Component, Label, Node, Prefab, Sprite, SpriteFrame, Toggle } from 'cc';
 import { eqQianghuaCtrl } from '../eqQianghuaCtrl/eqQianghuaCtrl';
 import { EquipmentStateCreate } from 'db://assets/script/game/fight/equipment/EquipmentState';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
@@ -20,7 +20,40 @@ export class eqSelectCardCtrl2 extends Component {
     update(deltaTime: number) {
 
     }
-
+    skillDict: Record<number, string> = {
+        1: "诛仙", 2: "食人", 3: "驱魔", 4: "斗兽",
+        5: "仙师", 6: "人杰", 7: "魔王", 8: "兽灵",
+        9: "返火", 10: "辟土", 11: "逆雷", 12: "分水",
+        13: "驭兵", 14: "破妄",
+        15: "踏浪", 16: "破岩", 17: "驱雷", 18: "蹈火",
+        19: "不侵", 20: "灭法",
+        21: "突袭", 22: "闪避"
+    };
+    rankDict: Record<number, string> = {
+        0: "",
+        1: "法",
+        2: "灵",
+        3: "宝",
+        4: "古",
+        5: "造",
+        6: "珍",
+        7: "通",
+        8: "玄",
+        9: "仙"
+    };
+    // 品级对应色值，品级越高越鲜艳
+    rankColorDict: Record<number, string> = {
+        0: "#888888", // 凡器 灰
+        1: "#7399FF", // 法器 浅蓝
+        2: "#33CCFF", // 灵器 天蓝
+        3: "#66FFCC", // 法宝 青碧
+        4: "#33FF88", // 古宝 翠绿
+        5: "#FFFF33", // 造物 亮金
+        6: "#FFCC00", // 灵宝 橙金
+        7: "#FF6633", // 通天 橙红
+        8: "#FF3366", // 玄天 玫红
+        9: "#FF00FF"  // 仙器 亮紫最高阶
+    };
     public backQianhua() {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.active = false
@@ -104,17 +137,11 @@ export class eqSelectCardCtrl2 extends Component {
             }
             item.getChildByName("name").getComponent(Label).string = create[i].name + "  Lv" + create[i].lv + "/" + create[i].maxLv
             // 仙、佛、圣、魔、妖、兽
-            const cmp = new Map([
-                ['sacred', '仙界'],
-                ['nature', '佛界'],
-                ['machine', '圣界'],
-                ['abyss', '魔界'],
-                ['dark', '妖界'],
-                ['ordinary', '兽界'],
-            ]);
-
-            const position = ["仙灵", "神将", "武圣"]
-            item.getChildByName("Camp").getComponent(Label).string = cmp.get(create[i].camp) + "." + create[i].profession
+            const xilianStr = create[i].xilian != null ? this.skillDict[create[i].xilian] : "";
+            item.getChildByName("Camp").getComponent(Label).string = create[i].profession + " " + xilianStr
+            item.getChildByName("yxjm_df_txk").getChildByName("flyup").active = true
+            item.getChildByName("yxjm_df_txk").getChildByName("flyup").getComponent(Label).color = new Color(this.rankColorDict[create[i].flyup]);
+            item.getChildByName("yxjm_df_txk").getChildByName("flyup").getComponent(Label).string = this.rankDict[create[i].flyup] || ""
             // // 绑定事件
             // this.Item.children[goIntoNum - 1].on("click", () => { this.clickFun(create[i]) })
             item.getChildByName("id").getComponent(Label).string = create[i].uuid + "";

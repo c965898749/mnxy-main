@@ -16,8 +16,7 @@ export class HolEqCharacterAvatar extends Component {
     @property(Node)
     BorderNode: Node
 
-    @property(Node)
-    CampNode: Node
+
 
     @property(Node)
     LvNode: Node
@@ -40,7 +39,14 @@ export class HolEqCharacterAvatar extends Component {
 
     @property(Node)
     Bottom: Node
-
+    @property(Node)
+    eqType: Node
+    iconMap: Record<number, string> = {
+        0: '兵',
+        1: '防',
+        2: '宝',
+        3: '法'
+    };
     async setCharacter(create: EquipmentStateCreate) {
         console.log(create, '--- IGNORE ---')
         const meta = EquipmentEnum[create.id]
@@ -51,11 +57,12 @@ export class HolEqCharacterAvatar extends Component {
         } else {
             this.LegendBorderNode.active = true
         }
-        if (create.star >=3) {
+        this.eqType.getComponent(Label).string = this.iconMap[create.eqType]
+        if (create.star >= 3) {
             this.Pingzhi.getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`image/ui/pingzhi_0${create.star}/spriteFrame`, SpriteFrame)
         } else {
-            this.Pingzhi.getComponent(Sprite).spriteFrame =null
+            this.Pingzhi.getComponent(Sprite).spriteFrame = null
         }
         if (create.goIntoNum != 0) {
             this.isBattle.active = true
@@ -68,25 +75,23 @@ export class HolEqCharacterAvatar extends Component {
             } else {
                 this.StackCount.getComponent(Label).string = "+" + create.stackCount
             }
-        }else{
-             this.StackCount.getComponent(Label).string =null
+        } else {
+            this.StackCount.getComponent(Label).string = null
         }
         if (create.star < 4) {
             this.Quality.getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`image/ui/card1/spriteFrame`, SpriteFrame)
             this.Bottom.getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`image/ui/quality_01/spriteFrame`, SpriteFrame)
-        } else if(create.star >=4) {
+        } else if (create.star >= 4) {
             this.Quality.getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`image/ui/card2/spriteFrame`, SpriteFrame)
             this.Bottom.getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`image/ui/quality_05/spriteFrame`, SpriteFrame)
-        }else{
-             this.Quality.getComponent(Sprite).spriteFrame =null
-            this.Bottom.getComponent(Sprite).spriteFrame =null
+        } else {
+            this.Quality.getComponent(Sprite).spriteFrame = null
+            this.Bottom.getComponent(Sprite).spriteFrame = null
         }
-        this.CampNode.getComponent(Sprite).spriteFrame =
-            await util.bundle.load(`image/camp_icon/${create.camp}/spriteFrame`, SpriteFrame)
         this.LvNode.getComponent(Label).string = 'Lv: ' + create.lv
         this.Name.getComponent(Label).string = create.name
         // 渲染星级

@@ -123,6 +123,10 @@ export class MapCrtl extends Component {
             .getComponent(PveCtrl)
             .render(mapId)
     }
+    openXiLianMap() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("ElemRefineDgnCtrl").active = true
+    }
     async openta(event: Event, customEventData: string) {
         AudioMgr.inst.playOneShot("sound/other/click");
         const config = getConfig()

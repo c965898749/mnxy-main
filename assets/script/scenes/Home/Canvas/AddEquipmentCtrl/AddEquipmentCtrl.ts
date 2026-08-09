@@ -54,8 +54,7 @@ export class AddEquipmentCtrl extends Component {
     @property(Node)
     BorderNode: Node
 
-    @property(Node)
-    CampNode: Node
+
 
     @property(Node)
     LvNode: Node
@@ -84,7 +83,8 @@ export class AddEquipmentCtrl extends Component {
 
     @property(Node)
     Light: Node
-
+    @property(Node)
+    eqType: Node
     @property(Node)
     daNum: Node
     @property(Node)
@@ -171,7 +171,12 @@ export class AddEquipmentCtrl extends Component {
         this.onceCard.active = false;
     }
 
-
+    iconMap: Record<number, string> = {
+        0: '兵',
+        1: '防',
+        2: '宝',
+        3: '法'
+    };
 
     async shuaEq() {
         return await util.message.prompt({ message: "主人，店铺还没有开张哦~" })
@@ -220,7 +225,7 @@ export class AddEquipmentCtrl extends Component {
                     } else {
                         this.Light.active = false
                     }
-
+                    this.eqType.getComponent(Label).string = this.iconMap[heroInfo.eqType]
                     if (heroInfo.star < 4) {
                         this.Faguang.active = false;
                         this.Quality.getComponent(Sprite).spriteFrame =
@@ -235,8 +240,6 @@ export class AddEquipmentCtrl extends Component {
                             await util.bundle.load(`image/ui/quality_05/spriteFrame`, SpriteFrame)
 
                     }
-                    this.CampNode.getComponent(Sprite).spriteFrame =
-                        await util.bundle.load(`image/camp_icon/${heroInfo.camp}/spriteFrame`, SpriteFrame)
                     // this.LvNode.getComponent(Label).string = 'Lv: ' + heroInfo.lv
                     this.Name.getComponent(Label).string = heroInfo.name
                     // 渲染星级
@@ -459,6 +462,8 @@ export class AddEquipmentCtrl extends Component {
                         for (let j = 0; j < group.length; j++) {
                             const itemC = group[j];
                             let aa = item.getChildByName("arms").children[j];
+                            aa.getChildByName("eqType").active = true;
+                            aa.getChildByName("eqType").getComponent(Label).string = this.iconMap[itemC.eqType]
                             aa.getChildByName("sell").getChildByName("Background").getComponent(Sprite).spriteFrame =
                                 await util.bundle.load(`image/store/store_10/spriteFrame`, SpriteFrame)
                             if (itemC.goldEdgePrice != 0) {
@@ -477,9 +482,6 @@ export class AddEquipmentCtrl extends Component {
                                     await util.bundle.load(`image/ui/icon_69/spriteFrame`, SpriteFrame)
                             }
                             // icon_61
-                            aa.getChildByName("Camp").active = true
-                            aa.getChildByName("Camp").getComponent(Sprite).spriteFrame =
-                                await util.bundle.load(`image/camp_icon/${itemC.camp}/spriteFrame`, SpriteFrame)
                             if (itemC.star < 2) {
                                 let good = aa.getChildByName("good")
                                 good.active = false
@@ -583,6 +585,8 @@ export class AddEquipmentCtrl extends Component {
                         for (let j = 0; j < group.length; j++) {
                             const itemC = group[j];
                             let aa = item.getChildByName("arms").children[j];
+                            aa.getChildByName("eqType").active = true;
+                            aa.getChildByName("eqType").getComponent(Label).string = this.iconMap[itemC.eqType]
                             aa.getChildByName("sell").getChildByName("Background").getComponent(Sprite).spriteFrame =
                                 await util.bundle.load(`image/store/store_10/spriteFrame`, SpriteFrame)
                             if (itemC.goldEdgePrice != 0) {
@@ -601,9 +605,6 @@ export class AddEquipmentCtrl extends Component {
                                     await util.bundle.load(`image/ui/icon_69/spriteFrame`, SpriteFrame)
                             }
                             // icon_61
-                            aa.getChildByName("Camp").active = true
-                            aa.getChildByName("Camp").getComponent(Sprite).spriteFrame =
-                                await util.bundle.load(`image/camp_icon/${itemC.camp}/spriteFrame`, SpriteFrame)
                             if (itemC.star < 2) {
                                 let good = aa.getChildByName("good")
                                 good.active = false

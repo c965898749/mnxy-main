@@ -482,7 +482,7 @@
     "_contentSize": {
       "__type__": "cc.Size",
       "width": 550,
-      "height": 540
+      "height": 547.8000000000001
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -520,15 +520,15 @@
     "_string": "攻击力: 999999\n攻击力: 999999\n攻击力: 999999\n攻击力: 999999\n攻击力: 999999\n攻击力: 999999\n攻击力: 999999\n攻击力: 999999\n攻击力: 999999\n攻击力: 999999\n攻击力: 999999\n攻击力: 999999\n攻击力: 999999\n攻击力: 999999\n攻击力: 999999\n攻击力: 999999\n攻击力: 999999\n攻击力: 999999",
     "_horizontalAlign": 0,
     "_verticalAlign": 1,
-    "_actualFontSize": 30,
-    "_fontSize": 30,
+    "_actualFontSize": 25,
+    "_fontSize": 25,
     "_fontFamily": "Arial",
     "_lineHeight": 30,
     "_overflow": 3,
     "_enableWrapText": true,
     "_font": {
-      "__uuid__": "ffced869-cbef-4cb1-adcc-cadb6205f454",
-      "__expectedType__": "cc.BitmapFont"
+      "__uuid__": "21826bb1-11a2-4c7a-82b0-9bb897c8a3c5",
+      "__expectedType__": "cc.TTFFont"
     },
     "_isSystemFontUsed": false,
     "_spacingX": 0,

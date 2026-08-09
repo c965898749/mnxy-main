@@ -1339,10 +1339,10 @@
       "b": 97,
       "a": 255
     },
-    "_string": "妖界         神将",
-    "_horizontalAlign": 1,
+    "_string": "神将",
+    "_horizontalAlign": 0,
     "_verticalAlign": 1,
-    "_actualFontSize": 30,
+    "_actualFontSize": 31,
     "_fontSize": 30,
     "_fontFamily": "Arial",
     "_lineHeight": 40,
@@ -1519,7 +1519,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 30,
+      "width": 420,
       "height": 50.4
     },
     "_anchorPoint": {
@@ -1556,13 +1556,13 @@
       "a": 255
     },
     "_string": "无",
-    "_horizontalAlign": 1,
+    "_horizontalAlign": 0,
     "_verticalAlign": 1,
-    "_actualFontSize": 30,
+    "_actualFontSize": 31,
     "_fontSize": 30,
     "_fontFamily": "Arial",
     "_lineHeight": 40,
-    "_overflow": 0,
+    "_overflow": 2,
     "_enableWrapText": true,
     "_font": null,
     "_isSystemFontUsed": true,

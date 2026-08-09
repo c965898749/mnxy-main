@@ -8,7 +8,7 @@ const { ccclass, property } = _decorator;
 
 @ccclass('ElemRefineDgnCtrl')
 export class ElemRefineDgnCtrl extends Component {
-  @property({ type: Node, tooltip: "任务列表" }) ContentNode: Node = null;
+    @property({ type: Node, tooltip: "任务列表" }) ContentNode: Node = null;
     initialized = false;
 
     start() {
@@ -70,7 +70,7 @@ export class ElemRefineDgnCtrl extends Component {
                     for (let i = 0; i < data.details.length; i++) {
                         let detail = data.details[i]
                         let item = nodePool.get()
-                        item.getChildByName("SpriteSplash").getChildByName("Label").getComponent(Label).string = detail.bossName + "(" + difficultyLevel.get(detail.difficultyLevel) + ")"
+                        item.getChildByName("SpriteSplash").getChildByName("Label").getComponent(Label).string = detail.bossName
                         let rewardList = detail.rewardList
                         for (let j = 0; j < rewardList.length; j++) {
                             item.getChildByName("boss").children[j].getChildByName("Node").active = true
@@ -90,6 +90,10 @@ export class ElemRefineDgnCtrl extends Component {
                                 //护法、装备
                                 item.getChildByName("boss").children[j].getChildByName("Node").getComponent(Sprite).spriteFrame =
                                     await util.bundle.load('game/texture/frames/hero/Header/' + rewardList[j].itemId + '/spriteFrame', SpriteFrame)
+                            } else if ("6" == rewardList[j].rewardType || "5" == rewardList[j].rewardType) {
+                                //材料
+                                  item.getChildByName("boss").children[j].getChildByName("Node").getComponent(Sprite).spriteFrame =
+                                    await util.bundle.load(rewardList[j].img, SpriteFrame)
                             }
 
                         }

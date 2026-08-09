@@ -1,6 +1,7 @@
 import { _decorator, Component, director, Node } from 'cc';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
+import { XilianCtrl } from '../XilianCtrl/XilianCtrl';
 const { ccclass, property } = _decorator;
 
 @ccclass('EquipmentCtrl')
@@ -46,7 +47,7 @@ export class EquipmentCtrl extends Component {
 
     public async xiLiang() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        return await util.message.prompt({ message: "暂未开放" })
+        this.node.parent.getChildByName("XilianCtrl").active = true
     }
 
     public openSet() {
@@ -56,7 +57,7 @@ export class EquipmentCtrl extends Component {
 
     public async opentianJian() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        return await util.message.prompt({ message: "暂未开放" })
+       this.node.parent.getChildByName("eqTianjianCtrl").active = true
     }
 
     public async qianghua() {

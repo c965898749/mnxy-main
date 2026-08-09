@@ -1,4 +1,4 @@
-import { _decorator, Button, Component, instantiate, Label, Node, Prefab, Sprite, SpriteFrame } from 'cc';
+import { _decorator, Button, Color, Component, instantiate, Label, Node, Prefab, Sprite, SpriteFrame } from 'cc';
 import { getConfig } from 'db://assets/script/common/config/config';
 import { EquipmentState, EquipmentStateCreate } from 'db://assets/script/game/fight/equipment/EquipmentState';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
@@ -28,7 +28,40 @@ export class SelectEqCardCtrl extends Component {
     update(deltaTime: number) {
 
     }
-
+    rankDict: Record<number, string> = {
+        0: "",
+        1: "法",
+        2: "灵",
+        3: "宝",
+        4: "古",
+        5: "造",
+        6: "珍",
+        7: "通",
+        8: "玄",
+        9: "仙"
+    };
+    // 品级对应色值，品级越高越鲜艳
+    rankColorDict: Record<number, string> = {
+        0: "#888888", // 凡器 灰
+        1: "#7399FF", // 法器 浅蓝
+        2: "#33CCFF", // 灵器 天蓝
+        3: "#66FFCC", // 法宝 青碧
+        4: "#33FF88", // 古宝 翠绿
+        5: "#FFFF33", // 造物 亮金
+        6: "#FFCC00", // 灵宝 橙金
+        7: "#FF6633", // 通天 橙红
+        8: "#FF3366", // 玄天 玫红
+        9: "#FF00FF"  // 仙器 亮紫最高阶
+    };
+    skillDict: Record<number, string> = {
+        1: "诛仙", 2: "食人", 3: "驱魔", 4: "斗兽",
+        5: "仙师", 6: "人杰", 7: "魔王", 8: "兽灵",
+        9: "返火", 10: "辟土", 11: "逆雷", 12: "分水",
+        13: "驭兵", 14: "破妄",
+        15: "踏浪", 16: "破岩", 17: "驱雷", 18: "蹈火",
+        19: "不侵", 20: "灭法",
+        21: "突袭", 22: "闪避"
+    };
 
     public backQianhua() {
         AudioMgr.inst.playOneShot("sound/other/click");
@@ -51,7 +84,10 @@ export class SelectEqCardCtrl extends Component {
             let item = nodePool.get()
             item.getChildByName("Button").active = true
             item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
-               await util.bundle.load(`game/texture/frames/emp/${create[i].id.split('_')[0]}/spriteFrame`, SpriteFrame)
+                await util.bundle.load(`game/texture/frames/emp/${create[i].id.split('_')[0]}/spriteFrame`, SpriteFrame)
+            item.getChildByName("yxjm_df_txk").getChildByName("flyup").getComponent(Label).color = new Color(this.rankColorDict[create[i].flyup]);
+            item.getChildByName("yxjm_df_txk").getChildByName("flyup").getComponent(Label).string = this.rankDict[create[i].flyup] || ""
+            item.getChildByName("yxjm_df_txk").getChildByName("flyup").active = true
             // 渲染星级
             item.getChildByName("star-001").children.forEach(n => n.active = false)
             for (let j = 0; j < create[i].star; j++) {
@@ -74,7 +110,7 @@ export class SelectEqCardCtrl extends Component {
             ]);
 
             // const position = ["仙灵", "神将", "武圣"]
-            item.getChildByName("Camp").getComponent(Label).string = cmp.get(create[i].camp) + "." + create[i].profession
+            item.getChildByName("Camp").getComponent(Label).string = create[i].profession + " " + (this.skillDict[create[i].xilian] || "")
             // // 绑定事件
             item.getChildByName("Button").getComponent(Button).transition = 3
             item.getChildByName("Button").getComponent(Button).zoomScale = 0.9

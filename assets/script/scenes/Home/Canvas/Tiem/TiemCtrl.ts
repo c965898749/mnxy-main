@@ -78,7 +78,7 @@ export class TiemCtrl extends Component {
                     this.Item.children[goIntoNum - 1].children[4].children[j].children[0].active = true
                 }
             }
-            this.Item.children[goIntoNum - 1].children[2].getComponent(Label).string = create[i].name + "  Lv" + create[i].lv + "/" + create[i].maxLv
+            this.Item.children[goIntoNum - 1].children[2].getComponent(Label).string = create[i].name +(create[i].flyup > 0 ? "+" + create[i].flyup : "")+ "  Lv" + create[i].lv + "/" + create[i].maxLv
             // 仙、佛、圣、魔、妖、兽
             const cmp = new Map([
                 ['sacred', '仙界'],

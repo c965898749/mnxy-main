@@ -32,8 +32,7 @@ export class EquipmentMetaState extends BasicMetaState {
     // 暴击原型 1 ~ 100
     Critical: number = 5
 
-    // 角色阵营 普通 自然 深渊
-    CharacterCamp: CampType = "ordinary"
+
 
     // 动画所处文件夹
     AnimationDir: string

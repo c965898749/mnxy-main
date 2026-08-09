@@ -78,7 +78,10 @@ export type EquipmentStateCreate = {
     dsDef: number
     fdDef: number
     zlDef: number
-       // 新增：装备镶嵌宝石列表
+
+    xilian: number
+    flyup: number
+    // 新增：装备镶嵌宝石列表
     gemList?: GemSlotInfo[]
 
 }
@@ -140,6 +143,9 @@ export class EquipmentState extends BasicState<EquipmentMetaState> {
     dsDef: number
     fdDef: number
     zlDef: number
+
+    xilian: number
+    flyup: number
     // 新增：宝石镶嵌列表
     gemList: GemSlotInfo[]
     // 构造器
@@ -167,6 +173,8 @@ export class EquipmentState extends BasicState<EquipmentMetaState> {
         this.name = create.name
         this.camp = create.camp
         this.id = create.id
+        this.xilian = create.xilian
+        this.flyup = create.flyup
         this.introduce = create.introduce
         this.eqType = create.eqType
         this.maxLv = create.maxLv

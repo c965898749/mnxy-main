@@ -101,8 +101,6 @@ export class eqQianghuaCtrl extends Component {
                 await util.bundle.load(`image/ui/quality_05/spriteFrame`, SpriteFrame)
 
         }
-        $node.getChildByName("Camp").getComponent(Sprite).spriteFrame =
-            await util.bundle.load(`image/camp_icon/${create.camp}/spriteFrame`, SpriteFrame)
         $node.getChildByName("LV").getComponent(Label).string = 'Lv: ' + create.lv
         $node.getChildByName("namebg").getChildByName("name_1001").getComponent(Label).string = create.name
         // 渲染星级

@@ -34,7 +34,6 @@ export class EqHeroUi extends Component {
             const config = getConfig()
             const close = await util.message.load()
             cahracterQueue = cahracterQueue.concat(config.userData.equipments)
-            cahracterQueue = cahracterQueue.filter(c => EquipmentEnum[c.id].CharacterCamp === camp)
             await allHeros.render(cahracterQueue)
             close()
             e.target.getChildByName("Light").active = true

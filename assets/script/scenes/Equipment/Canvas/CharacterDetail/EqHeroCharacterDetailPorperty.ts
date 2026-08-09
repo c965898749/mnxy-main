@@ -22,7 +22,16 @@ function levelUpNeedSoule(create: EquipmentStateCreate): number {
 
 @ccclass('EqHeroCharacterDetailPorperty')
 export class EqHeroCharacterDetailPorperty extends Component {
-
+    skillDict: Record<number, string> = {
+        1: "诛仙", 2: "食人", 3: "驱魔", 4: "斗兽",
+        5: "仙师", 6: "人杰", 7: "魔王", 8: "兽灵",
+        9: "返火", 10: "辟土", 11: "逆雷", 12: "分水",
+        13: "驭兵", 14: "破妄",
+        15: "踏浪", 16: "破岩", 17: "驱雷", 18: "蹈火",
+        19: "不侵", 20: "灭法",
+        21: "突袭", 22: "闪避"
+    };
+    gemMinLv=0
     // 角色状态
     private $state: EquipmentStateCreate
 
@@ -40,7 +49,7 @@ export class EqHeroCharacterDetailPorperty extends Component {
     async renderProperty(create: EquipmentStateCreate, clickFun?: (characters: EquipmentStateCreate, node: Node) => any) {
         console.log('renderProperty', create.gemList)
         this.$state = create
-        this.node.getChildByName("Name").getComponent(Label).string = "名称: " + create.name
+        this.node.getChildByName("Name").getComponent(Label).string = "名称: " + create.name+(create.flyup > 0 ? "+" + create.flyup : "");
         this.node.getChildByName("Lv").getComponent(Label).string = "Lv: " + create.lv
         this.node.getChildByName("introduce").getComponent(Label).string = create.introduce + ''
         this.node.getChildByName("CharacterAnimation").getComponent(Sprite).spriteFrame =
@@ -126,8 +135,8 @@ export class EqHeroCharacterDetailPorperty extends Component {
             ['ordinary', '兽界'],
         ]);
 
-        this.node.getChildByName("Zhongzu").getComponent(Label).string = cmp.get(create.camp) + "     " + create.profession
-
+        this.node.getChildByName("Zhongzu").getComponent(Label).string = create.profession + ""
+        this.node.getChildByName("skill").getChildByName("Value").getComponent(Label).string = this.skillDict[create.xilian] || "无"
         // 渲染星级
         const starNode = this.node.getChildByName("Star")
         starNode.children.forEach(n => n.active = false)
@@ -345,12 +354,47 @@ export class EqHeroCharacterDetailPorperty extends Component {
 
     // 显示所有的属性
     async showAllProperty() {
-        let message = `基本属性\n`
-        message += `攻击: ${Math.ceil(this.$state.attack)}\n\n`
-        message += `洗练属性\n`
-        message += `暂无开放\n\n`
-        message += `技能\n`
-        message += `无\n`
+        // 纯文本展示，无富文本标签，\n 换行，自动计算当前宝石最低等级的实际概率
+        // let gemMinLv = this.$state.gemMinLv ?? 0;
+        // let gemMinLv = this.$state.gemMinLv ?? 0;
+        let xilianCode = this.$state.xilian;
+        let message = `技能\n`;
+        const suitCfg = {
+            1: { name: "诛仙", rateRatio: 0.5, maxRate: 25, desc: "物理攻击时有（宝石最低等级 * 0.5%）几率攻击仙族护法时额外提升75%攻击力，回合结束移除该加成" },
+            2: { name: "食人", rateRatio: 0.5, maxRate: 25, desc: "物理攻击时有（宝石最低等级 * 0.5%）几率攻击人族护法时额外提升75%攻击力，回合结束移除该加成" },
+            3: { name: "驱魔", rateRatio: 0.5, maxRate: 25, desc: "物理攻击时有（宝石最低等级 * 0.5%）几率攻击魔族护法时额外提升75%攻击力，回合结束移除该加成" },
+            4: { name: "斗兽", rateRatio: 0.5, maxRate: 25, desc: "物理攻击时有（宝石最低等级 * 0.5%）几率攻击兽族护法时额外提升75%攻击力，回合结束移除该加成" },
+            5: { name: "仙师", rateRatio: 0, maxRate: 0, desc: "提升除自身外的所有仙族护法生命上限，提升值为生命值 * 1% * 宝石最低等级，多个仙师套装可以叠加效果" },
+            6: { name: "人杰", rateRatio: 0, maxRate: 0, desc: "提升除自身外的所有人族护法生命上限，提升值为生命值 * 1% * 宝石最低等级，多个人杰套装可以叠加效果" },
+            7: { name: "魔王", rateRatio: 0, maxRate: 0, desc: "提升除自身外的所有魔族护法生命上限，提升值为生命值 * 1% * 宝石最低等级，多个魔王套装可以叠加效果" },
+            8: { name: "兽灵", rateRatio: 0, maxRate: 0, desc: "提升除自身外的所有兽族护法生命上限，提升值为生命值 * 1% * 宝石最低等级，多个兽灵套装可以叠加效果" },
+            9: { name: "返火", rateRatio: 0.5, maxRate: 25, desc: "受到火属性伤害时，有（宝石最低等级 * 0.5%）几率对伤害来源造成等值的物理伤害，且有同样几率免疫燃烧、锢魂，伤害反弹和抵抗负面分别独立触发" },
+            10: { name: "辟土", rateRatio: 0.5, maxRate: 25, desc: "受到土属性伤害时，有（宝石最低等级 * 0.5%）几率对伤害来源造成等值的物理伤害，且有同样几率免疫毒砂、凝滞" },
+            11: { name: "逆雷", rateRatio: 0.5, maxRate: 25, desc: "受到雷属性伤害时，有（宝石最低等级 * 0.5%）几率对伤害来源造成等值的物理伤害，且有同样几率免疫麻痹、盲目" },
+            12: { name: "分水", rateRatio: 0.5, maxRate: 25, desc: "受到水属性伤害时，有（宝石最低等级 * 0.5%）几率对伤害来源造成等值的物理伤害，且有同样几率免疫僵化、禁疗" },
+            13: { name: "驭兵", rateRatio: 0.5, maxRate: 25, desc: "攻击时有（宝石最低等级 * 0.5%）几率增加50%攻击，攻击后身上每有一把剑则保留增加攻击力的20%，回合结束移除该加成" },
+            14: { name: "破妄", rateRatio: 0.5, maxRate: 25, desc: "攻击前有（宝石最低等级 * 0.5%）几率将对面三位护法生命上限恢复到初始值，不侵、法术护盾都无法抵挡破妄，反击、连击、乱舞都能触发破妄" },
+            15: { name: "踏浪", rateRatio: 0.5, maxRate: 25, desc: "攻击时有（宝石最低等级 * 0.5%）几率提升50%攻击力，并且使目标失去神通（僵化），行动一次后清除，回合结束移除攻击加成，如果护法带有踏浪神通，效果可叠加" },
+            16: { name: "破岩", rateRatio: 0.5, maxRate: 25, desc: "攻击时有（宝石最低等级 * 0.5%）几率提升50%攻击力，并且使目标持续降低攻击力（毒砂5），回合结束移除攻击加成，如果护法带有破岩神通，效果可叠加" },
+            17: { name: "驱雷", rateRatio: 0.5, maxRate: 25, desc: "攻击时有（宝石最低等级 * 0.5%）几率提升50%攻击力，并且使目标无法释放法术书（麻痹），行动一次后清除，回合结束移除攻击加成，如果护法带有驱雷神通，效果可叠加" },
+            18: { name: "蹈火", rateRatio: 0.5, maxRate: 25, desc: "攻击时有（宝石最低等级 * 0.5%）几率提升50%攻击力，并且使目标持续失去生命值（燃烧），回合结束移除攻击加成，如果护法带有蹈火神通，效果可叠加" },
+            19: { name: "不侵", rateRatio: 0.5, maxRate: 25, desc: "被攻击时有（宝石最低等级 * 0.5%）几率抵抗对方给予的持续效果，如燃烧、毒砂、禁疗、绝杀、驱逐、摧毁、乱阵、僵化、早夭等，不可抵抗弱化、破妄" },
+            20: { name: "灭法", rateRatio: 0.5, maxRate: 25, desc: "攻击时对具备仙衣、不侵效果的目标造成的伤害提高（宝石最低等级 * 0.5%），并且有相同几率清除对方的无敌效果（本次攻击不产生伤害），灭法造成的伤害为物理伤害" },
+            21: { name: "突袭", rateRatio: 0.5, maxRate: 25, desc: "攻击时有（宝石最低等级 * 0.5%）几率触发，本次攻击不会受到反击、护体等神通，并额外增加50%攻击力，回合结束移除该加成" },
+            22: { name: "闪避", rateRatio: 0.24, maxRate: 12, desc: "有（宝石最低等级 * 0.24%）几率躲过物理攻击，如果护法带有闪避神通，效果可叠加" }
+        };
+        const cfg = suitCfg[xilianCode];
+        // if (!cfg) {
+        //     message += `无\n`;
+        // } else {
+        //     const realLv = Math.min(this.gemMinLv, 50);
+        //     let realRate = 0;
+        //     if (cfg.rateRatio > 0) realRate = Math.min(realLv * cfg.rateRatio, cfg.maxRate);
+            message += `【${cfg.name}】\n${cfg.desc}\n`;
+        //     if (cfg.rateRatio > 0) message += `当前宝石最低等级${this.gemMinLv}，实际触发概率${realRate.toFixed(2)}%\n`;
+        // }
+        message += `\n装备宝石槽未装满洗练属性不激活，属性计算取装备镶嵌宝石最低等级`;
         await util.message.introduce({ message })
+
     }
 }

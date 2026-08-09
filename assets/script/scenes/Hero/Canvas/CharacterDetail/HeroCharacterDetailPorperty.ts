@@ -41,6 +41,31 @@ export class HeroCharacterDetailPorperty extends Component {
 
     private $answerCS: boolean = true
 
+    rankDict: Record<number, string> = {
+        0: "",
+        1: "法",
+        2: "灵",
+        3: "宝",
+        4: "古",
+        5: "造",
+        6: "珍",
+        7: "通",
+        8: "玄",
+        9: "仙"
+    };
+    // 品级对应色值，品级越高越鲜艳
+    rankColorDict: Record<number, string> = {
+        0: "#888888", // 凡器 灰
+        1: "#7399FF", // 法器 浅蓝
+        2: "#33CCFF", // 灵器 天蓝
+        3: "#66FFCC", // 法宝 青碧
+        4: "#33FF88", // 古宝 翠绿
+        5: "#FFFF33", // 造物 亮金
+        6: "#FFCC00", // 灵宝 橙金
+        7: "#FF6633", // 通天 橙红
+        8: "#FF3366", // 玄天 玫红
+        9: "#FF00FF"  // 仙器 亮紫最高阶
+    };
 
 
     // 渲染属性
@@ -109,7 +134,7 @@ export class HeroCharacterDetailPorperty extends Component {
             material.setProperty('centerScale', 1);
         }
 
-        this.node.getChildByName("Name").getComponent(Label).string = "名称: " + create.name
+        this.node.getChildByName("Name").getComponent(Label).string = "名称: " + create.name+(create.flyup > 0 ? "+" + create.flyup : "");
         this.node.getChildByName("Lv").getComponent(Label).string = "Lv: " + this.$state.lv
         this.node.getChildByName("Hp").getChildByName("Value").getComponent(Label).string = Math.ceil(create.maxHp) + ''
         this.node.getChildByName("Attack").getChildByName("Value").getComponent(Label).string = Math.ceil(create.attack) + ''
@@ -156,11 +181,14 @@ export class HeroCharacterDetailPorperty extends Component {
             let eqCharacters = eqCharactersList.find(x => x.eqType == index && x.goIntoNum + "" == create.id)
             if (eqCharacters) {
                 n.getChildByName("Label").getComponent(Label).string = ""
+                n.getChildByName("header_qitiandashen").getChildByName("flyup").getComponent(Label).string = this.rankDict[eqCharacters.flyup] || ""
+                n.getChildByName("header_qitiandashen").getChildByName("flyup").getComponent(Label).color = new Color(this.rankColorDict[eqCharacters.flyup]);
                 n.getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
                     await util.bundle.load(`game/texture/frames/emp/${eqCharacters.id.split('_')[0]}/spriteFrame`, SpriteFrame)
             } else {
                 n.getChildByName("Label").getComponent(Label).string = nameNode[index]
                 n.getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame = null
+                n.getChildByName("header_qitiandashen").getChildByName("flyup").getComponent(Label).string = ""
             }
             n.on("click", () => this.empOnclick(create, index))
         })
@@ -189,7 +217,7 @@ export class HeroCharacterDetailPorperty extends Component {
         } else {
             var cahracterQueue2 = []
             cahracterQueue2 = config.userData.equipments
-            cahracterQueue2 = cahracterQueue2.filter(x => x.goIntoNum == 0 && x.eqType == empType && x.profession == create.profession && x.camp == create.camp)
+            cahracterQueue2 = cahracterQueue2.filter(x => x.goIntoNum == 0 && x.eqType == empType && x.profession == create.profession)
             await this.render(cahracterQueue2, create.id, empType)
         }
     }
@@ -236,6 +264,7 @@ export class HeroCharacterDetailPorperty extends Component {
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
                     this.empNode.children[empType].getChildByName("Label").getComponent(Label).string = nameNode[empType]
                     this.empNode.children[empType].getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame = null
+                    this.empNode.children[empType].getChildByName("header_qitiandashen").getChildByName("flyup").getComponent(Label).string = ""
                     node.getChildByName("sell").active = false
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
@@ -276,6 +305,8 @@ export class HeroCharacterDetailPorperty extends Component {
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
                     let cahracterQueue = userInfo.eqCharactersList.filter(x => x.goIntoNum == itemId && x.eqType == empType)
                     this.empNode.children[empType].getChildByName("Label").getComponent(Label).string = ""
+                    this.empNode.children[empType].getChildByName("header_qitiandashen").getChildByName("flyup").getComponent(Label).string = this.rankDict[cahracterQueue[0].flyup] || ""
+                    this.empNode.children[empType].getChildByName("header_qitiandashen").getChildByName("flyup").getComponent(Label).color = new Color(this.rankColorDict[cahracterQueue[0].flyup]);
                     this.empNode.children[empType].getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
                         await util.bundle.load(`game/texture/frames/emp/${cahracterQueue[0].id.split('_')[0]}/spriteFrame`, SpriteFrame)
 
@@ -495,7 +526,7 @@ export class HeroCharacterDetailPorperty extends Component {
                     config.userData.characters = dto.characters
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
                     AudioMgr.inst.playOneShot("sound/other/getCoin");
-                    await util.message.prompt({ message: "重置成功"})
+                    await util.message.prompt({ message: "重置成功" })
                 } else {
                     AudioMgr.inst.playOneShot("sound/other/tantdoor");
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
