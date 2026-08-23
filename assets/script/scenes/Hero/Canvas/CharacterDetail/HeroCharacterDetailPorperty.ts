@@ -134,7 +134,7 @@ export class HeroCharacterDetailPorperty extends Component {
             material.setProperty('centerScale', 1);
         }
 
-        this.node.getChildByName("Name").getComponent(Label).string = "名称: " + create.name+(create.flyup > 0 ? "+" + create.flyup : "");
+        this.node.getChildByName("Name").getComponent(Label).string = "名称: " + create.name + (create.flyup > 0 ? "+" + create.flyup : "");
         this.node.getChildByName("Lv").getComponent(Label).string = "Lv: " + this.$state.lv
         this.node.getChildByName("Hp").getChildByName("Value").getComponent(Label).string = Math.ceil(create.maxHp) + ''
         this.node.getChildByName("Attack").getChildByName("Value").getComponent(Label).string = Math.ceil(create.attack) + ''
@@ -188,7 +188,10 @@ export class HeroCharacterDetailPorperty extends Component {
             } else {
                 n.getChildByName("Label").getComponent(Label).string = nameNode[index]
                 n.getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame = null
-                n.getChildByName("header_qitiandashen").getChildByName("flyup").getComponent(Label).string = ""
+                const label = n.getChildByName("header_qitiandashen")?.getChildByName("flyup")?.getComponent(Label);
+                if (label) label.string = "";
+
+
             }
             n.on("click", () => this.empOnclick(create, index))
         })
@@ -324,22 +327,7 @@ export class HeroCharacterDetailPorperty extends Component {
 
     // 显示所有的属性
     async showAllProperty() {
-        const message = this.$state.meta.getSkillDesc(this.$state)
-        // let message = ``
-        // message += `${this.$state.meta.PassiveIntroduceOne}\n`
-        // message += `${this.$state.meta.PassiveIntroduceTwo}\n`
-        // if (this.$state.meta.PassiveIntroduceThree) {
-        //     message += `${this.$state.meta.PassiveIntroduceThree}\n`
-        // }
-        // message += `${this.$state.meta.SkillIntroduce}\n`
-        // message += ` 攻击力: ${Math.ceil(this.$state.attack)}\n`
-        // message += ` 防御力: ${Math.ceil(this.$state.defence)}\n`
-        // message += ` 速度值: ${Math.ceil(this.$state.speed)}\n`
-        // message += ` 穿透值: ${Math.ceil(this.$state.pierce)}\n`
-        // message += ` 格挡率: ${Math.ceil(this.$state.block)}%\n`
-        // message += ` 暴击率: ${Math.ceil(this.$state.critical)}%\n`
-        // message += ` 免伤率: ${Math.ceil(this.$state.FreeInjuryPercent * 100)}%\n`
-        // message += ` 最大能量: ${Math.ceil(this.$state.maxEnergy)}\n`
+        const message = this.$state.meta?.getSkillDesc?.(this.$state) ?? "";
         await util.message.introduce({ message })
     }
 

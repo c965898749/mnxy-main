@@ -530,7 +530,7 @@ export class FightMap extends Component {
                         }
                         skeletons.forEach(skeleton => {
                             skeleton.node.active = true
-                            if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
+                            if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN"|| effectType == "FIXED_SOUL") {
                                 skeleton.setAnimation(0, "animation", true);
                             } else {
                                 skeleton.setAnimation(0, "animation", false);
@@ -896,7 +896,7 @@ export class FightMap extends Component {
                                 this.showNumber(this.hasLetterA(fightProcess.targetUnitId), targetCharacterNode, -fightProcess.singleTargetValue, new math.Color(255, 176, 126, 255), 40)
                                 let hut = targetCharacterNode.getChildByName(effectType).getComponent(sp.Skeleton)
                                 hut.node.active = true
-                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
+                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN"|| effectType == "FIXED_SOUL") {
                                     hut.setAnimation(0, "animation", true);
                                 } else {
                                     hut.setAnimation(0, "animation", false)
@@ -905,7 +905,7 @@ export class FightMap extends Component {
                             } else {
                                 let selectSkeleton2 = targetChangXiaNode.getChildByName("buff").getChildByName(effectType).getComponent(sp.Skeleton)
                                 selectSkeleton2.node.active = true
-                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
+                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN"|| effectType == "FIXED_SOUL") {
                                     selectSkeleton2.setAnimation(0, "animation", true)
                                 } else {
                                     selectSkeleton2.setAnimation(0, "animation", false)
@@ -1038,14 +1038,14 @@ export class FightMap extends Component {
 
                                     let selectSkeleton = targetCharacterNode.getChildByName(effectTypeName).getComponent(sp.Skeleton)
                                     selectSkeleton.node.active = true
-                                    if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
+                                    if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN"|| effectType == "FIXED_SOUL") {
                                         selectSkeleton.setAnimation(0, "animation", true)
                                     } else {
                                         selectSkeleton.setAnimation(0, "animation", false)
                                     }
                                     await new Promise(res => setTimeout(res, 500 / this.timeScale))
                                     //伤害掉血动画
-                                    if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
+                                    if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN"|| effectType == "FIXED_SOUL") {
                                         //中毒无动画
                                     } else if (effectType == 'ATTACK_UP') {
                                         //暂无展示
@@ -1096,7 +1096,7 @@ export class FightMap extends Component {
                                 //console.log("effectTypeName------", effectTypeName)
                                 let eventSelectSkeleton = targetChangXiaNode.getChildByName("buff").getChildByName(effectTypeName).getComponent(sp.Skeleton)
                                 eventSelectSkeleton.node.active = true
-                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN") {
+                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN"|| effectType == "FIXED_SOUL") {
                                     eventSelectSkeleton.setAnimation(0, "animation", true)
                                 } else {
                                     eventSelectSkeleton.setAnimation(0, "animation", false)

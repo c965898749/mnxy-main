@@ -53,15 +53,19 @@ export class SelectEqCardCtrl extends Component {
         8: "#FF3366", // 玄天 玫红
         9: "#FF00FF"  // 仙器 亮紫最高阶
     };
-    skillDict: Record<number, string> = {
-        1: "诛仙", 2: "食人", 3: "驱魔", 4: "斗兽",
-        5: "仙师", 6: "人杰", 7: "魔王", 8: "兽灵",
-        9: "返火", 10: "辟土", 11: "逆雷", 12: "分水",
-        13: "驭兵", 14: "破妄",
-        15: "踏浪", 16: "破岩", 17: "驱雷", 18: "蹈火",
-        19: "不侵", 20: "灭法",
-        21: "突袭", 22: "闪避"
-    };
+ skillDict: Record<number, string> = {
+    0: "突击",
+    1: "灵能",
+    2: "防护",
+    3: "御灵",
+    4: "暴击",
+    5: "暴抗",
+    6: "闪避",
+    7: "命中",
+    8: "速度",
+    9: "生命"
+};
+
 
     public backQianhua() {
         AudioMgr.inst.playOneShot("sound/other/click");
@@ -85,7 +89,15 @@ export class SelectEqCardCtrl extends Component {
             item.getChildByName("Button").active = true
             item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`game/texture/frames/emp/${create[i].id.split('_')[0]}/spriteFrame`, SpriteFrame)
-            item.getChildByName("yxjm_df_txk").getChildByName("flyup").getComponent(Label).color = new Color(this.rankColorDict[create[i].flyup]);
+            const flyupNode = item.getChildByName("yxjm_df_txk")?.getChildByName("flyup");
+            const labelComp = flyupNode?.getComponent(Label);
+            // 单独只对这一行做安全判空，不处理节点获取逻辑
+            const colorVal = this.rankColorDict[create[i].flyup];
+            if (labelComp && colorVal) {
+                labelComp.color = new Color(colorVal);
+            }
+
+
             item.getChildByName("yxjm_df_txk").getChildByName("flyup").getComponent(Label).string = this.rankDict[create[i].flyup] || ""
             item.getChildByName("yxjm_df_txk").getChildByName("flyup").active = true
             // 渲染星级

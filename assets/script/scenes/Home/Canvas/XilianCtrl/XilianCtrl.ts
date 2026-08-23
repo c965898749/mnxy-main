@@ -1,4 +1,4 @@
-import { _decorator, Component, instantiate, Label, Node, Prefab, sp, Sprite, SpriteFrame, tween, v3 } from 'cc';
+import { _decorator, Component, instantiate, Label, Layout, Node, Prefab, RichText, sp, Sprite, SpriteFrame, Toggle, tween, v3 } from 'cc';
 import { getConfig, getToken } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
@@ -10,6 +10,9 @@ const { ccclass, property } = _decorator;
 
 @ccclass('XilianCtrl')
 export class XilianCtrl extends Component {
+    @property(Layout)
+    ContentNode: Layout;
+    str = ""
     start() {
 
     }
@@ -18,14 +21,31 @@ export class XilianCtrl extends Component {
 
     }
     skillDict: Record<number, string> = {
-        1: "诛仙", 2: "食人", 3: "驱魔", 4: "斗兽",
-        5: "仙师", 6: "人杰", 7: "魔王", 8: "兽灵",
-        9: "返火", 10: "辟土", 11: "逆雷", 12: "分水",
-        13: "驭兵", 14: "破妄",
-        15: "踏浪", 16: "破岩", 17: "驱雷", 18: "蹈火",
-        19: "不侵", 20: "灭法",
-        21: "突袭", 22: "闪避"
+        0: "突击",
+        1: "灵能",
+        2: "防护",
+        3: "御灵",
+        4: "暴击",
+        5: "暴抗",
+        6: "闪避",
+        7: "命中",
+        8: "速度",
+        9: "生命"
     };
+
+
+
+    qualityColor: Record<number, string> = {
+        0: "#88ff88", //普通绿色
+        1: "#bb77ff", //优秀紫色
+        2: "#ffdd77"  //极品金色
+    };
+    qualityName: Record<number, string> = {
+        0: "普通",
+        1: "优秀",
+        2: "极品"
+    };
+
     @property(Node)
     hechen: Node
     @property(Node)
@@ -45,45 +65,33 @@ export class XilianCtrl extends Component {
     private $state: EquipmentStateCreate
 
     async questry() {
+
+
         const suitText = `<size=18>
-<color=#ffdd77><size=22>【诛仙】</size></color>物理攻击时有（<color=#ff6666>宝石最低等级 * 0.5%</color>）几率攻击仙族护法时额外提升<color=#ff6666>75%</color>攻击力，回合结束移除该加成
-<color=#ffdd77><size=22>【食人】</size></color>物理攻击时有（<color=#ff6666>宝石最低等级 * 0.5%</color>）几率攻击人族护法时额外提升<color=#ff6666>75%</color>攻击力，回合结束移除该加成
-<color=#ffdd77><size=22>【驱魔】</size></color>物理攻击时有（<color=#ff6666>宝石最低等级 * 0.5%</color>）几率攻击魔族护法时额外提升<color=#ff6666>75%</color>攻击力，回合结束移除该加成
-<color=#ffdd77><size=22>【斗兽】</size></color>物理攻击时有（<color=#ff6666>宝石最低等级 * 0.5%</color>）几率攻击兽族护法时额外提升<color=#ff6666>75%</color>攻击力，回合结束移除该加成
+<color=#ffdd77><size=22>【突击】</size></color>增加卡牌物理攻击伤害，突击每高于敌方防护1点，额外增加<color=#ff6666>0.1%</color>物理伤害
 
+<color=#ffdd77><size=22>【灵能】</size></color>增加卡牌飞弹、火焰、毒素伤害，灵能每高于敌方御灵1点，额外增加<color=#ff6666>0.1%</color>飞弹、火焰、毒素伤害
 
-<color=#77ddff><size=22>【仙师】</size></color>提升除自身外的所有仙族护法生命上限，提升值为生命值 * <color=#ff6666>1% * 宝石最低等级</color> <color=#aaaaaa>多个仙师套装可以叠加效果</color>
-<color=#77ddff><size=22>【人杰】</size></color>提升除自身外的所有人族护法生命上限，提升值为生命值 * <color=#ff6666>1% * 宝石最低等级</color> <color=#aaaaaa>多个人杰套装可以叠加效果</color>
-<color=#77ddff><size=22>【魔王】</size></color>提升除自身外的所有魔族护法生命上限，提升值为生命值 * <color=#ff6666>1% * 宝石最低等级</color> <color=#aaaaaa>多个魔王套装可以叠加效果</color>
-<color=#77ddff><size=22>【兽灵】</size></color>提升除自身外的所有兽族护法生命上限，提升值为生命值 * <color=#ff6666>1% * 宝石最低等级</color> <color=#aaaaaa>多个兽灵套装可以叠加效果
+<color=#77ddff><size=22>【防护】</size></color>降低自身受到的物理攻击伤害
 
+<color=#77ddff><size=22>【御灵】</size></color>降低自身受到的飞弹、火焰、毒素伤害
 
-<color=#ff9955><size=22>【返火】</size></color>受到火属性伤害时，有（<color=#ff6666>宝石最低等级 * 0.5%</color>）几率对伤害来源造成等值的物理伤害，且有同样几率免疫燃烧、锢魂 <color=#aaaaaa>伤害反弹和抵抗负面分别独立触发</color>
-<color=#ff9955><size=22>【辟土】</size></color>受到土属性伤害时，有（<color=#ff6666>宝石最低等级 * 0.5%</color>）几率对伤害来源造成等值的物理伤害，且有同样几率免疫毒砂、凝滞
-<color=#ff9955><size=22>【逆雷】</size></color>受到雷属性伤害时，有（<color=#ff6666>宝石最低等级 * 0.5%</color>）几率对伤害来源造成等值的物理伤害，且有同样几率免疫麻痹、盲目
-<color=#ff9955><size=22>【分水】</size></color>受到水属性伤害时，有（<color=#ff6666>宝石最低等级 * 0.5%</color>）几率对伤害来源造成等值的物理伤害，且有同样几率免疫僵化、禁疗
+<color=#ff9955><size=22>【暴击】</size></color>提高自身物理攻击暴击概率
 
+<color=#ff9955><size=22>【暴抗】</size></color>降低自身被暴击的概率
 
-<color=#cc99ff><size=22>【驭兵】</size></color>攻击时有（<color=#ff6666>宝石最低等级 * 0.5%</color>）几率增加<color=#ff6666>50%</color>攻击，攻击后身上每有一把剑则保留增加攻击力的<color=#ff6666>20%</color>，回合结束移除该加成
-<color=#cc99ff><size=22>【破妄】</size></color>攻击前有（<color=#ff6666>宝石最低等级 * 0.5%</color>）几率将对面三位护法生命上限恢复到初始值 <color=#aaaaaa>"不侵、法术护盾都无法抵挡破妄，反击、连击、乱舞都能触发破妄"</color>
+<color=#cc99ff><size=22>【闪避】</size></color>提高自身闪避物理攻击的概率
 
+<color=#cc99ff><size=22>【命中】</size></color>提高自身攻击命中概率，克制敌方闪避效果
 
-<color=#66eeaa><size=22>【踏浪】</size></color>攻击时有（<color=#ff6666>宝石最低等级 * 0.5%</color>）几率提升<color=#ff6666>50%</color>攻击力，并且使目标失去神通（僵化），行动一次后清除，回合结束移除攻击加成 <color=#aaaaaa>如果护法带有踏浪神通，效果可叠加</color>
-<color=#66eeaa><size=22>【破岩】</size></color>攻击时有（<color=#ff6666>宝石最低等级 * 0.5%</color>）几率提升<color=#ff6666>50%</color>攻击力，并且使目标持续降低攻击力（毒砂5），回合结束移除攻击加成 <color=#aaaaaa>如果护法带有破岩神通，效果可叠加</color>
-<color=#66eeaa><size=22>【驱雷】</size></color>攻击时有（<color=#ff6666>宝石最低等级 * 0.5%</color>）几率提升<color=#ff6666>50%</color>攻击力，并且使目标无法释放法术书（麻痹），行动一次后清除，回合结束移除攻击加成 <color=#aaaaaa>如果护法带有驱雷神通，效果可叠加</color>
-<color=#66eeaa><size=22>【蹈火】</size></color>攻击时有（<color=#ff6666>宝石最低等级 * 0.5%</color>）几率提升<color=#ff6666>50%</color>攻击力，并且使目标持续失去生命值（燃烧），回合结束移除攻击加成 <color=#aaaaaa>如果护法带有蹈火神通，效果可叠加</color>
+<color=#66eeaa><size=22>【速度】</size></color>增加卡牌速度属性，影响出手先后顺序
 
+<color=#ee88bb><size=22>【生命】</size></color>增加卡牌生命值上限
 
-<color=#ee88bb><size=22>【不侵】</size></color>被攻击时有（<color=#ff6666>宝石最低等级 * 0.5%</color>）几率抵抗对方给予的持续效果，如燃烧、毒砂、禁疗、绝杀、驱逐、摧毁、乱阵、僵化、早夭等 <color=#aaaaaa>不可抵抗弱化、破妄</color>
-<color=#ee88bb><size=22>【灭法】</size></color>攻击时对具备仙衣、不侵效果的目标造成的伤害提高（<color=#ff6666>宝石最低等级 * 0.5%</color>），并且有相同几率清除对方的无敌效果（本次攻击不产生伤害） <color=#aaaaaa>灭法造成的伤害为物理伤害</color>
-
-
-<color=#ffcc44><size=22>【突袭】</size></color>攻击时有（<color=#ff6666>宝石最低等级 * 0.5%</color>）几率触发，本次攻击不会受到反击、护体等神通，并额外增加<color=#ff6666>50%</color>攻击力，回合结束移除该加成
-<color=#ffcc44><size=22>【闪避】</size></color>有（<color=#ff6666>宝石最低等级 * 0.24%</color>）几率躲过物理攻击 <color=#aaaaaa>如果护法带有闪避神通，效果可叠加</color>
-
-<color=#ff3333>装备宝石槽未装满洗练属性不激活，属性计算取装备镶嵌宝石最低等级</color>
-<color=#ff3333>每次洗炼需要消耗水之元、火之元、土之元、生之元、雷之元、道之元各72枚</color>
+<color=#ff3333>洗练满 50 次则激活第二属性（可开启洗洗炼锁定每次100灵石）</color>
+<color=#ff3333>每次洗炼消耗水之元、火之元、土之元、生之元、雷之元、道之元各2枚</color>
 </size>`;
+
 
 
         this.node.parent.getChildByName("questionCrtl")
@@ -110,24 +118,106 @@ export class XilianCtrl extends Component {
                 n.destroy()
                 this.selecEquipment.getComponent(Sprite).spriteFrame =
                     await util.bundle.load(`game/texture/frames/emp/${c.id.split('_')[0]}/spriteFrame`, SpriteFrame)
-                this.selecEquipment.getChildByName("xilian").getComponent(Label).string = this.skillDict[c.xilian] || ""
+                this.xilian(c);
                 this.$state = c
                 return
             })
     }
 
+    async xilian(characters: EquipmentStateCreate) {
+        try {
+            const layoutComp = this.ContentNode;
+            if (!layoutComp) return;
 
+            // ✅关键点：Layout组件取 .node 拿到节点
+            const layoutNode = layoutComp.node;
+
+            if (layoutNode.children.length > 0) {
+                layoutNode.removeAllChildren();
+            }
+
+            const xilianPrefab = await util.bundle.load("prefab/xilian", Prefab);
+            if (!xilianPrefab) return;
+            let cc = 0
+            if (characters.xilianList.length > 0) {
+                cc = characters.xilianList.length
+            }
+            for (let index = 0; index < characters.xilianList.length; index++) {
+                const content = characters.xilianList[index];
+                if (!content) continue;
+                const xilian = instantiate(xilianPrefab);
+
+                const richTextNode = xilian.getChildByName("RichText");
+                const toggleNode = xilian.getChildByName("Toggle");
+                const id = xilian.getChildByName("id");
+                if (cc > 1) {
+                    toggleNode.active = true
+                    if (this.str == content.id + "") {
+                        toggleNode.getComponent(Toggle).isChecked = true
+                    } else {
+                        toggleNode.getComponent(Toggle).isChecked = false
+                    }
+                } else {
+                    toggleNode.active = false
+                }
+                if (richTextNode) {
+                    const labelComp = richTextNode.getComponent(RichText);
+                    const attrName = this.skillDict[content.xilian];
+                    const qColor = this.qualityColor[content.quality];
+                    id.getComponent(Label).string = content.id + ""
+                    // const qName = this.qualityName[content.quality];
+                    let valStr: string;
+                    //4‑7暴击、暴抗、闪避、命中保留1位小数；其余直接数字
+                    if (content.xilian >= 4 && content.xilian <= 7) {
+                        valStr = (Number(content.value)).toFixed(1) + '%';
+                    } else {
+                        valStr = String(content.value);
+                    }
+                    const line = `<color=${qColor}><size=20>${attrName}+${valStr}</size></color>`;
+                    if (labelComp) labelComp.string = line;
+                }
+                layoutNode.addChild(xilian);
+            }
+        } catch (e) {
+            console.error("渲染奖励列表异常：", e);
+        }
+    }
     async hechenBtn2() {
         AudioMgr.inst.playOneShot("sound/other/click");
         if (!this.$state) {
             return await util.message.prompt({ message: "请选择装备！" })
+        }
+        let allChecked = true;
+        const layoutComp = this.ContentNode;
+        if (!layoutComp) return;
+        // ✅关键点：Layout组件取 .node 拿到节点
+        const layoutNode = layoutComp.node;
+        for (let index = 0; index < layoutNode.children.length; index++) {
+
+            const content = layoutNode.children[index];
+            if (!content) continue;
+
+            const toggleComp = content.getChildByName("Toggle").getComponent(Toggle);
+            // 只要有一个未勾选，全部勾选标记置false
+            if (!toggleComp.isChecked) {
+                allChecked = false;
+            } else {
+                // 勾选的收集id
+                this.str = content.getChildByName("id").getComponent(Label).string;
+            }
+
+        }
+
+        if (layoutNode.children.length > 1 && allChecked) {
+            return await util.message.prompt({ message: "洗练属性请勿全部锁定！" })
         }
         const config = getConfig()
         const token = getToken()
         const postData = {
             token: token,
             userId: config.userData.userId,
-            id: this.$state.uuid
+            id: this.$state.uuid,
+            str: this.str,
         };
         const options = {
             method: 'POST',
@@ -174,11 +264,20 @@ export class XilianCtrl extends Component {
                         this.t5.position = v3(0, 0.0)
                         this.t6.position = v3(0, 0.0)
                     })
-                    config.userData.equipments = data.data
+                    let map = data.data
+                    let eqCharactersList = map["eqCharactersList"]
+                    let xilian = map["xilian"]
+                    let info = map["info"]
+                    if(info){
+                        config.userData.diamond = info.diamond
+                    }
+                    const str = this.formatRefineList(xilian);
+                    config.userData.equipments = eqCharactersList
                     const create = config.userData.equipments.find(equip => equip.uuid === this.$state.uuid);
-                    this.selecEquipment.getChildByName("xilian").getComponent(Label).string = this.skillDict[create.xilian] || ""
+                    // this.selecEquipment.getChildByName("xilian").getComponent(Label).string = this.skillDict[create.xilian] || ""
+                    this.xilian(create)
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
-
+                    await util.message.eqPrompt({ message: str })
 
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
@@ -189,6 +288,39 @@ export class XilianCtrl extends Component {
             }
             );
     }
+    /**
+ * 将java返回的 List<Map<string,Object>> refineList 转为富文本字符串
+ * java返回结构：{attr:number, quality:number, value:number|double}
+ * skillDict 与上面保持一致
+ * quality:0普通，1优秀，2极品
+ */
+    formatRefineList(refineList: Array<{ xilian: number, quality: number, value: number | number }>): string {
+
+
+
+        const lines: string[] = [];
+        // lines.push(`<size=18>`);
+
+        for (const item of refineList) {
+            const attrName = this.skillDict[item.xilian];
+            const qColor = this.qualityColor[item.quality];
+            const qName = this.qualityName[item.quality];
+            let valStr: string;
+            //4‑7暴击、暴抗、闪避、命中保留1位小数；其余直接数字
+            if (item.xilian >= 4 && item.xilian <= 7) {
+                valStr = (Number(item.value)).toFixed(1) + '%';
+            } else {
+                valStr = String(item.value);
+            }
+            const line = `<color=${qColor}><size=20>${attrName}+${valStr}</size></color>`;
+            // const line = `【${attrName}】${qName}：${valStr}`;
+            lines.push(line);
+        }
+
+        // lines.push(`</size>`);
+        return lines.join("\n");
+    }
+
     goback() {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.active = false;

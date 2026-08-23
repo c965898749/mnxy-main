@@ -10,6 +10,13 @@ export type GemSlotInfo = {
     equipUniqueId: string;       // 装备id
     icon: string;
 }
+export type xilianInfo = {
+    id: number;     // 宝石id
+    eqId: number; // 镶嵌槽位置索引 0,1,2...
+    xilian: number;       // 装备id
+    quality: number;
+    value: string;
+}
 export type EquipmentStateCreate = {
     // id
     id: string
@@ -79,11 +86,11 @@ export type EquipmentStateCreate = {
     fdDef: number
     zlDef: number
 
-    xilian: number
     flyup: number
     // 新增：装备镶嵌宝石列表
     gemList?: GemSlotInfo[]
 
+    xilianList?: xilianInfo[]
 }
 
 export class EquipmentState extends BasicState<EquipmentMetaState> {
@@ -144,10 +151,12 @@ export class EquipmentState extends BasicState<EquipmentMetaState> {
     fdDef: number
     zlDef: number
 
-    xilian: number
+
     flyup: number
     // 新增：宝石镶嵌列表
     gemList: GemSlotInfo[]
+
+    xilianList?: xilianInfo[]
     // 构造器
     constructor(create: EquipmentStateCreate, character: CharacterState) {
         const meta = EquipmentEnum[create.id]
@@ -173,7 +182,6 @@ export class EquipmentState extends BasicState<EquipmentMetaState> {
         this.name = create.name
         this.camp = create.camp
         this.id = create.id
-        this.xilian = create.xilian
         this.flyup = create.flyup
         this.introduce = create.introduce
         this.eqType = create.eqType
@@ -190,6 +198,8 @@ export class EquipmentState extends BasicState<EquipmentMetaState> {
         this.zlDef = create.lv * create.zlDef
         // 初始化宝石列表，不传则为空数组
         this.gemList = create.gemList ?? [];
+        //初始化洗练
+        this.xilianList = create.xilianList ?? [];
     }
 
     // 添加属性到角色

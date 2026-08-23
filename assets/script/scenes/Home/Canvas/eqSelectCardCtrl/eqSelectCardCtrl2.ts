@@ -20,15 +20,19 @@ export class eqSelectCardCtrl2 extends Component {
     update(deltaTime: number) {
 
     }
-    skillDict: Record<number, string> = {
-        1: "诛仙", 2: "食人", 3: "驱魔", 4: "斗兽",
-        5: "仙师", 6: "人杰", 7: "魔王", 8: "兽灵",
-        9: "返火", 10: "辟土", 11: "逆雷", 12: "分水",
-        13: "驭兵", 14: "破妄",
-        15: "踏浪", 16: "破岩", 17: "驱雷", 18: "蹈火",
-        19: "不侵", 20: "灭法",
-        21: "突袭", 22: "闪避"
-    };
+ skillDict: Record<number, string> = {
+    0: "突击",
+    1: "灵能",
+    2: "防护",
+    3: "御灵",
+    4: "暴击",
+    5: "暴抗",
+    6: "闪避",
+    7: "命中",
+    8: "速度",
+    9: "生命"
+};
+
     rankDict: Record<number, string> = {
         0: "",
         1: "法",

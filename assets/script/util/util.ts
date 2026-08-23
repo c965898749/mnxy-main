@@ -5,9 +5,11 @@ import { log } from "./out/log";
 import { load as loadMessage, preloadLoad } from "./message/load";
 import { confirm, preloadConfirm } from "./message/confirm"
 import { preloadPrompt, prompt } from "./message/prompt"
+import { preloadEqPrompt, eqPrompt } from "./message/eqPrompt"
 import { getNodePool } from "./resource/getNodePool";
 import { moveNodeToPosition } from "./sundry/moveNodeToPosition";
 import { introduce, preloadIntroduce } from "./message/introduce";
+import { eqIntroduce, preloadEqIntroduce } from "./message/eqIntroduce";
 import { setDetail, preloadDetail } from "./message/connect";
 import { formateNumber } from "./sundry/formateNumber";
 
@@ -31,12 +33,16 @@ export const util = {
     message: {
         prompt , // 提示框
         preloadPrompt ,
+        eqPrompt , // 提示框
+        preloadEqPrompt ,
         confirm , // 确认框
         preloadConfirm ,
         load: loadMessage , // 加载框
         preloadLoad ,
         introduce ,
         preloadIntroduce ,
+        eqIntroduce ,
+        preloadEqIntroduce ,
         setDetail ,
         preloadDetail ,
     } ,
