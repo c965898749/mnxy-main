@@ -1,0 +1,16 @@
+{
+  "name": "ymxy",
+  "version": "1.0.5",
+  "main": "build.js",
+  "description": "迷你神仙",
+  "author": "author",
+  "scripts": {
+    "package-win": ""
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.10",
+    "fs-extra": "^11.2.0",
+    "request": "^2.88.2",
+    "steamworks.js": "^0.4.0"
+  }
+}

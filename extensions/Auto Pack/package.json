@@ -1,0 +1,44 @@
+{
+  "name": "auto-pack",
+  "version": "3.0.5",
+  "package_version": 2,
+  "description": "Automatically build Windows (Electron) or Steam packages when packaging for the web.",
+  "author": "haochengjiang",
+  "main": "./main.js",
+  "main-menu": {
+    "i18n:MAIN_MENU.package.title/open": {
+      "message": "auto-pack:open"
+    }
+  },
+  "panels": {
+    "default": {
+      "title": "Auto Pack",
+      "type": "dockable",
+      "main": "./app.js",
+      "size": {
+        "min-width": 600,
+        "min-height": 850,
+        "width": 600,
+        "height": 850
+      }
+    }
+  },
+  "contributions": {
+    "builder": "./builder.js",
+    "menu": [
+      {
+        "path": "i18n:menu.extension",
+        "label": "Auto Pack",
+        "message": "open"
+      }
+    ],
+    "messages": {
+      "open": {
+        "methods": [
+          "open"
+        ]
+      }
+    }
+  },
+  "editor": ">=3.0.0"
+}

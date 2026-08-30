@@ -1769,7 +1769,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": -140,
-      "y": -31.678,
+      "y": -40,
       "z": 0
     },
     "_lrot": {
@@ -1809,7 +1809,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 128.3349609375,
+      "width": 0,
       "height": 50.4
     },
     "_anchorPoint": {
@@ -1821,7 +1821,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "6f/GRgSD1NKLTyoN2fqbMO"
+    "fileId": "f0IPK2Ql1HV5MoHICkIZGD"
   },
   {
     "__type__": "cc.Label",
@@ -1845,7 +1845,7 @@
       "b": 26,
       "a": 255
     },
-    "_string": "妖界.神将",
+    "_string": "",
     "_horizontalAlign": 0,
     "_verticalAlign": 1,
     "_actualFontSize": 30,
@@ -1889,7 +1889,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "8ch9mKxc1N+bGlyzQPjGGt"
+    "fileId": "ccXp4dT5hIDpHkXa3SdwTi"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -1899,7 +1899,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "fbzeU3YmBAb6/FyJQdgo/S",
+    "fileId": "a76eOHWZNFn5JupqNhnuwt",
     "instance": null,
     "targetOverrides": null,
     "nestedPrefabInstanceRoots": null

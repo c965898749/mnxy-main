@@ -400,7 +400,7 @@ export class Loginpel extends Component {
     /**
      * 版本一致，进入游戏主场景
      */
-    private enterGame() {
+    private async enterGame() {
         if (this.isRequesting) return;
         this.isRequesting = true;
         const token = getToken()
@@ -422,6 +422,7 @@ export class Loginpel extends Component {
             .then(data => {
                 // console.log(data); // 处理响应数据
                 if (data.success == '1') {
+                    this.node.parent.getChildByName("HolPreLoad").active=true
                     localStorage.setItem("UserConfigData", null)
                     var userInfo = data.data;
                     var config = {

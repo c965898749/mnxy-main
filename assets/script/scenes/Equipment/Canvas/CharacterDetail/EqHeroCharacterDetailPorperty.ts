@@ -183,9 +183,20 @@ export class EqHeroCharacterDetailPorperty extends Component {
             });
         }
         this.node.getChildByName("Xilian").children.forEach(n => n.active = false)
-        for (let i = 0; i<create.xilianList.length; i++) {
-            this.node.getChildByName("Xilian").children[i].active = true
-            this.node.getChildByName("Xilian").children[i].getComponent(RichText).string = this.formatRefineList(create.xilianList[i])
+        // 先判空数组，同时避免children越界
+        if (create?.xilianList && create.xilianList.length > 0) {
+            const xilianNode = this.node.getChildByName("Xilian");
+            if(xilianNode){
+                for (let i = 0; i < create.xilianList.length; i++) {
+                    const child = xilianNode.children[i];
+                    if (!child) continue;
+                    child.active = true;
+                    const richText = child.getComponent(RichText);
+                    if(richText){
+                        richText.string = this.formatRefineList(create.xilianList[i]);
+                    }
+                }
+            }
         }
 
 

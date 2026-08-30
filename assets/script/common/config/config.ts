@@ -244,8 +244,9 @@ export interface BattleLogItem {
 
 export class BattleLogStorage {
     private readonly STORAGE_KEY = "battle_log_list";
-    // 本地最大缓存战斗数量，超出删除最早一条
-    private readonly MAX_STORE_COUNT = 1000;
+    // 本地最大缓存战斗数量，超出删除最早一条，战斗日志单条体积大，建议调小
+    private readonly MAX_STORE_COUNT = 200;
+
 
     /** 读取本地缓存列表（localStorage 整体存JSON字符串） */
     private getAllLocalList(): BattleLogItem[] {
@@ -260,11 +261,26 @@ export class BattleLogStorage {
         }
     }
 
-    /** 写入本地，数组转JSON字符串持久化 */
+
+    /** 写入本地，数组转JSON字符串持久化，增加溢出容错 */
     private saveToLocal(list: BattleLogItem[]) {
-        const jsonStr = JSON.stringify(list);
-        localStorage.setItem(this.STORAGE_KEY, jsonStr);
+        try {
+            const jsonStr = JSON.stringify(list);
+            localStorage.setItem(this.STORAGE_KEY, jsonStr);
+        } catch (e) {
+            console.warn("BattleLogStorage 存储溢出，降级处理", e);
+            // 存储超限：减半裁剪重试
+            const shrinkList = list.slice(-Math.floor(list.length / 2));
+            try {
+                const jsonStr = JSON.stringify(shrinkList);
+                localStorage.setItem(this.STORAGE_KEY, jsonStr);
+            } catch {
+                // 仍然失败，直接清空
+                localStorage.removeItem(this.STORAGE_KEY);
+            }
+        }
     }
+
 
     /** 删除单条失效战斗缓存 */
     public removeLocalBattle(battleId: string) {
@@ -273,11 +289,13 @@ export class BattleLogStorage {
         this.saveToLocal(list);
     }
 
+
     /** 根据战斗ID查询本地缓存 */
     public getLocalBattle(battleId: string): BattleLogItem | null {
         const list = this.getAllLocalList();
         return list.find(item => item.battleId === battleId) ?? null;
     }
+
 
     /** 新增/更新缓存，自动控容量 */
     public saveBattleItem(item: BattleLogItem) {
@@ -291,6 +309,7 @@ export class BattleLogStorage {
         }
         this.saveToLocal(list);
     }
+
 
     /** 统一获取完整战斗数据入口 */
     public async getBattleFullInfo(battleId: string): Promise<BattleFullData> {
@@ -313,6 +332,7 @@ export class BattleLogStorage {
 
         return fullBattleData;
     }
+
 
     /** POST 请求 playBattle 接口，完全适配你的后端逻辑 */
     private async requestBattleServer(fightId: string): Promise<BattleFullData> {
@@ -357,6 +377,7 @@ export class BattleLogStorage {
         return map as BattleFullData;
     }
 
+
     /** 清空所有战斗本地缓存 */
     public clearAll() {
         localStorage.removeItem(this.STORAGE_KEY);
@@ -366,7 +387,9 @@ export class BattleLogStorage {
 // 全局单例，所有外部直接导入这个实例
 export const battleCache = new BattleLogStorage();
 
+
 import { ChatMsg, ChannelType } from "./ChatMsg";
+
 
 export class ChatStorage {
     // 每个频道本地存储key前缀
@@ -376,10 +399,12 @@ export class ChatStorage {
     // 当前登录用户ID，外部初始化传入
     private selfUserId: number = 0;
 
+
     // 外部设置当前玩家ID
     public setSelfId(uid: number) {
         this.selfUserId = uid;
     }
+
 
     // 根据频道生成唯一localStorage key（世界独立key，数组存储多条）
     private getStorageKey(channelType: ChannelType, targetId: number): string {
@@ -398,6 +423,7 @@ export class ChatStorage {
         }
     }
 
+
     /** 读取当前频道本地缓存数组（所有频道统一数组存储，返回多条列表） */
     public getAllLocalList(channelType: ChannelType, targetId: number): ChatMsg[] {
         const key = this.getStorageKey(channelType, targetId);
@@ -414,12 +440,25 @@ export class ChatStorage {
         }
     }
 
-    /** 写入当前频道完整数组到本地持久化 */
+
+    /** 写入当前频道完整数组到本地持久化，增加溢出容错 */
     private saveToLocal(channelType: ChannelType, targetId: number, list: ChatMsg[]) {
         const key = this.getStorageKey(channelType, targetId);
-        const jsonStr = JSON.stringify(list);
-        localStorage.setItem(key, jsonStr);
+        try {
+            const jsonStr = JSON.stringify(list);
+            localStorage.setItem(key, jsonStr);
+        } catch (e) {
+            console.warn("ChatStorage 存储溢出，降级处理", e);
+            const shrinkList = list.slice(-Math.floor(list.length / 2));
+            try {
+                const jsonStr = JSON.stringify(shrinkList);
+                localStorage.setItem(key, jsonStr);
+            } catch {
+                localStorage.removeItem(key);
+            }
+        }
     }
+
 
     /** 新增单条消息，插入数组头部，自动控100条上限（所有频道通用） */
     public saveChatItem(msg: ChatMsg) {
@@ -435,6 +474,7 @@ export class ChatStorage {
         this.saveToLocal(msg.channelType, msg.targetId, list);
     }
 
+
     /** 新增单条消息，插入数组尾部，自动控100条上限（所有频道通用） */
     public saveChatItem2(msg: ChatMsg) {
         let list = this.getAllLocalList(msg.channelType, msg.targetId);
@@ -449,17 +489,20 @@ export class ChatStorage {
         this.saveToLocal(msg.channelType, msg.targetId, list);
     }
 
+
     public saveToLocals(list: ChatMsg[]) {
         for (const msg of list) {
             this.saveChatItem(msg);
         }
     }
 
+
     /** 清空单个频道本地全部数组缓存 */
     public clearSingleChannel(channelType: ChannelType, targetId: number) {
         const key = this.getStorageKey(channelType, targetId);
         localStorage.removeItem(key);
     }
+
 
     /** 清空全部聊天本地缓存（切换账号调用） */
     public clearAllChatCache() {

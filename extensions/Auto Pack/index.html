@@ -1,0 +1,159 @@
+<!-- index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Auto Pack</title>
+  <!-- <link rel="stylesheet" href="index.css"> -->
+</head>
+
+<body>
+  <div ref="app" id="app" style="opacity: 0;">
+    <div class="counter">
+      <h2 id="title">构建发布</h2>
+
+      <ui-prop>
+        <ui-label slot="label">自动打包</ui-label>
+        <ui-checkbox slot="content" ref="auto"></ui-checkbox>
+      </ui-prop>
+      <ui-prop>
+        <ui-label slot="label">项目名称</ui-label>
+        <ui-input slot="content" tabindex="0" ref="packname" value=""> </ui-input>
+      </ui-prop>
+      <ui-prop>
+        <ui-label slot="label">标题栏名称</ui-label>
+        <ui-input slot="content" tabindex="0" ref="titlename"></ui-input>
+      </ui-prop>
+      <ui-prop>
+        <ui-label slot="label">应用版本</ui-label>
+        <ui-input slot="content" tabindex="0" ref="version"></ui-input>
+      </ui-prop>
+      <ui-prop>
+        <ui-label slot="label">应用图标</ui-label>
+        <ui-file slot="content" tabindex="0" extensions="ico,icns" ref="iconPath"></ui-file>
+      </ui-prop>
+      <ui-prop><ui-label slot="label">窗口尺寸</ui-label>
+        <div slot="content">
+          <ui-prop>
+            <ui-label slot="label">设计宽度</ui-label>
+            <ui-num-input slot="content" tabindex="0" ref="windowWidth" tooltip=""></ui-num-input>
+          </ui-prop>
+          <ui-prop>
+            <ui-label slot="label">设计高度</ui-label>
+            <ui-num-input slot="content" tabindex="0" ref="windowHeight" tooltip=""></ui-num-input>
+          </ui-prop>
+        </div>
+      </ui-prop>
+      <ui-prop>
+        <ui-label slot="label">调试模式</ui-label>
+        <ui-checkbox slot="content" tabindex="0" ref="debug"></ui-checkbox>
+      </ui-prop>
+      <ui-prop>
+        <ui-label slot="label">设置全屏</ui-label>
+        <ui-checkbox slot="content" tabindex="0" ref="setFullScreen"></ui-checkbox>
+      </ui-prop>
+
+      <ui-prop>
+        <ui-label slot="label">是否加密</ui-label>
+        <ui-checkbox slot="content" tabindex="0" ref="asar"></ui-checkbox>
+      </ui-prop>
+
+      <ui-prop>
+        <ui-label slot="label">是否覆盖原有的包</ui-label>
+        <ui-checkbox slot="content" tabindex="0" ref="overwrite"></ui-checkbox>
+      </ui-prop>
+
+      <ui-prop>
+        <ui-label slot="label">steam</ui-label>
+        <ui-checkbox slot="content" tabindex="0" ref="steam" tooltip=""></ui-checkbox>
+        <ui-num-input slot="content" tabindex="0" ref="steamAppID" tooltip=""></ui-num-input>
+      </ui-prop>
+
+      <ui-prop>
+        <ui-label slot="label">热更</ui-label>
+        <ui-checkbox slot="content" tabindex="0" ref="hotRefresh" tooltip="" @change="hotRefreshChanged"></ui-checkbox>
+        <ui-input slot="content" tabindex="0" ref="hotRefreshUrl" tooltip=""></ui-input>
+      </ui-prop>
+
+      <ui-prop>
+        <ui-label slot="label" tooltip="https://registry.npmmirror.com/-/binary/electron/">npm源</ui-label>
+        <ui-checkbox slot="content" tabindex="0" ref="mirrors"></ui-checkbox>
+        <ui-input slot="content" tabindex="0" ref="mirrorsUrl" tooltip=""></ui-input>
+      </ui-prop>
+
+      <ui-prop>
+        <ui-label slot="label" tooltip="">appBundleId</ui-label>
+        <ui-checkbox slot="content" tabindex="0" ref="appBundleId"></ui-checkbox>
+        <ui-input slot="content" tabindex="0" ref="appBundleIdName" tooltip=""></ui-input>
+      </ui-prop>
+
+      <ui-prop>
+        <ui-label slot="label">平台</ui-label>
+        <ui-select slot="content" ref="platform" tabindex="0">
+          <option value="0">win32</option>
+          <option value="1">darwin</option>
+          <option value="2">linux</option>
+          <option value="3">mas</option>
+        </ui-select>
+      </ui-prop>
+
+      <ui-prop>
+        <ui-label slot="label">架构</ui-label>
+        <ui-select slot="content" ref="arch" tabindex="0">
+          <option value="0">ia32</option>
+          <option value="1">x64</option>
+          <option value="2">arm64</option>
+        </ui-select>
+      </ui-prop>
+
+      <ui-prop>
+        <ui-label slot="label">electron 版本号</ui-label>
+        <ui-input slot="content" tabindex="0" ref="electronVersion" readonly></ui-input>
+      </ui-prop>
+
+
+      <!-- <ui-prop>
+      <ui-label slot="label">构建进度</ui-label>
+      <ui-progress slot="content" tabindex="0" ref="progress" percent></ui-progress>
+    </ui-prop> -->
+
+
+      <ui-prop>
+        <ui-label slot="label">辅助功能</ui-label>
+        <ui-button slot="content" tabindex="0" type="default" class="assist-btn" ref="webBtn"
+          @click="openFolder('web')">web
+        </ui-button>
+        <ui-button slot="content" tabindex="0" type="default" class="assist-btn" ref="windowsBtn"
+          @click="openFolder('windows')">windows
+        </ui-button>
+        <ui-button slot="content" tabindex="0" type="default" class="assist-btn" ref="copyBtn"
+          @click="copyElectronMgrForProject()"> ElectronMgr
+        </ui-button>
+        <ui-button slot="content" tabindex="0" type="default" class="assist-btn" ref="copyBtn"
+          @click="copySteamMgrForProject()"> SteamMgr
+        </ui-button>
+      </ui-prop>
+
+
+      <div class="foot">
+        <ui-button slot="content" tabindex="0" type="default" class="foot-btn" ref="saveBtn"
+          @click="footButtonFunc('save')">保存配置
+        </ui-button>
+
+        <ui-button slot=" content" tabindex="0" type="default" class="foot-btn" ref="previewBtn"
+          @click="footButtonFunc('preview')">预览
+        </ui-button>
+
+        <ui-button slot="content" tabindex="0" type="default" class="foot-btn" ref="buildBtn"
+          @click="footButtonFunc('build')">立即构建
+        </ui-button>
+      </div>
+
+    </div>
+
+  </div>
+</body>
+
+</html>

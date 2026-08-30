@@ -43,7 +43,7 @@ export class PveCtrl extends Component {
     BossList: Node
     chapter: string
     @property({ tooltip: "固定尺寸" })
-    MaxEnergy: 1500//最大体力值
+    MaxEnergy: 2000//最大体力值
     @property({ tooltip: "固定尺寸" })
     energy = 0
     huoliEnergy = 0
@@ -218,9 +218,9 @@ export class PveCtrl extends Component {
         }
         const config = getConfig()
         var LeaveEnergy = this.GetLeaveEnergy();
-        this.Tili.getChildByName("TiliCount").getComponent(Label).string = LeaveEnergy + "/1500";
+        this.Tili.getChildByName("TiliCount").getComponent(Label).string = LeaveEnergy + "/2000";
         this.Tili.getChildByName("user_tl").getChildByName("Bar").setScale(
-            LeaveEnergy / 1500,
+            LeaveEnergy /2000,
             1,
             1
         )

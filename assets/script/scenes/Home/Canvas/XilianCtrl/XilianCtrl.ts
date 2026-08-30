@@ -88,7 +88,8 @@ export class XilianCtrl extends Component {
 
 <color=#ee88bb><size=22>【生命】</size></color>增加卡牌生命值上限
 
-<color=#ff3333>洗练满 50 次则激活第二属性（可开启洗洗炼锁定每次100灵石）</color>
+<color=#ff3333> 洗练有概率出现第二、第三属性；累计洗练 50 次保底激活第二属性、累计洗练 1000 次保底激活第三属性（每锁定一个属性消耗 100 灵石）</color>
+<color=#ff3333>单件装备【暴击】、【暴抗】、【闪避】、【命中】最高不超过10%</color>
 <color=#ff3333>每次洗炼消耗水之元、火之元、土之元、生之元、雷之元、道之元各2枚</color>
 </size>`;
 
@@ -142,6 +143,8 @@ export class XilianCtrl extends Component {
             if (characters.xilianList.length > 0) {
                 cc = characters.xilianList.length
             }
+            // 循环外面只拆分一次
+            const idArr = this.str.split(',').filter(item => item.trim() !== '');
             for (let index = 0; index < characters.xilianList.length; index++) {
                 const content = characters.xilianList[index];
                 if (!content) continue;
@@ -151,12 +154,11 @@ export class XilianCtrl extends Component {
                 const toggleNode = xilian.getChildByName("Toggle");
                 const id = xilian.getChildByName("id");
                 if (cc > 1) {
-                    toggleNode.active = true
-                    if (this.str == content.id + "") {
-                        toggleNode.getComponent(Toggle).isChecked = true
-                    } else {
-                        toggleNode.getComponent(Toggle).isChecked = false
-                    }
+                    toggleNode.active = true;
+                    const toggleComp = toggleNode.getComponent(Toggle);
+                    const curId = content.id + "";
+                    // indexOf >=0 代表存在
+                    toggleComp.isChecked = idArr.indexOf(curId) !== -1;
                 } else {
                     toggleNode.active = false
                 }
@@ -190,23 +192,23 @@ export class XilianCtrl extends Component {
         let allChecked = true;
         const layoutComp = this.ContentNode;
         if (!layoutComp) return;
+        this.str = ""
         // ✅关键点：Layout组件取 .node 拿到节点
         const layoutNode = layoutComp.node;
+        const idList: string[] = [];
         for (let index = 0; index < layoutNode.children.length; index++) {
-
             const content = layoutNode.children[index];
             if (!content) continue;
-
             const toggleComp = content.getChildByName("Toggle").getComponent(Toggle);
-            // 只要有一个未勾选，全部勾选标记置false
             if (!toggleComp.isChecked) {
                 allChecked = false;
             } else {
-                // 勾选的收集id
-                this.str = content.getChildByName("id").getComponent(Label).string;
+                const idStr = content.getChildByName("id").getComponent(Label).string;
+                idList.push(idStr);
             }
-
         }
+        this.str = idList.join(",");
+
 
         if (layoutNode.children.length > 1 && allChecked) {
             return await util.message.prompt({ message: "洗练属性请勿全部锁定！" })
@@ -268,7 +270,7 @@ export class XilianCtrl extends Component {
                     let eqCharactersList = map["eqCharactersList"]
                     let xilian = map["xilian"]
                     let info = map["info"]
-                    if(info){
+                    if (info) {
                         config.userData.diamond = info.diamond
                     }
                     const str = this.formatRefineList(xilian);

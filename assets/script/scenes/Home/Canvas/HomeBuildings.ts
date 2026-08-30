@@ -49,7 +49,7 @@ export class HomeBuildings extends Component {
     @property(Node)
     energyHuoliLabel: Node//活力力显示
     @property({ tooltip: "固定尺寸" })
-    MaxEnergy: 1500//最大体力值
+    MaxEnergy: 2000//最大体力值
     // EnergyReturnTime: 600//体力回复时间
     timer = 0
     @property({ tooltip: "固定尺寸" })
@@ -71,7 +71,11 @@ export class HomeBuildings extends Component {
         const holPreLoad = this.node.parent.getChildByName("HolPreLoad").getComponent(HolPreLoad)
         holPreLoad.setTips([
             "提示\n不同阵营之间相互克制，巧用阵营可以出奇制胜",
-        ])
+            "提示\n合理培养卡牌，低星卡牌也能发挥巨大作用",
+            "提示\n记得领取每日奖励，积累资源更快成长",
+            "提示\n闯关遇到瓶颈可以尝试调整上阵阵容",
+            "提示\n完成成就任务可以获得丰厚额外奖励",
+        ]);
         holPreLoad.setProcess(10)
         const config = getConfig()
         // 音乐们

@@ -18,7 +18,11 @@ export class EqHeroAllHeros extends Component {
         holPreLoad.node.active = true
         holPreLoad.setTips([
             "提示\n不同阵营之间相互克制，巧用阵营可以出奇制胜",
-        ])
+            "提示\n合理培养卡牌，低星卡牌也能发挥巨大作用",
+            "提示\n记得领取每日奖励，积累资源更快成长",
+            "提示\n闯关遇到瓶颈可以尝试调整上阵阵容",
+            "提示\n完成成就任务可以获得丰厚额外奖励",
+        ]);
         holPreLoad.setProcess(20)
         // const config = getConfig()
         // 监听进度条完成函数

@@ -21,7 +21,7 @@ export class JinjichangCtrl extends Component {
     gameRanking = 0
     initialized = false;
     huoliEnergy = 0
-    MaxEnergy: 1500//最大体力值
+    MaxEnergy: 2000//最大体力值
     // EnergyReturnTime: 600//体力回复时间
     timer = 0
     @property({ tooltip: "固定尺寸" })
@@ -124,9 +124,9 @@ export class JinjichangCtrl extends Component {
 
     refresh() {
         this.huoliEnergy = this.GetLeaveHuoliEnergy();
-        this.energyHuoliLabel.getComponent(Label).string = this.huoliEnergy + "/1500";
+        this.energyHuoliLabel.getComponent(Label).string = this.huoliEnergy + "/2000";
         this.Huoli.setScale(
-            this.huoliEnergy / 1500,
+            this.huoliEnergy /2000,
             1,
             1
         )

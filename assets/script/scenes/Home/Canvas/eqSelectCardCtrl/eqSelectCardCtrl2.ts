@@ -1,6 +1,6 @@
-import { _decorator, Color, Component, Label, Node, Prefab, Sprite, SpriteFrame, Toggle } from 'cc';
+import { _decorator, Color, Component, Label, Node, Prefab, RichText, Sprite, SpriteFrame, Toggle } from 'cc';
 import { eqQianghuaCtrl } from '../eqQianghuaCtrl/eqQianghuaCtrl';
-import { EquipmentStateCreate } from 'db://assets/script/game/fight/equipment/EquipmentState';
+import { EquipmentStateCreate, xilianInfo } from 'db://assets/script/game/fight/equipment/EquipmentState';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 import { AttrLevelCtrl } from '../qianghua/AttrLevelCtrl';
@@ -20,18 +20,18 @@ export class eqSelectCardCtrl2 extends Component {
     update(deltaTime: number) {
 
     }
- skillDict: Record<number, string> = {
-    0: "突击",
-    1: "灵能",
-    2: "防护",
-    3: "御灵",
-    4: "暴击",
-    5: "暴抗",
-    6: "闪避",
-    7: "命中",
-    8: "速度",
-    9: "生命"
-};
+    skillDict: Record<number, string> = {
+        0: "突击",
+        1: "灵能",
+        2: "防护",
+        3: "御灵",
+        4: "暴击",
+        5: "暴抗",
+        6: "闪避",
+        7: "命中",
+        8: "速度",
+        9: "生命"
+    };
 
     rankDict: Record<number, string> = {
         0: "",
@@ -91,7 +91,7 @@ export class eqSelectCardCtrl2 extends Component {
         this.eqQianghuaCtrl = qianghuaCtrlInstance
         this.node.active = true
         const nodePool = util.resource.getNodePool(
-            await util.bundle.load("prefab/fankuai", Prefab)
+            await util.bundle.load("prefab/fankuai2", Prefab)
         )
         const childrens = [...this.ContentNode.children]
         for (let i = 0; i < childrens.length; i++) {
@@ -141,8 +141,7 @@ export class eqSelectCardCtrl2 extends Component {
             }
             item.getChildByName("name").getComponent(Label).string = create[i].name + "  Lv" + create[i].lv + "/" + create[i].maxLv
             // 仙、佛、圣、魔、妖、兽
-            const xilianStr = create[i].xilian != null ? this.skillDict[create[i].xilian] : "";
-            item.getChildByName("Camp").getComponent(Label).string = create[i].profession + " " + xilianStr
+            item.getChildByName("Camp").getComponent(RichText).string = `<color=#C9821A><size=30>${create[i].profession}</size></color>` + " " + this.formatRefineList(create[i].xilianList)
             item.getChildByName("yxjm_df_txk").getChildByName("flyup").active = true
             item.getChildByName("yxjm_df_txk").getChildByName("flyup").getComponent(Label).color = new Color(this.rankColorDict[create[i].flyup]);
             item.getChildByName("yxjm_df_txk").getChildByName("flyup").getComponent(Label).string = this.rankDict[create[i].flyup] || ""
@@ -154,6 +153,37 @@ export class eqSelectCardCtrl2 extends Component {
             item.getComponent(AttrLevelCtrl).initData(this)
             continue
         }
+    }
+    qualityColor: Record<number, string> = {
+        0: "#88ff88", //普通绿色
+        1: "#bb77ff", //优秀紫色
+        2: "#ffdd77"  //极品金色
+    };
+
+    formatRefineList(xilianList?: xilianInfo[]): string {
+
+
+
+        const lines: string[] = [];
+        // lines.push(`<size=18>`);
+
+        for (const item of xilianList) {
+            const attrName = this.skillDict[item.xilian];
+            const qColor = this.qualityColor[item.quality];
+            let valStr: string;
+            //4‑7暴击、暴抗、闪避、命中保留1位小数；其余直接数字
+            if (item.xilian >= 4 && item.xilian <= 7) {
+                valStr = (Number(item.value)).toFixed(1) + '%';
+            } else {
+                valStr = String(item.value);
+            }
+            const line = `<color=${qColor}><size=20>${attrName}+${valStr}</size></color>`;
+            // const line = `【${attrName}】${qName}：${valStr}`;
+            lines.push(line);
+        }
+
+        // lines.push(`</size>`);
+        return lines.join("   ");
     }
 
 }

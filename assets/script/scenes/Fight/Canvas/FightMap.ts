@@ -97,7 +97,11 @@ export class FightMap extends Component {
         const holPreLoad = this.node.getChildByName("HolPreLoad").getComponent(HolPreLoad)
         holPreLoad.setTips([
             "提示\n不同阵营之间相互克制，巧用阵营可以出奇制胜",
-        ])
+            "提示\n合理培养卡牌，低星卡牌也能发挥巨大作用",
+            "提示\n记得领取每日奖励，积累资源更快成长",
+            "提示\n闯关遇到瓶颈可以尝试调整上阵阵容",
+            "提示\n完成成就任务可以获得丰厚额外奖励",
+        ]);
         holPreLoad.setProcess(20)
         // 随机地图
         const images = await util.bundle.loadDir("image/fightMap", SpriteFrame)
@@ -391,6 +395,7 @@ export class FightMap extends Component {
                 // 等待行动队列清空
                 await Promise.all(this.actionAwaitQueue)
                 this.actionAwaitQueue = []
+                let effectType = fightProcess.effectType
                 let characterNode = this.getCharacterById(fightProcess.sourceUnitId)
                 await util.sundry.moveNodeToPosition(
                     characterNode,
@@ -400,22 +405,88 @@ export class FightMap extends Component {
                         moveTimeScale: this.timeScale
                     }
                 )
-                AudioMgr.inst.playOneShot("sound/fight/attack/attack");
-                let targetCharacterNode = this.getCharacterById(fightProcess.targetUnitId)
-                let hut = targetCharacterNode.getChildByName("hut").getComponent(sp.Skeleton)
-                hut.node.active = true
-                hut.setAnimation(0, "animation", false)
-                //伤害结算
-                this.showNumber(this.hasLetterA(fightProcess.targetUnitId), targetCharacterNode, -fightProcess.singleTargetValue, new math.Color(255, 176, 126, 255), 40)
-                let Hp = this.Hp.children[this.hasLetterA(fightProcess.targetUnitId) ? 0 : 1]
-                Hp.getComponent(ProgressBar).progress = fightProcess.targetHpAfter / fightProcess.targetHpBefore
-                Hp.getChildByName("user_li_count").getComponent(Label).string = fightProcess.targetHpAfter + "/" + fightProcess.targetHpBefore
-                let item = this.getChracterChangXiaById(fightProcess.targetUnitId)
-                // 更新场下生命值
-                item.getChildByName("my_hp").getComponent(ProgressBar).progress = fightProcess.targetHpAfter / fightProcess.targetHpBefore
-                item.getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = fightProcess.targetHpAfter + "/" + fightProcess.targetHpBefore
-                const hurtPromise = this.playAnimation(hut)
-                this.actionAwaitQueue.push(hurtPromise)
+                if (effectType == "DISP") {
+                    // 等待行动队列清空
+                    await Promise.all(this.actionAwaitQueue)
+                    this.actionAwaitQueue = []
+                    let targetCharacterNode = this.getCharacterById(fightProcess.targetUnitId)
+                    let targetChangXiaNode = this.getChracterChangXiaById(fightProcess.targetUnitId)
+                    let selectSkeleton = targetCharacterNode.getChildByName("DISP").getComponent(sp.Skeleton)
+                    selectSkeleton.node.active = true
+                    selectSkeleton.setAnimation(0, "animation", false)
+                    selectSkeleton.setCompleteListener(() => {
+                        AudioMgr.inst.playOneShot("sound/fight/skill/DISP");
+                        selectSkeleton.node.active = false;
+                    })
+                    await this.showString(1, targetChangXiaNode, new math.Color(255, 0, 0), fightProcess.extraDesc)
+                } else if (effectType == "CRIT") {
+                    await Promise.all(this.actionAwaitQueue)
+                    this.actionAwaitQueue = []
+                    let targetCharacterNode = this.getCharacterById(fightProcess.targetUnitId)
+                    let targetChangXiaNode = this.getChracterChangXiaById(fightProcess.targetUnitId)
+                    AudioMgr.inst.playOneShot("sound/fight/skill/chuanyun_grial");
+                    let selectSkeleton = targetCharacterNode.getChildByName("CRIT").getComponent(sp.Skeleton)
+                    selectSkeleton.node.active = true
+                    selectSkeleton.setAnimation(0, "animation", false)
+                    selectSkeleton.setCompleteListener(() => {
+                        selectSkeleton.node.active = false;
+                    })
+                    AudioMgr.inst.playOneShot("sound/fight/attack/attack");
+                    let hut = targetCharacterNode.getChildByName("hut").getComponent(sp.Skeleton)
+                    hut.node.active = true
+                    hut.setAnimation(0, "animation", false)
+                    //伤害结算
+                    this.showNumber(this.hasLetterA(fightProcess.targetUnitId), targetCharacterNode, -fightProcess.singleTargetValue, new math.Color(255, 176, 126, 255), 40)
+                    let Hp = this.Hp.children[this.hasLetterA(fightProcess.targetUnitId) ? 0 : 1]
+                    Hp.getComponent(ProgressBar).progress = fightProcess.targetHpAfter / fightProcess.targetHpBefore
+                    Hp.getChildByName("user_li_count").getComponent(Label).string = fightProcess.targetHpAfter + "/" + fightProcess.targetHpBefore
+                    let item = this.getChracterChangXiaById(fightProcess.targetUnitId)
+                    // 更新场下生命值
+                    item.getChildByName("my_hp").getComponent(ProgressBar).progress = fightProcess.targetHpAfter / fightProcess.targetHpBefore
+                    item.getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = fightProcess.targetHpAfter + "/" + fightProcess.targetHpBefore
+                    const hurtPromise = this.playAnimation(hut)
+                    this.actionAwaitQueue.push(hurtPromise)
+                    await this.showString(1, targetChangXiaNode, new math.Color(255, 0, 0), fightProcess.extraDesc)
+                } else if (effectType == "CRIT_DISP") {
+                    await Promise.all(this.actionAwaitQueue)
+                    this.actionAwaitQueue = []
+                    let targetCharacterNode = this.getCharacterById(fightProcess.targetUnitId)
+                    let targetChangXiaNode = this.getChracterChangXiaById(fightProcess.targetUnitId)
+                    AudioMgr.inst.playOneShot("sound/fight/skill/chuanyun_grial");
+                    let selectSkeleton = targetCharacterNode.getChildByName("CRIT").getComponent(sp.Skeleton)
+                    selectSkeleton.node.active = true
+                    selectSkeleton.setAnimation(0, "animation", false)
+
+                    selectSkeleton.setCompleteListener(async () => {
+                        selectSkeleton.node.active = false;
+                        await this.showString(1, targetChangXiaNode, new math.Color(255, 0, 0), fightProcess.extraDesc)
+                        let selectSkeleton2 = targetCharacterNode.getChildByName("DISP").getComponent(sp.Skeleton)
+                        selectSkeleton2.node.active = true
+                        selectSkeleton2.setAnimation(0, "animation", false)
+                        selectSkeleton2.setCompleteListener(() => {
+                            AudioMgr.inst.playOneShot("sound/fight/skill/DISP");
+                            selectSkeleton2.node.active = false;
+                        })
+                        await this.showString(1, targetChangXiaNode, new math.Color(255, 0, 0), fightProcess.extraDesc)
+                    })
+                } else {
+                    AudioMgr.inst.playOneShot("sound/fight/attack/attack");
+                    let targetCharacterNode = this.getCharacterById(fightProcess.targetUnitId)
+                    let hut = targetCharacterNode.getChildByName("hut").getComponent(sp.Skeleton)
+                    hut.node.active = true
+                    hut.setAnimation(0, "animation", false)
+                    //伤害结算
+                    this.showNumber(this.hasLetterA(fightProcess.targetUnitId), targetCharacterNode, -fightProcess.singleTargetValue, new math.Color(255, 176, 126, 255), 40)
+                    let Hp = this.Hp.children[this.hasLetterA(fightProcess.targetUnitId) ? 0 : 1]
+                    Hp.getComponent(ProgressBar).progress = fightProcess.targetHpAfter / fightProcess.targetHpBefore
+                    Hp.getChildByName("user_li_count").getComponent(Label).string = fightProcess.targetHpAfter + "/" + fightProcess.targetHpBefore
+                    let item = this.getChracterChangXiaById(fightProcess.targetUnitId)
+                    // 更新场下生命值
+                    item.getChildByName("my_hp").getComponent(ProgressBar).progress = fightProcess.targetHpAfter / fightProcess.targetHpBefore
+                    item.getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = fightProcess.targetHpAfter + "/" + fightProcess.targetHpBefore
+                    const hurtPromise = this.playAnimation(hut)
+                    this.actionAwaitQueue.push(hurtPromise)
+                }
                 //回到初始位置
                 await util.sundry.moveNodeToPosition(
                     characterNode,
@@ -440,7 +511,12 @@ export class FightMap extends Component {
                         }
                         let itemNode = this.getChracterChangXiaById(key)
                         itemNode.getChildByName("dead").active = true
-                        itemNode.getChildByName("buff").children.forEach(buffNode => { buffNode.active = false; });
+                        itemNode.getChildByName("buff").children.forEach(buffNode => {
+                            // FIXED_SOUL 不过滤，其他全部隐藏
+                            if (buffNode.name !== "FIXED_SOUL") {
+                                buffNode.active = false;
+                            }
+                        });
                     }
                 } else {
                     let characterNode = this.getCharacterById(fightProcess.targetUnitId)
@@ -449,7 +525,11 @@ export class FightMap extends Component {
                     itemNode.getChildByName("dead").active = true
                     //死亡移除所有动画
                     characterNode.children.forEach(buffNode => { buffNode.active = false; });
-                    itemNode.getChildByName("buff").children.forEach(buffNode => { buffNode.active = false; });
+                    itemNode.getChildByName("buff").children.forEach(buffNode => {
+                        if (buffNode.name !== "FIXED_SOUL") {
+                            buffNode.active = false;
+                        }
+                    });
                 }
 
                 await new Promise(res => setTimeout(res, 200 / this.timeScale))
@@ -530,7 +610,7 @@ export class FightMap extends Component {
                         }
                         skeletons.forEach(skeleton => {
                             skeleton.node.active = true
-                            if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN"|| effectType == "FIXED_SOUL") {
+                            if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN" || effectType == "FIXED_SOUL") {
                                 skeleton.setAnimation(0, "animation", true);
                             } else {
                                 skeleton.setAnimation(0, "animation", false);
@@ -896,7 +976,7 @@ export class FightMap extends Component {
                                 this.showNumber(this.hasLetterA(fightProcess.targetUnitId), targetCharacterNode, -fightProcess.singleTargetValue, new math.Color(255, 176, 126, 255), 40)
                                 let hut = targetCharacterNode.getChildByName(effectType).getComponent(sp.Skeleton)
                                 hut.node.active = true
-                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN"|| effectType == "FIXED_SOUL") {
+                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN" || effectType == "FIXED_SOUL") {
                                     hut.setAnimation(0, "animation", true);
                                 } else {
                                     hut.setAnimation(0, "animation", false)
@@ -905,7 +985,7 @@ export class FightMap extends Component {
                             } else {
                                 let selectSkeleton2 = targetChangXiaNode.getChildByName("buff").getChildByName(effectType).getComponent(sp.Skeleton)
                                 selectSkeleton2.node.active = true
-                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN"|| effectType == "FIXED_SOUL") {
+                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN" || effectType == "FIXED_SOUL") {
                                     selectSkeleton2.setAnimation(0, "animation", true)
                                 } else {
                                     selectSkeleton2.setAnimation(0, "animation", false)
@@ -1038,14 +1118,14 @@ export class FightMap extends Component {
 
                                     let selectSkeleton = targetCharacterNode.getChildByName(effectTypeName).getComponent(sp.Skeleton)
                                     selectSkeleton.node.active = true
-                                    if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN"|| effectType == "FIXED_SOUL") {
+                                    if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN" || effectType == "FIXED_SOUL") {
                                         selectSkeleton.setAnimation(0, "animation", true)
                                     } else {
                                         selectSkeleton.setAnimation(0, "animation", false)
                                     }
                                     await new Promise(res => setTimeout(res, 500 / this.timeScale))
                                     //伤害掉血动画
-                                    if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN"|| effectType == "FIXED_SOUL") {
+                                    if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN" || effectType == "FIXED_SOUL") {
                                         //中毒无动画
                                     } else if (effectType == 'ATTACK_UP') {
                                         //暂无展示
@@ -1058,7 +1138,7 @@ export class FightMap extends Component {
                                     // 更新场上生命值
                                     this.Hp.children[this.hasLetterA(fightProcess.targetUnitId) ? 0 : 1].getComponent(ProgressBar).progress = fightProcess.targetHpAfter / fightProcess.targetHpBefore
                                     this.Hp.children[this.hasLetterA(fightProcess.targetUnitId) ? 0 : 1].getChildByName("user_li_count").getComponent(Label).string = fightProcess.targetHpAfter + "/" + fightProcess.targetHpBefore
-                                    if (effectType != "POISON" && effectType != "SILENCE" && effectType != "HEAL_DOWN" && effectType != "STUN") {
+                                    if (effectType != "POISON" && effectType != "SILENCE" && effectType != "HEAL_DOWN" && effectType != "STUN" && effectType != "FIXED_SOUL") {
                                         // selectSkeleton.setCompleteListener(() => selectSkeleton.node.active = false)
                                         const hurtPromise = this.playAnimation(selectSkeleton)
                                         this.actionAwaitQueue.push(hurtPromise)
@@ -1096,7 +1176,7 @@ export class FightMap extends Component {
                                 //console.log("effectTypeName------", effectTypeName)
                                 let eventSelectSkeleton = targetChangXiaNode.getChildByName("buff").getChildByName(effectTypeName).getComponent(sp.Skeleton)
                                 eventSelectSkeleton.node.active = true
-                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN"|| effectType == "FIXED_SOUL") {
+                                if (effectType == "POISON" || effectType == "SILENCE" || effectType == "HEAL_DOWN" || effectType == "STUN" || effectType == "FIXED_SOUL") {
                                     eventSelectSkeleton.setAnimation(0, "animation", true)
                                 } else {
                                     eventSelectSkeleton.setAnimation(0, "animation", false)
@@ -1121,7 +1201,7 @@ export class FightMap extends Component {
                                 // 更新场下生命值
                                 targetChangXiaNode.getChildByName("my_hp").getComponent(ProgressBar).progress = fightProcess.targetHpAfter / fightProcess.targetHpBefore
                                 targetChangXiaNode.getChildByName("my_hp").getChildByName("user_li_count").getComponent(Label).string = fightProcess.targetHpAfter + "/" + fightProcess.targetHpBefore
-                                if (effectType != "POISON" && effectType != "SILENCE" && effectType != "HEAL_DOWN" && effectType != "STUN") {
+                                if (effectType != "POISON" && effectType != "SILENCE" && effectType != "HEAL_DOWN" && effectType != "STUN" && effectType != "FIXED_SOUL") {
                                     const hurtPromise = this.playAnimation(eventSelectSkeleton)
                                     this.actionAwaitQueue.push(hurtPromise)
                                 }

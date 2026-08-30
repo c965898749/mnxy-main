@@ -180,7 +180,11 @@ export class FightMap extends Component {
         const holPreLoad = this.node.getChildByName("HolPreLoad").getComponent(HolPreLoad)
         holPreLoad.setTips([
             "提示\n不同阵营之间相互克制，巧用阵营可以出奇制胜",
-        ])
+            "提示\n合理培养卡牌，低星卡牌也能发挥巨大作用",
+            "提示\n记得领取每日奖励，积累资源更快成长",
+            "提示\n闯关遇到瓶颈可以尝试调整上阵阵容",
+            "提示\n完成成就任务可以获得丰厚额外奖励",
+        ]);
         holPreLoad.setProcess(20)
         // 随机地图
         const images = await util.bundle.loadDir("image/fightMap", SpriteFrame)

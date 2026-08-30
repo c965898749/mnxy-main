@@ -1,4 +1,4 @@
-import { _decorator, Component, EditBox, Label, Node, Sprite, SpriteFrame, Toggle, ToggleComponent } from 'cc';
+import { _decorator, Component, EditBox, Label, Node, Sprite, SpriteFrame, sys, Toggle, ToggleComponent } from 'cc';
 import { LCoin } from 'db://assets/script/common/common/Language';
 import { getConfig, getToken } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
@@ -39,7 +39,7 @@ export class UserInfoCrtl extends Component {
     @property(Node)
     energyHuoliLabel: Node//活力力显示
     @property({ tooltip: "固定尺寸" })
-    MaxEnergy: 1500//最大体力值
+    MaxEnergy: 2000//最大体力值
     // EnergyReturnTime: 600//体力回复时间
     timer = 0
     @property({ tooltip: "固定尺寸" })
@@ -77,6 +77,18 @@ export class UserInfoCrtl extends Component {
         // 秒数补零：不足两位时，前面加0
         var formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
         return minutes + ":" + formattedSeconds;
+    }
+    openXianyuCtrl() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        switch (sys.os) {
+            case sys.OS.WINDOWS:
+                this.node.parent.getChildByName("XianyuCtrl").active = true
+                break;
+            default:
+                this.node.parent.getChildByName("XianyuCtrl2").active = true
+                break;
+        }
+
     }
 
     //体力系统
@@ -123,7 +135,7 @@ export class UserInfoCrtl extends Component {
         } else {
             this.TiliTime.getComponent(Label).string = "下次恢复1点体力需 " + this.formatTime(EnergyTime);
         }
-        
+
 
         if (this.huoliEnergy > this.MaxEnergy) {
             let lastDate = this.GetLeaveHuoliEnergyTime();
@@ -254,7 +266,7 @@ export class UserInfoCrtl extends Component {
         const postData = {
             token: token,
             str: username,
-            userId:config.userData.userId
+            userId: config.userData.userId
         };
         const options = {
             method: 'POST',
