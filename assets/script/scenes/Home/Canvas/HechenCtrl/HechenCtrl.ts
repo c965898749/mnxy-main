@@ -12,7 +12,6 @@ export class HechenCtrl extends Component {
     itemCount: Node = null;
 
     private _clickFun: (() => any) | null = null;
-    private _abortController: AbortController | null = null;
 
     goBack2() {
         AudioMgr.inst.playOneShot("sound/other/click");
@@ -23,7 +22,6 @@ export class HechenCtrl extends Component {
         }
         // 关闭时清理事件、取消网络请求
         this._clearEvent();
-        this._cancelLastFetch();
     }
 
     async render(create, clickFun: () => any) {
@@ -62,16 +60,10 @@ export class HechenCtrl extends Component {
         if (yhechen) yhechen.off("click");
     }
 
-    private _cancelLastFetch() {
-        if (this._abortController) {
-            this._abortController.abort();
-            this._abortController = null;
-        }
-    }
+
 
     hechen(itemId, clickFun) {
         AudioMgr.inst.playOneShot("sound/other/click");
-        this._cancelLastFetch();
         const config = getConfig();
         const token = getToken();
         const postData = {
@@ -79,12 +71,10 @@ export class HechenCtrl extends Component {
             id: itemId,
             userId: config.userData.userId
         };
-        this._abortController = new AbortController();
         const options = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
-            signal: this._abortController.signal
         };
 
         fetch(config.ServerUrl.url + "hechenCailiao", options)
@@ -115,7 +105,6 @@ export class HechenCtrl extends Component {
 
     Yhechen(itemId, clickFun) {
         AudioMgr.inst.playOneShot("sound/other/click");
-        this._cancelLastFetch();
         const config = getConfig();
         const token = getToken();
         const postData = {
@@ -123,12 +112,10 @@ export class HechenCtrl extends Component {
             id: itemId,
             userId: config.userData.userId
         };
-        this._abortController = new AbortController();
         const options = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
-            signal: this._abortController.signal
         };
 
         fetch(config.ServerUrl.url + "yhechenCailiao", options)
@@ -158,7 +145,6 @@ export class HechenCtrl extends Component {
     }
 
     onDestroy() {
-        this._cancelLastFetch();
         this._clearEvent();
     }
 }

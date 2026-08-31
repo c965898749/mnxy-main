@@ -1,4 +1,4 @@
-import { _decorator, Component, director, Label, Node, WebView } from 'cc';
+import { _decorator, Component, director, Label, Node, sys, WebView } from 'cc';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 const { ccclass, property } = _decorator;
@@ -33,7 +33,14 @@ export class otherCtrl extends Component {
 
     public openfrom() {
         AudioMgr.inst.playOneShot("sound/other/click");
-        this.node.parent.getChildByName("forumCtrl").active = true
+        switch (sys.os) {
+            case sys.OS.WINDOWS:
+                this.node.parent.getChildByName("forumCtrl2").active = true
+                break;
+            default:
+                this.node.parent.getChildByName("forumCtrl").active = true
+                break;
+        }
     }
     public openMessage() {
         AudioMgr.inst.playOneShot("sound/other/click");

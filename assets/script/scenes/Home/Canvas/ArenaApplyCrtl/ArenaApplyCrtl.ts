@@ -8,7 +8,6 @@ import { SelectCardCtrl } from '../qianghua/SelectCardCtrl';
 import { CharacterEnum } from 'db://assets/script/game/fight/character/CharacterEnum';
 import { ArenaRankingCrtl } from '../ArenaRankingCrtl/ArenaRankingCrtl';
 const { ccclass, property } = _decorator;
-
 @ccclass('ArenaApplyCrtl')
 export class ArenaApplyCrtl extends Component {
     ArenaId: number
@@ -39,23 +38,21 @@ export class ArenaApplyCrtl extends Component {
     public _side1: string = null;
     public _side2: string = null;
     public cahracterQueue: CharacterStateCreate[] = []
-    start() {
+    // 新增：当前选中出战卡牌数组
+    public selectArenaCards: CharacterStateCreate[] = [];
 
+    start() {
     }
 
     update(deltaTime: number) {
         // 1. 获取当前时间对象
         const now = new Date();
-
         // 2. 判断是否为周日（JavaScript中周日的星期值为0，周一至周六对应1-6）
         const isSunday = now.getDay() === 0;
-
         // 3. 获取当前小时数（24小时制，范围0-23）
         const currentHour = now.getHours();
-
         // 4. 核心判断：是否是周日 且 小时数大于等于22
         const isAfterSunday22 = isSunday && currentHour >= 22;
-
         // 5. 输出判断结果
         if (isAfterSunday22) {
             this.remainingTime.getComponent(Label).string = this.getTimeToMondayMidnight();
@@ -69,12 +66,12 @@ export class ArenaApplyCrtl extends Component {
             this.title.getComponent(Label).string = yearAndWeek + "赛季进行中";
         }
     }
+
     getTimeToMondayMidnight() {
         // 1. 获取当前时间的Date对象
         const now = new Date();
         // 2. 获取当前是一周的第几天（0=周日，1=周一，2=周二...6=周六）
         const currentDay = now.getDay();
-
         // 3. 计算需要添加的天数，以到达下一个周一
         let daysToAdd;
         if (currentDay === 0) {
@@ -96,21 +93,18 @@ export class ArenaApplyCrtl extends Component {
             // 周二到周六（2-6），计算距离周一的天数（例如周二需加6天，周三加5天...）
             daysToAdd = 8 - currentDay;
         }
-
         // 4. 创建下一个周一凌晨0点的Date对象
         const nextMonday = new Date(now);
         // 设置日期：当前日期 + 需要添加的天数
         nextMonday.setDate(now.getDate() + daysToAdd);
         // 设置时间为凌晨0点0分0秒
         nextMonday.setHours(0, 0, 0, 0);
-
         // 5. 计算时间差（毫秒数）
         const timeDiffMs = nextMonday.getTime() - now.getTime();
         // 若时间差为负数（理论上不会出现，做容错处理）
         if (timeDiffMs < 0) {
             return "00:00:00";
         }
-
         // 6. 将毫秒数转换为 小时:分钟:秒
         // 总秒数
         const totalSeconds = Math.floor(timeDiffMs / 1000);
@@ -120,10 +114,60 @@ export class ArenaApplyCrtl extends Component {
         const minutes = Math.floor((totalSeconds % 3600) / 60);
         // 秒：总秒数 % 60
         const seconds = totalSeconds % 60;
-
         // 7. 补零处理，确保每个部分都是两位数，拼接成HH:MM:SS格式
         const formatNumber = (num) => num.toString().padStart(2, '0');
         return `${formatNumber(hours)}:${formatNumber(minutes)}:${formatNumber(seconds)}`;
+    }
+
+    yijianApply() {
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+            str: this.ArenaId
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "getArenaCards", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                //console.log(data); // 处理响应数据
+                if (data.success == '1') {
+                    let characters = data.data;
+                    if (characters) {
+                        this.Item.active = true
+                        this.Item2.active = false
+                        this.apply.active = true
+                        this.enterAnra.active = false
+                        const create = characters
+                        this.Item.children.forEach(n => n.children[0].getComponent(Sprite).spriteFrame = null)
+                        // 一键申请：清空选中数组
+                        this.selectArenaCards = [];
+                        for (let i = 0; i < create.length; i++) {
+                            this.Item.children[i].children[0].getComponent(Sprite).spriteFrame =
+                                await util.bundle.load(`game/texture/frames/hero/Header/${create[i].id}/spriteFrame`, SpriteFrame)
+                            this.selectArenaCards.push(create[i]);
+                        }
+                    } else {
+                        util.message.confirm({ message: "没有匹配到对应卡牌" })
+                    }
+                } else {
+                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+            );
     }
 
     async renderApply(arenaId) {
@@ -156,6 +200,8 @@ export class ArenaApplyCrtl extends Component {
                     this.weiwanId = null
                     this.arenaRanking100 = []
                     this.node.active = true
+                    // 切换擂台，清空选中数组
+                    this.selectArenaCards = [];
                     if (isSignedUp) {
                         const create = map['gameArenaBattlecharacters'];
                         this.Item2.active = true
@@ -167,7 +213,6 @@ export class ArenaApplyCrtl extends Component {
                             this.Item2.children[goIntoNum2 - 1].children[0].getComponent(Sprite).spriteFrame =
                                 await util.bundle.load(`game/texture/frames/hero/Header/${create[i].id}/spriteFrame`, SpriteFrame)
                         }
-
                     } else {
                         this.Item.active = true
                         this.Item2.active = false
@@ -176,10 +221,13 @@ export class ArenaApplyCrtl extends Component {
                         const create = config.userData.characters.filter(x => x.goIntoNum != 0)
                         this.ArenaId = arenaId;
                         this.Item.children.forEach(n => n.children[0].getComponent(Sprite).spriteFrame = null)
+                        // 本地渲染出战卡牌，填充数组
+                        this.selectArenaCards = [];
                         for (let i = 0; i < create.length; i++) {
                             var goIntoNum = create[i].goIntoNum
                             this.Item.children[goIntoNum - 1].children[0].getComponent(Sprite).spriteFrame =
                                 await util.bundle.load(`game/texture/frames/hero/Header/${create[i].id}/spriteFrame`, SpriteFrame)
+                            this.selectArenaCards.push(create[i]);
                         }
                     }
                     if (gameArenaRanks && gameArenaRanks.length > 0) {
@@ -190,7 +238,6 @@ export class ArenaApplyCrtl extends Component {
                         this.weiwanId = gameArenaRank.userId
                         this.winName.getComponent(Label).string = gameArenaRank.nickname
                         this.weiwanCount.getComponent(Label).string = gameArenaRank.weiwanCount
-
                     }
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
@@ -243,6 +290,7 @@ export class ArenaApplyCrtl extends Component {
             }
             );
     }
+
     goback() {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.active = false
@@ -252,13 +300,10 @@ export class ArenaApplyCrtl extends Component {
     async openArena() {
         // 1. 获取当前时间对象
         const now = new Date();
-
         // 2. 判断是否为周日（JavaScript中周日的星期值为0，周一至周六对应1-6）
         const isSunday = now.getDay() === 0;
-
         // 3. 获取当前小时数（24小时制，范围0-23）
         const currentHour = now.getHours();
-
         // 4. 核心判断：是否是周日 且 小时数大于等于22
         const isAfterSunday22 = isSunday && currentHour >= 22;
         if (isAfterSunday22) {
@@ -267,41 +312,27 @@ export class ArenaApplyCrtl extends Component {
         const config = getConfig()
         const token = getToken()
         AudioMgr.inst.playOneShot("sound/other/click");
+
+        // ========== 修改后的星级校验，使用 selectArenaCards 数组 ==========
         if (this.ArenaId == 1) {
-            const create = config.userData.characters.filter(x => x.goIntoNum != 0 && x.star > 3)
-            if (create && create.length > 0) {
-                return await util.message.prompt({ message: "初级擂台只能出战3星及以下卡牌" })
-            }
-            if (this._side1) {
-                const k = config.userData.characters.filter(x => x.id == this._side1 && x.star > 3)
-                if (k && k.length > 0) {
-                    return await util.message.prompt({ message: "初级擂台只能出战3星及以下卡牌" })
-                }
-            }
-            if (this._side2) {
-                const k = config.userData.characters.filter(x => x.id == this._side2 && x.star > 3)
-                if (k && k.length > 0) {
-                    return await util.message.prompt({ message: "初级擂台只能出战3星及以下卡牌" })
+            const maxStar = 3;
+            const tipMsg = "初级擂台只能出战3星及以下卡牌";
+            for (const card of this.selectArenaCards) {
+                if (card.star > maxStar) {
+                    return await util.message.prompt({ message: tipMsg });
                 }
             }
         } else if (this.ArenaId == 2) {
-            const create = config.userData.characters.filter(x => x.goIntoNum != 0 && x.star > 4)
-            if (create && create.length > 0) {
-                return await util.message.prompt({ message: "中级擂台只能出战4星及以下卡牌" })
-            }
-            if (this._side1) {
-                const k = config.userData.characters.filter(x => x.id == this._side1 && x.star > 4)
-                if (k && k.length > 0) {
-                    return await util.message.prompt({ message: "中级擂台只能出战4星及以下卡牌" })
-                }
-            }
-            if (this._side2) {
-                const k = config.userData.characters.filter(x => x.id == this._side2 && x.star > 4)
-                if (k && k.length > 0) {
-                    return await util.message.prompt({ message: "中级擂台只能出战4星及以下卡牌" })
+            const maxStar = 4;
+            const tipMsg = "中级擂台只能出战4星及以下卡牌";
+            for (const card of this.selectArenaCards) {
+                if (card.star > maxStar) {
+                    return await util.message.prompt({ message: tipMsg });
                 }
             }
         }
+        // ==================================================================
+
         if (!this._side1 && !this._side2) {
             const result = await util.message.confirm({
                 message: "确定不配置副卡吗?"
@@ -314,7 +345,8 @@ export class ArenaApplyCrtl extends Component {
             userId: config.userData.userId,
             id: this._side1,
             str: this._side2,
-            finalLevel: this.ArenaId
+            finalLevel: this.ArenaId,
+            difficultyLevel: this.selectArenaCards.map(card => card.id).join(',')
         };
         const options = {
             method: 'POST',
@@ -342,8 +374,8 @@ export class ArenaApplyCrtl extends Component {
                 console.error('There was a problem with the fetch operation:', error);
             }
             );
-    }
 
+    }
 
     public async zhuSelectCard(event: Event, customEventData: string) {
         AudioMgr.inst.playOneShot("sound/other/click");
@@ -360,8 +392,6 @@ export class ArenaApplyCrtl extends Component {
         await this.renderfuCard(this.cahracterQueue, customEventData)
     }
 
-
-
     async renderfuCard(characterQueue: CharacterStateCreate[], customEventData) {
         await this.node.parent.getChildByName("SelectCardCtrl")
             .getComponent(SelectCardCtrl)
@@ -373,24 +403,27 @@ export class ArenaApplyCrtl extends Component {
     }
 
     async clickFun(reg, customEventData) {
+        // 移除同id旧卡牌，避免重复
+        this.selectArenaCards = this.selectArenaCards.filter(c => c.id !== reg.id);
+        this.selectArenaCards.push(reg);
+
         if ("1" == customEventData) {
             this._side1 = reg.id
             this.side1.getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`game/texture/frames/hero/Header/${reg.id}/spriteFrame`, SpriteFrame)
         }
-
         if ("2" == customEventData) {
             this._side2 = reg.id
             this.side2.getComponent(Sprite).spriteFrame =
                 await util.bundle.load(`game/texture/frames/hero/Header/${reg.id}/spriteFrame`, SpriteFrame)
         }
     }
+
     async render() {
         await this.node.parent.getChildByName("ArenaDetailCrtl")
             .getComponent(ArenaDetailCrtl)
             .render(this.ArenaId)
     }
-
 
     async openRanking() {
         AudioMgr.inst.playOneShot("sound/other/click");
@@ -401,5 +434,3 @@ export class ArenaApplyCrtl extends Component {
         }
     }
 }
-
-
