@@ -151,7 +151,7 @@ export class ItemCtrl extends Component {
         const postData = {
             token: token,
             id: create.id,
-            userId:config.userData.userId
+            userId: config.userData.userId
         };
         const options = {
             method: 'POST',
@@ -187,15 +187,13 @@ export class ItemCtrl extends Component {
                     // 仙、佛、圣、魔、妖、兽
                     const cmp = new Map([
                         ['sacred', '仙界'],
-                        ['nature', '佛界'],
-                        ['machine', '圣界'],
-                        ['abyss', '魔界'],
+                        ['nature', '兽界'],
+                        ['machine', '人界'],
                         ['dark', '妖界'],
-                        ['ordinary', '兽界'],
                     ]);
                     // this.power = this.power + parseInt(this.getZhanli(create[i]).toString())
                     const position = ["仙灵", "神将", "武圣"]
-                    this.node.children[3].getComponent(Label).string =cmp.get(create.camp) + "." + create.profession
+                    this.node.children[3].getComponent(Label).string = cmp.get(create.camp) + "." + create.profession
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                 }

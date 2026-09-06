@@ -78,15 +78,13 @@ export class TiemCtrl extends Component {
                     this.Item.children[goIntoNum - 1].children[4].children[j].children[0].active = true
                 }
             }
-            this.Item.children[goIntoNum - 1].children[2].getComponent(Label).string = create[i].name +(create[i].flyup > 0 ? "+" + create[i].flyup : "")+ "  Lv" + create[i].lv + "/" + create[i].maxLv
+            this.Item.children[goIntoNum - 1].children[2].getComponent(Label).string = create[i].name + (create[i].flyup > 0 ? "+" + create[i].flyup : "") + "  Lv" + create[i].lv + "/" + create[i].maxLv
             // 仙、佛、圣、魔、妖、兽
             const cmp = new Map([
                 ['sacred', '仙界'],
-                ['nature', '佛界'],
-                ['machine', '圣界'],
-                ['abyss', '魔界'],
+                ['nature', '兽界'],
+                ['machine', '人界'],
                 ['dark', '妖界'],
-                ['ordinary', '兽界'],
             ]);
             this.power = this.power + parseInt(this.getZhanli(create[i]).toString())
             const position = ["仙灵", "神将", "武圣"]
@@ -134,7 +132,7 @@ export class TiemCtrl extends Component {
     }
     public getZhanli(create: CharacterStateCreate) {
         // let zhanli = propts[PART_PROPTS.GongJi] * 25 + propts[PART_PROPTS.FangYu] * 25 + propts[PART_PROPTS.XueLiang] + propts[PART_PROPTS.BaoJi] * 2 + 500 * propts[PART_PROPTS.ShanBi] + 300 * (propts[PART_PROPTS.HuoGong] + propts[PART_PROPTS.HuoKang] + propts[PART_PROPTS.BingGong] + propts[PART_PROPTS.BingKang])
-        let zhanli = create.attack * 25 + create.defence?create.defence * 25:0 + create.maxHp + 300 * create.speed
+        let zhanli = create.attack * 25 + create.defence ? create.defence * 25 : 0 + create.maxHp + 300 * create.speed
         return zhanli;
     }
 

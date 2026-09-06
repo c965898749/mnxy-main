@@ -36,7 +36,7 @@ export class SelectCardCtrl extends Component {
         this.node.active = false
     }
 
-    async render(create: CharacterStateCreate[] , clickFun?: (characters: CharacterStateCreate , node: Node) => any) {
+    async render(create: CharacterStateCreate[], clickFun?: (characters: CharacterStateCreate, node: Node) => any) {
         this.node.active = true
         const nodePool = util.resource.getNodePool(
             await util.bundle.load("prefab/fankuai", Prefab)
@@ -61,16 +61,14 @@ export class SelectCardCtrl extends Component {
                     item.getChildByName("star-001").children[j].children[0].active = true
                 }
             }
-            item.getChildByName("stackCount").getComponent(Label).string =create[i].stackCount+""
-            item.getChildByName("name").getComponent(Label).string = create[i].name + "  Lv" + create[i].lv + "/"+create[i].maxLv
+            item.getChildByName("stackCount").getComponent(Label).string = create[i].stackCount + ""
+            item.getChildByName("name").getComponent(Label).string = create[i].name + "  Lv" + create[i].lv + "/" + create[i].maxLv
             // 仙、佛、圣、魔、妖、兽
             const cmp = new Map([
                 ['sacred', '仙界'],
-                ['nature', '佛界'],
-                ['machine', '圣界'],
-                ['abyss', '魔界'],
+                ['nature', '兽界'],
+                ['machine', '人界'],
                 ['dark', '妖界'],
-                ['ordinary', '兽界'],
             ]);
 
             const position = ["仙灵", "神将", "武圣"]
@@ -78,12 +76,12 @@ export class SelectCardCtrl extends Component {
             // // 绑定事件
             item.getChildByName("Button").getComponent(Button).transition = 3
             item.getChildByName("Button").getComponent(Button).zoomScale = 0.9
-            item.getChildByName("Button").on("click" , () => {if (clickFun) clickFun(create[i] , this.node)})
+            item.getChildByName("Button").on("click", () => { if (clickFun) clickFun(create[i], this.node) })
             this.ContentNode.addChild(item)
             continue
         }
     }
-    
+
 }
 
 

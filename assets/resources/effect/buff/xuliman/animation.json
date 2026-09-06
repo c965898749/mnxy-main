@@ -1,0 +1,87 @@
+{
+  "skeleton": {
+    "hash": " ",
+    "spine": "3.8.75",
+    "x": 0,
+    "y": 0,
+    "width": 0,
+    "height": 0,
+    "images": "./",
+    "audio": ""
+  },
+  "bones": [
+    {
+      "name": "root"
+    }
+  ],
+  "slots": [
+    {
+      "name": "frame",
+      "bone": "root",
+      "attachment": "frame_0"
+    }
+  ],
+  "skins": [
+    {
+      "name": "default",
+      "attachments": {
+        "frame": {
+          "frame_0": {
+            "x": 0,
+            "y": 0,
+            "width": 45,
+            "height": 53
+          },
+          "frame_1": {
+            "x": 0,
+            "y": 0,
+            "width": 45,
+            "height": 51
+          },
+          "frame_2": {
+            "x": 0,
+            "y": 0,
+            "width": 45,
+            "height": 46
+          },
+          "frame_3": {
+            "x": 0,
+            "y": 0,
+            "width": 43,
+            "height": 40
+          }
+        }
+      }
+    }
+  ],
+  "animations": {
+    "animation": {
+      "slots": {
+        "frame": {
+          "attachment": [
+            {
+              "time": 0,
+              "name": "frame_0"
+            },
+            {
+              "time": 0.06666666666666667,
+              "name": "frame_1"
+            },
+            {
+              "time": 0.13333333333333333,
+              "name": "frame_2"
+            },
+            {
+              "time": 0.2,
+              "name": "frame_3"
+            },
+            {
+              "time": 0.26666666666666666,
+              "name": "frame_0"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

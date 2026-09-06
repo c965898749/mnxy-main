@@ -143,11 +143,9 @@ export class SelectEqCardCtrl extends Component {
             // 仙、佛、圣、魔、妖、兽
             const cmp = new Map([
                 ['sacred', '仙界'],
-                ['nature', '佛界'],
-                ['machine', '圣界'],
-                ['abyss', '魔界'],
+                ['nature', '兽界'],
+                ['machine', '人界'],
                 ['dark', '妖界'],
-                ['ordinary', '兽界'],
             ]);
 
             // const position = ["仙灵", "神将", "武圣"]

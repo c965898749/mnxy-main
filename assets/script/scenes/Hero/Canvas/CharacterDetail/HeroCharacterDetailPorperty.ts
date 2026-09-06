@@ -145,11 +145,9 @@ export class HeroCharacterDetailPorperty extends Component {
         // 仙、佛、圣、魔、妖、兽
         const cmp = new Map([
             ['sacred', '仙界'],
-            ['nature', '佛界'],
-            ['machine', '圣界'],
-            ['abyss', '魔界'],
+            ['nature', '兽界'],
+            ['machine', '人界'],
             ['dark', '妖界'],
-            ['ordinary', '兽界'],
         ]);
 
         // const position = ["仙灵", "神将", "武圣"]
@@ -181,8 +179,11 @@ export class HeroCharacterDetailPorperty extends Component {
             let eqCharacters = eqCharactersList.find(x => x.eqType == index && x.goIntoNum + "" == create.id)
             if (eqCharacters) {
                 n.getChildByName("Label").getComponent(Label).string = ""
-                n.getChildByName("header_qitiandashen").getChildByName("flyup").getComponent(Label).string = this.rankDict[eqCharacters.flyup] || ""
-                n.getChildByName("header_qitiandashen").getChildByName("flyup").getComponent(Label).color = new Color(this.rankColorDict[eqCharacters.flyup]);
+                const flyupNode = n.getChildByName("header_qitiandashen")?.getChildByName("flyup");
+                if (flyupNode) {
+                    flyupNode.getComponent(Label).string = this.rankDict[eqCharacters.flyup] || ""
+                    flyupNode.getComponent(Label).color = new Color(this.rankColorDict[eqCharacters.flyup]);
+                }
                 n.getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
                     await util.bundle.load(`game/texture/frames/emp/${eqCharacters.id.split('_')[0]}/spriteFrame`, SpriteFrame)
             } else {

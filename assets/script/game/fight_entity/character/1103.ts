@@ -39,7 +39,7 @@ export class Character extends CharacterMetaState {
 
     Energy: number = 90
 
-    CharacterCamp: "ordinary" | "nature" | "abyss" | "dark" | "machine" | "sacred" = "ordinary"
+    CharacterCamp: "ordinary" | "nature" | "abyss" | "dark" | "machine" | "sacred" = "nature"
 
     position = 2
 
