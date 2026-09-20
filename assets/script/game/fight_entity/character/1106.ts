@@ -11,17 +11,17 @@ import { BuffState } from "../../fight/buff/BuffState";
 import { CardSkillLevelUtil } from "../../../util/CardSkillLevelUtil";
 
 
-@RegisterCharacter({ id: "1103" })
+@RegisterCharacter({ id: "1106" })
 export class Character extends CharacterMetaState {
 
-    name: string = "哮天犬"
+    name: string = "虞姬"
 
-    AnimationDir: string = "game/fight_entity/character/1103"
+    AnimationDir: string = "game/fight_entity/character/1106"
 
 
-    AvatarPath: string = "game/texture/frames/hero/1103/spriteFrame"
+    AvatarPath: string = "game/texture/frames/hero/1106/spriteFrame"
 
-    HeaderPath: string = "game/texture/frames/hero/Header/1103/spriteFrame"
+    HeaderPath: string = "game/texture/frames/hero/Header/1106/spriteFrame"
 
     AnimationType: "DrangonBones" | "Spine" = "Spine"
 
@@ -39,7 +39,7 @@ export class Character extends CharacterMetaState {
 
     Energy: number = 90
 
-    CharacterCamp: "ordinary" | "nature" | "abyss" | "dark" | "machine" | "sacred" = "nature"
+    CharacterCamp: "ordinary" | "nature" | "abyss" | "dark" | "machine" | "sacred" = "machine"
 
     position = 2
 
@@ -47,39 +47,50 @@ export class Character extends CharacterMetaState {
 
     PassiveIntroduceOne: string = `
     
-    兽妖 Lv{skillLv}
-    攻击前有{healVal}%概率提升攻击且使攻击附带疾病效果（本方每有一名兽族，额外增加20%的攻击力，攻击后清除）。
-    `.replace(/ /ig, "")
+     
+    不动如山 Lv{skillLv}
+    位于2号位增加物理抗性{healVal}点伤害
+       `.replace(/ /ig, "")
 
 
     PassiveIntroduceTwo: string = `
-
-    月之暗面 lv{skillLv}
-    场上，哮天犬(兽族护法数*20%)概率将所受伤害的{healVal}%转移给已方兽族护法。
-    `.replace(/ /ig, "")
+   
+      乌江之殇 lv{skillLv}
+      回合开始时扣除前后护法 {healVal}% 的当前生命（上限40%），给该护法增加其值 80% 的物理结界。扣血有 50% 概率可触发蓄力
+       `.replace(/ /ig, "")
 
     SkillIntroduce: string = `
+   
+       项羽 协同 lv{skillLv}
+       与项羽在同一队伍时，增加自身{healVal}点生命上限，{healVal2}点攻击，{healVal3}点速度
+       `.replace(/ /ig, "")
 
-    玄武 协同 lv{skillLv}
-    与玄武在同一队伍时，增加自身{healVal}点生命上限，{healVal2}点攻击，{healVal3}点速度
-    `.replace(/ /ig, "")
+    introduce: string = "霸王，我做你的护盾！"
 
-    introduce: string = "吞天地环宇，食日月风雷。"
-
-    skillValue: string = `兽妖 月之暗面 玄武协同`
+    skillValue: string = `不动如山 乌江之殇 项羽协同`
 
     public getSkillDesc(state: CharacterState): string {
         const lv = state.lv; // 当前等级，来自 create 里的lv
         const star = state.star;
         // ========== 该角色专属数值公式，每个卡牌可以完全不一样 ==========
         const [skill1, skill2, skill3, skill4] = CardSkillLevelUtil.calculateSkillLevels(lv, star);
+        let skill22 = 0;
+        // 边界判空限制
+        if (lv <= 0) {
+            skill22 = 0;
+        } else if (lv >= 100) {
+            skill22 = 10;
+        } else {
+            skill22 = Math.floor(lv / 10);
+        }
+        // 100级上限对应10箭，每10等级+1箭，均分
 
         // 拼接基础文本，替换占位符
         let msg = "";
-        msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "").replace("{healVal}", Math.floor(10 * skill1) + "") + "\n";
+        msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "").replace("{healVal}", skill1 + "") + "\n";
         if (skill2 > 0) {
             msg += this.PassiveIntroduceTwo.replace("{skillLv}", skill2 + "")
-                .replace("{healVal}", Math.floor(10 * skill2) + "")+ "\n";
+                .replace("{healVal}", skill22 + "") + "\n";
         } else {
             msg += this.PassiveIntroduceTwo.replace("{skillLv}", "未开启")
                 .replace("{healVal}", Math.floor(10) + "") + "\n";
@@ -97,4 +108,6 @@ export class Character extends CharacterMetaState {
         }
         return msg;
     }
+
+
 }

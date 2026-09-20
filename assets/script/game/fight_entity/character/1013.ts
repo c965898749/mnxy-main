@@ -53,7 +53,7 @@ export class Character extends CharacterMetaState {
     PassiveIntroduceTwo: string = `
     
     致命衰竭 Lv{skillLv}
-    场上，有单位登场时为目标添加衰弱状态，攻击减少{healVal}%，持续99回合
+    场上，有单位登场时为目标添加衰弱状态，攻击减少{healVal}%（上限90%），持续99回合
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `
@@ -67,7 +67,7 @@ export class Character extends CharacterMetaState {
 
     skillValue: string = "烛火燎原  致命衰竭  句芒协同"
 
-   
+
     public getSkillDesc(state: CharacterState): string {
         const lv = state.lv; // 当前等级，来自 create 里的lv
         const star = state.star;
@@ -77,21 +77,26 @@ export class Character extends CharacterMetaState {
         // 拼接基础文本，替换占位符
         let msg = "";
         msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "").replace("{healVal}", Math.floor(54 * skill1) + "") + "\n";
+        // 致命衰竭：计算衰减值，上限90%
+        let debuffPercent = Math.floor(10 * skill2);
+        debuffPercent = Math.min(debuffPercent, 90);
         if (skill2 > 0) {
-            msg += this.PassiveIntroduceTwo.replace("{skillLv}", skill2 + "").replace("{healVal}", Math.floor(10 * skill2) + "") + "\n";
-        }else {
-             msg += this.PassiveIntroduceTwo.replace("{skillLv}",  "未开启").replace("{healVal}", Math.floor(10) + "") + "\n";
+            msg += this.PassiveIntroduceTwo.replace("{skillLv}", skill2 + "").replace("{healVal}", debuffPercent + "") + "\n";
+        } else {
+            let baseDebuff = Math.floor(10);
+            baseDebuff = Math.min(baseDebuff, 90);
+            msg += this.PassiveIntroduceTwo.replace("{skillLv}", "未开启").replace("{healVal}", baseDebuff + "") + "\n";
         }
         if (skill3 > 0) {
             msg += this.SkillIntroduce.replace("{skillLv}", skill3 + "")
-            .replace("{healVal}", Math.floor(211 * skill3) + "")
-            .replace("{healVal2}", Math.floor(110 * skill3) + "")
-            .replace("{healVal3}", Math.floor(221 * skill3) + "") + "\n";
-        }else {
-             msg += this.SkillIntroduce.replace("{skillLv}",  "未开启")
-            .replace("{healVal}", Math.floor(211) + "")
-            .replace("{healVal2}", Math.floor(110) + "")
-            .replace("{healVal3}", Math.floor(221) + "") + "\n";
+                .replace("{healVal}", Math.floor(211 * skill3) + "")
+                .replace("{healVal2}", Math.floor(110 * skill3) + "")
+                .replace("{healVal3}", Math.floor(221 * skill3) + "") + "\n";
+        } else {
+            msg += this.SkillIntroduce.replace("{skillLv}", "未开启")
+                .replace("{healVal}", Math.floor(211) + "")
+                .replace("{healVal2}", Math.floor(110) + "")
+                .replace("{healVal3}", Math.floor(221) + "") + "\n";
         }
         return msg;
     }
