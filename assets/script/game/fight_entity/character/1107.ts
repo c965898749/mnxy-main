@@ -11,17 +11,17 @@ import { BuffState } from "../../fight/buff/BuffState";
 import { CardSkillLevelUtil } from "../../../util/CardSkillLevelUtil";
 
 
-@RegisterCharacter({ id: "1106" })
+@RegisterCharacter({ id: "1107" })
 export class Character extends CharacterMetaState {
 
-    name: string = "虞姬"
+    name: string = "嫦娥"
 
-    AnimationDir: string = "game/fight_entity/character/1106"
+    AnimationDir: string = "game/fight_entity/character/1107"
 
 
-    AvatarPath: string = "game/texture/frames/hero/1106/spriteFrame"
+    AvatarPath: string = "game/texture/frames/hero/1107/spriteFrame"
 
-    HeaderPath: string = "game/texture/frames/hero/Header/1106/spriteFrame"
+    HeaderPath: string = "game/texture/frames/hero/Header/1107/spriteFrame"
 
     AnimationType: "DrangonBones" | "Spine" = "Spine"
 
@@ -39,7 +39,7 @@ export class Character extends CharacterMetaState {
 
     Energy: number = 90
 
-    CharacterCamp: "ordinary" | "nature" | "abyss" | "dark" | "machine" | "sacred" = "machine"
+    CharacterCamp: "ordinary" | "nature" | "abyss" | "dark" | "machine" | "sacred" = "sacred"
 
     position = 2
 
@@ -48,26 +48,26 @@ export class Character extends CharacterMetaState {
     PassiveIntroduceOne: string = `
     
      
-    不动如山 Lv{skillLv}
-    位于2号位增加物理抗性{healVal}点伤害
+    桂影栖身 Lv{skillLv}
+    嫦娥在场下时，每回合增加{healVal}%闪避，最多叠加30%
        `.replace(/ /ig, "")
 
 
     PassiveIntroduceTwo: string = `
    
-      乌江之殇 lv{skillLv}
-      回合开始时，扣除自身与前后护法 {healVal}% 当前生命值（扣除上限 40%）；基于本次扣除的生命值，为目标施加等同于扣血数值 80% 的物理结界。本次扣血有 50% 概率触发蓄力效果
+    月满重生 lv{skillLv}
+    我方有单位阵亡时，消耗自身生命上限{healVal}%血量复活该单位；复活单位恢复50%最大生命值（最低消耗血量40%且不能复活固魂单位）
        `.replace(/ /ig, "")
 
     SkillIntroduce: string = `
    
-       项羽 协同 lv{skillLv}
-       与项羽在同一队伍时，增加自身{healVal}点生命上限，{healVal2}点攻击，{healVal3}点速度
-       `.replace(/ /ig, "")
+    王母协同 lv{skillLv}
+    与王母在同一队伍时，增加自身{healVal}点生命上限，{healVal2}点攻击，{healVal3}点速度
+    `.replace(/ /ig, "")
 
-    introduce: string = "霸王，我做你的护盾！"
+    introduce: string = "明月寄相思，桂香伴中秋。"
 
-    skillValue: string = `不动如山 乌江之殇 项羽协同`
+    skillValue: string = `桂影栖身 月满重生 王母协同`
 
 public getSkillDesc(state: CharacterState): string {
     const lv = state.lv;
@@ -81,9 +81,7 @@ public getSkillDesc(state: CharacterState): string {
     }
 
     let msg = "";
-    msg += this.PassiveIntroduceOne
-        .replace("{skillLv}", skill1 + "")
-        .replace("{healVal}", Math.floor(32 * skill1) + "") + "\n";
+    msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "").replace("{healVal}", skill1 + "") + "\n";
 
     if (skill2 > 0) {
         msg += this.PassiveIntroduceTwo
@@ -92,7 +90,7 @@ public getSkillDesc(state: CharacterState): string {
     } else {
         msg += this.PassiveIntroduceTwo
             .replace("{skillLv}", "未开启")
-            .replace("{healVal}", "10") + "\n";
+            .replace("{healVal}", "100") + "\n";
     }
 
     if (skill3 > 0) {

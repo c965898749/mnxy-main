@@ -97,14 +97,14 @@ export class Character extends CharacterMetaState {
         }
         if (skill3 > 0) {
             msg += this.SkillIntroduce.replace("{skillLv}", skill3 + "")
-                .replace("{healVal}", Math.floor(352 * skill3) + "")
-                .replace("{healVal2}", Math.floor(176 * skill3) + "")
-                .replace("{healVal3}", Math.floor(176 * skill3) + "") + "\n";
+                .replace("{healVal}", Math.floor(211 * skill3) + "")
+                .replace("{healVal2}", Math.floor(158 * skill3) + "")
+                .replace("{healVal3}", Math.floor(158 * skill3) + "") + "\n";
         } else {
             msg += this.SkillIntroduce.replace("{skillLv}", "未开启")
-                .replace("{healVal}", Math.floor(352) + "")
-                .replace("{healVal2}", Math.floor(176) + "")
-                .replace("{healVal3}", Math.floor(176) + "") + "\n";
+                .replace("{healVal}", Math.floor(211) + "")
+                .replace("{healVal2}", Math.floor(158) + "")
+                .replace("{healVal3}", Math.floor(158) + "") + "\n";
         }
         return msg;
     }

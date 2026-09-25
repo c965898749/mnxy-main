@@ -23,7 +23,7 @@ export class AutoScrollPageView extends Component {
         // 为每个页面添加点击事件
         for (let i = 0; i < pages.length; i++) {
             let page = pages[i];
-            page.on(cc.Node.EventType.TOUCH_END, function (event) {
+            page.on(Node.EventType.TOUCH_END, function (event) {
 
                 // 这里可以获取当前点击的页面索引
                 // let index = this.pageView.getItems().indexOf(page);

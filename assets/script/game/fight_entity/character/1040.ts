@@ -75,7 +75,7 @@ export class Character extends CharacterMetaState {
 
         // 拼接基础文本，替换占位符
         let msg = "";
-        msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "").replace("{healVal}", Math.floor(52 * skill1) + "") + "\n";
+        msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "").replace("{healVal}", Math.floor(32 * skill1) + "") + "\n";
         if (skill2 > 0) {
             msg += this.PassiveIntroduceTwo.replace("{skillLv}", skill2 + "")
                 .replace("{healVal}", Math.floor(32 * skill2) + "") + "\n";
