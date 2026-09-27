@@ -1,0 +1,223 @@
+import { _decorator, Color, Component, Label, Node, Prefab, RichText, Sprite, SpriteFrame, Toggle } from 'cc';
+import { EqFengjieCtrl } from '../EqFengjieCtrl/EqFengjieCtrl';
+import { EquipmentStateCreate, xilianInfo } from 'db://assets/script/game/fight/equipment/EquipmentState';
+import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
+import { util } from 'db://assets/script/util/util';
+import { AttrLevelCtrl } from '../qianghua/AttrLevelCtrl';
+const { ccclass, property } = _decorator;
+
+@ccclass('eqSelectCardCtrl3')
+export class eqSelectCardCtrl3 extends Component {
+  @property({ type: Node, tooltip: "任务列表" }) ContentNode: Node = null;
+    initialized = false;
+    eqFengjieCtrl: EqFengjieCtrl = null
+    public myMap = new Map<string, number>(); // 键为字符串，值为数字
+    create: EquipmentStateCreate[]
+    start() {
+
+    }
+
+    update(deltaTime: number) {
+
+    }
+    skillDict: Record<number, string> = {
+        0: "突击",
+        1: "灵能",
+        2: "防护",
+        3: "御灵",
+        4: "暴击",
+        5: "暴抗",
+        6: "闪避",
+        7: "命中",
+        8: "速度",
+        9: "生命"
+    };
+
+    rankDict: Record<number, string> = {
+        0: "",
+        1: "法",
+        2: "灵",
+        3: "宝",
+        4: "古",
+        5: "造",
+        6: "珍",
+        7: "通",
+        8: "玄",
+        9: "仙"
+    };
+    // 品级对应色值，品级越高越鲜艳
+    rankColorDict: Record<number, string> = {
+        0: "#888888", // 凡器 灰
+        1: "#7399FF", // 法器 浅蓝
+        2: "#33CCFF", // 灵器 天蓝
+        3: "#66FFCC", // 法宝 青碧
+        4: "#33FF88", // 古宝 翠绿
+        5: "#FFFF33", // 造物 亮金
+        6: "#FFCC00", // 灵宝 橙金
+        7: "#FF6633", // 通天 橙红
+        8: "#FF3366", // 玄天 玫红
+        9: "#FF00FF"  // 仙器 亮紫最高阶
+    };
+
+    // --- 按星级筛选显示 ---
+    private filterByStar(match: (star: number) => boolean) {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        for (let i = 0; i < this.create.length; i++) {
+            this.ContentNode.children[i].active = match(this.create[i].star);
+        }
+    }
+    public filterBelow3Star() { this.filterByStar(s => s < 3.5); }
+    public filter3HalfStar()   { this.filterByStar(s => s >= 3.5 && s < 4); }
+    public filter4Star()       { this.filterByStar(s => s >= 4 && s < 4.5); }
+    public filter4HalfStar()   { this.filterByStar(s => s >= 4.5); }
+    public filterAll()         { this.filterByStar(() => true); }
+    public showAll()           { this.filterByStar(() => true); }
+
+    // 一键选择：把所有显示的装备全部勾选进分解列表（默认每个选1个）
+    public selectAll() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.myMap.clear();
+        for (let i = 0; i < this.create.length; i++) {
+            const node = this.ContentNode.children[i];
+            if (!node.active) continue;
+            const c = this.create[i];
+            this.myMap.set(c.uuid + "", 1);
+            node.getChildByName("Toggle").getComponent(Toggle).isChecked = true;
+            node.getChildByName("cong").active = true;
+            node.getChildByName("itemCount").getComponent(Label).string = "1";
+            if (c.stackCount > 0) {
+                node.getChildByName("stackCount").getComponent(Label).string = (c.stackCount - 1) + "";
+            }
+        }
+    }
+
+    public backQianhua() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.active = false
+    }
+    public async queDingQianhua() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.active = false
+        this.eqFengjieCtrl.getComponent(EqFengjieCtrl).initData(this.myMap)
+    }
+    public async canleQianhua() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("qianghuaCtrl").getChildByName("congCard").getChildByName("main_bg").getComponent(Sprite).spriteFrame =
+            await util.bundle.load(`image/qianghua/congCard2/spriteFrame`, SpriteFrame)
+        this.node.parent.getChildByName("eqQianghuaCtrl").getChildByName("congCard").getChildByName("num").getComponent(Label).string = null
+        this.node.parent.getChildByName("eqQianghuaCtrl").getComponent(EqFengjieCtrl).myMap.clear();
+        const childrens = [...this.ContentNode.children]
+        for (let i = 0; i < childrens.length; i++) {
+            const node = childrens[i];
+            node.getChildByName("Toggle").getComponent(Toggle).isChecked = false
+            node.getChildByName("stackCount").getComponent(Label).string = this.create[i].stackCount + ""
+            node.getChildByName("Toggle").getComponent(Toggle).isChecked = false
+            node.getChildByName("itemCount").getComponent(Label).string = "1"
+            node.getChildByName("cong").active = false
+        }
+    }
+
+
+    async render(create: EquipmentStateCreate[], qianghuaCtrlInstance: EqFengjieCtrl, map: Map<string, number>) {
+        this.create = create
+        this.myMap = map
+        this.eqFengjieCtrl = qianghuaCtrlInstance
+        this.node.active = true
+        const nodePool = util.resource.getNodePool(
+            await util.bundle.load("prefab/fankuai2", Prefab)
+        )
+        const childrens = [...this.ContentNode.children]
+        for (let i = 0; i < childrens.length; i++) {
+            const node = childrens[i];
+            node.getChildByName("Toggle").off('toggle')
+            node.getChildByName("levelUp").off('click')
+            nodePool.put(node)
+        }
+
+        for (let i = 0; i < create.length; i++) {
+            let item = nodePool.get()
+            item.getChildByName("Toggle").active = true
+            item.getChildByName("levelUp").active = false
+            item.getChildByName("itemCount").active = false
+            item.getChildByName("Label-001").active = false;
+            item.getChildByName("stackCount").active = false;
+            item.getChildByName("levelUp").active = false;
+            if (create[i].stackCount > 0) {
+                item.getChildByName("itemCount").active = true
+                item.getChildByName("stackCount").active = true;
+                item.getChildByName("levelUp").active = true;
+                item.getChildByName("stackCount").getComponent(Label).string = create[i].stackCount + ""
+            }
+            item.getChildByName("Toggle").getComponent(Toggle).isChecked = false
+            item.getChildByName("itemCount").getComponent(Label).string = "1"
+            item.getChildByName("cong").active = false
+
+            for (const [key, value] of this.myMap) {
+                if (create[i].id == key + "") {
+                    item.getChildByName("Toggle").getComponent(Toggle).isChecked = true
+                    item.getChildByName("cong").active = true
+                    if (create[i].stackCount > 0) {
+                        item.getChildByName("stackCount").getComponent(Label).string = (Number(create[i].stackCount) + 1 - Number(value)) + ""
+                    }
+                    item.getChildByName("itemCount").getComponent(Label).string = value + ""
+                }
+            }
+            item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
+                await util.bundle.load(`game/texture/frames/emp/${create[i].id.split('_')[0]}/spriteFrame`, SpriteFrame)
+            // 渲染星级
+            item.getChildByName("star-001").children.forEach(n => n.active = false)
+            for (let j = 0; j < create[i].star; j++) {
+                item.getChildByName("star-001").children[j].active = true
+                if (j + 0.5 < create[i].star) {
+                    item.getChildByName("star-001").children[j].children[0].active = true
+                }
+            }
+            item.getChildByName("name").getComponent(Label).string = create[i].name + "  Lv" + create[i].lv + "/" + create[i].maxLv
+            // 仙、佛、圣、魔、妖、兽
+            item.getChildByName("Camp").getComponent(RichText).string = `<color=#C9821A><size=30>${create[i].profession}</size></color>` + " " + this.formatRefineList(create[i].xilianList)
+            item.getChildByName("yxjm_df_txk").getChildByName("flyup").active = true
+            item.getChildByName("yxjm_df_txk").getChildByName("flyup").getComponent(Label).color = new Color(this.rankColorDict[create[i].flyup]);
+            item.getChildByName("yxjm_df_txk").getChildByName("flyup").getComponent(Label).string = this.rankDict[create[i].flyup] || ""
+            // // 绑定事件
+            // this.Item.children[goIntoNum - 1].on("click", () => { this.clickFun(create[i]) })
+            item.getChildByName("id").getComponent(Label).string = create[i].uuid + "";
+            // item.getChildByName("Toggle").on('toggle', callback, this);
+            this.ContentNode.addChild(item)
+            item.getComponent(AttrLevelCtrl).initData(this)
+            continue
+        }
+    }
+    qualityColor: Record<number, string> = {
+        0: "#88ff88", //普通绿色
+        1: "#bb77ff", //优秀紫色
+        2: "#ffdd77"  //极品金色
+    };
+
+    formatRefineList(xilianList?: xilianInfo[]): string {
+
+
+
+        const lines: string[] = [];
+        // lines.push(`<size=18>`);
+
+        for (const item of xilianList) {
+            const attrName = this.skillDict[item.xilian];
+            const qColor = this.qualityColor[item.quality];
+            let valStr: string;
+            //4‑7暴击、暴抗、闪避、命中保留1位小数；其余直接数字
+            if (item.xilian >= 4 && item.xilian <= 7) {
+                valStr = (Number(item.value)).toFixed(1) + '%';
+            } else {
+                valStr = String(item.value);
+            }
+            const line = `<color=${qColor}><size=20>${attrName}+${valStr}</size></color>`;
+            // const line = `【${attrName}】${qName}：${valStr}`;
+            lines.push(line);
+        }
+
+        // lines.push(`</size>`);
+        return lines.join("   ");
+    }
+}
+
+

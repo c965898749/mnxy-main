@@ -229,14 +229,14 @@ export class eqQianghuaCtrl extends Component {
         if (this.LevelUpResult.finalLevel > config.userData.lv * 2) {
             return await util.message.prompt({ message: "卡牌强化不得高于人物等级2倍" })
         }
-        var cahracters = config.userData.characters
+        var equipments = config.userData.equipments;
         var gold = config.userData.gold;
         if (this.LevelUpResult.totalSilverSpent > gold) {
             return await util.message.prompt({ message: "银两不足！" })
         }
         let cahracter4 = [];
         this.myMap.forEach((value, key) => {
-            cahracter4 = cahracters.filter(x => key == x.id && x.star >= 4);
+            cahracter4 = equipments.filter(x => key == x.uuid+"" && x.star >= 4);
         })
         // 
         // 是否询问
@@ -271,9 +271,9 @@ export class eqQianghuaCtrl extends Component {
             .then(async data => {
                 if (data.success == '1') {
                     var userInfo = data.data;
-                    config.userData.gold = userInfo.gold
-                    config.userData.equipments = userInfo.eqCharactersList
-                    localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    // config.userData.gold = userInfo.gold
+                    // config.userData.equipments = userInfo.eqCharactersList
+                    // localStorage.setItem("UserConfigData", JSON.stringify(config))
 
                     for (var i = 0; i < userInfo.eqCharactersList.length; i++) {
                         if (this._zhuId == userInfo.eqCharactersList[i].uuid) {

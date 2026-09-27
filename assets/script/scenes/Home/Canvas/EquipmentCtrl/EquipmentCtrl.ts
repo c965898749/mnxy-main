@@ -65,6 +65,11 @@ export class EquipmentCtrl extends Component {
         this.node.parent.getChildByName("EquipmentCtrl").active = false
         this.node.parent.getChildByName("eqQianghuaCtrl").active = true
     }
+
+    public async eqFengjieCtrl() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.node.parent.getChildByName("eqFengjieCtrl").active = true
+    }
 }
 
 

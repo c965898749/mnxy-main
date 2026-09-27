@@ -1,0 +1,104 @@
+
+animation.png
+size: 8022,1606
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+frame_0
+  rotate: false
+  xy: 2, 2
+  size: 800, 800
+  orig: 800, 800
+  offset: 0, 0
+  index: -1
+frame_1
+  rotate: false
+  xy: 804, 2
+  size: 800, 800
+  orig: 800, 800
+  offset: 0, 0
+  index: -1
+frame_2
+  rotate: false
+  xy: 1606, 2
+  size: 800, 800
+  orig: 800, 800
+  offset: 0, 0
+  index: -1
+frame_3
+  rotate: false
+  xy: 2408, 2
+  size: 800, 800
+  orig: 800, 800
+  offset: 0, 0
+  index: -1
+frame_4
+  rotate: false
+  xy: 3210, 2
+  size: 800, 800
+  orig: 800, 800
+  offset: 0, 0
+  index: -1
+frame_5
+  rotate: false
+  xy: 4012, 2
+  size: 800, 800
+  orig: 800, 800
+  offset: 0, 0
+  index: -1
+frame_6
+  rotate: false
+  xy: 4814, 2
+  size: 800, 800
+  orig: 800, 800
+  offset: 0, 0
+  index: -1
+frame_7
+  rotate: false
+  xy: 5616, 2
+  size: 800, 800
+  orig: 800, 800
+  offset: 0, 0
+  index: -1
+frame_8
+  rotate: false
+  xy: 6418, 2
+  size: 800, 800
+  orig: 800, 800
+  offset: 0, 0
+  index: -1
+frame_9
+  rotate: false
+  xy: 7220, 2
+  size: 800, 800
+  orig: 800, 800
+  offset: 0, 0
+  index: -1
+frame_10
+  rotate: false
+  xy: 2, 804
+  size: 800, 800
+  orig: 800, 800
+  offset: 0, 0
+  index: -1
+frame_11
+  rotate: false
+  xy: 804, 804
+  size: 800, 800
+  orig: 800, 800
+  offset: 0, 0
+  index: -1
+frame_12
+  rotate: false
+  xy: 1606, 804
+  size: 800, 800
+  orig: 800, 800
+  offset: 0, 0
+  index: -1
+frame_13
+  rotate: false
+  xy: 2408, 804
+  size: 800, 800
+  orig: 800, 800
+  offset: 0, 0
+  index: -1

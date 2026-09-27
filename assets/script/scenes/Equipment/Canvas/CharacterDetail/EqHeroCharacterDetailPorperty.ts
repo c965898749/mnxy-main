@@ -184,13 +184,13 @@ export class EqHeroCharacterDetailPorperty extends Component {
         // 先判空数组，同时避免children越界
         if (create?.xilianList && create.xilianList.length > 0) {
             const xilianNode = this.node.getChildByName("Xilian");
-            if(xilianNode){
+            if (xilianNode) {
                 for (let i = 0; i < create.xilianList.length; i++) {
                     const child = xilianNode.children[i];
                     if (!child) continue;
                     child.active = true;
                     const richText = child.getComponent(RichText);
-                    if(richText){
+                    if (richText) {
                         richText.string = this.formatRefineList(create.xilianList[i]);
                     }
                 }
@@ -205,6 +205,35 @@ export class EqHeroCharacterDetailPorperty extends Component {
         } else {
             this.node.getChildByName("sell").active = false
         }
+        this.node.getChildByName("suo").off("click")
+        if (create.isSuo == 1) {
+            this.node.getChildByName("suo").getComponent(Sprite).spriteFrame = await util.bundle.load("image/ui/suo_g/spriteFrame", SpriteFrame);
+        } else {
+            this.node.getChildByName("suo").getComponent(Sprite).spriteFrame = await util.bundle.load("image/ui/suo_k/spriteFrame", SpriteFrame);
+        }
+        this.node.getChildByName("suo").on("click", async () => {
+            AudioMgr.inst.playOneShot("sound/other/click");
+            const config = getConfig();
+            const token = getToken();
+            const postData = { token: token, id: create.uuid + "", userId: config.userData.userId };
+            const options = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(postData) };
+            fetch(config.ServerUrl.url + "toggleEquipSuo", options)
+                .then(r => r.json())
+                .then(async data => {
+                    if (data.success == 1) {
+                        create.isSuo = data.data;
+                        // 同步更新缓存中的装备锁状态
+                        const equip = config.userData.equipments.find(e => e.uuid === create.uuid);
+                        if (equip) equip.isSuo = data.data;
+                        if (create.isSuo == 1) {
+                            this.node.getChildByName("suo").getComponent(Sprite).spriteFrame = await util.bundle.load("image/ui/suo_g/spriteFrame", SpriteFrame);
+                        } else {
+                            this.node.getChildByName("suo").getComponent(Sprite).spriteFrame = await util.bundle.load("image/ui/suo_k/spriteFrame", SpriteFrame);
+                        }
+                        localStorage.setItem("UserConfigData", JSON.stringify(config));
+                    }
+                });
+        });
     }
     formatRefineList(xilian: xilianInfo): string {
         if (!xilian) return '';

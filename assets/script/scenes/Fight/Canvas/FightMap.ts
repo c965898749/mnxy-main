@@ -263,6 +263,7 @@ export class FightMap extends Component {
         if (this.isBuffUpEffect(effectType)) { AudioMgr.inst.playOneShot("sound/fight/skill/HP_UP"); return; }
         if (this.isDebuffDownEffect(effectType)) { AudioMgr.inst.playOneShot("sound/fight/skill/MAX_HP_DOWN"); return; }
         if (this.effectTypes.indexOf(effectType) !== -1) { AudioMgr.inst.playOneShot("sound/fight/skill/XULI"); return; }
+        if (effectType == 'XU_HEAL') { AudioMgr.inst.playOneShot("sound/fight/skill/HEAL"); return; }
         AudioMgr.inst.playOneShot("sound/fight/skill/" + effectType);
     }
 

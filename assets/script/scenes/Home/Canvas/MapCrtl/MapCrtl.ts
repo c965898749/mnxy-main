@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Node, tween, v3, Vec3 } from 'cc';
+import { _decorator, Component, Label, Node, sp, tween, v3, Vec3 } from 'cc';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { PveCtrl } from '../PveCtrl/PveCtrl';
 import { getConfig, getToken } from 'db://assets/script/common/config/config';
@@ -15,7 +15,7 @@ export class MapCrtl extends Component {
     Map: Node
     index: number = 0
     initialized = false;
-    tiles = ["踏上旅途", "冲向妖界", "龙宫探宝", "地府改命", "大闹天宫","西天取经","修成正果","血色禁地","极西之地","不周山下"]
+    tiles = ["踏上旅途", "冲向妖界", "龙宫探宝", "地府改命", "大闹天宫", "西天取经", "修成正果", "血色禁地", "极西之地", "不周山下"]
     start() {
         this.Title.getComponent(Label).string = "踏上旅途 1/10"
         this.refresh()
@@ -30,7 +30,8 @@ export class MapCrtl extends Component {
 
     }
     refresh() {
-
+        // let selectSkeleton = this.node.getChildByName("boss").getComponent(sp.Skeleton)
+        // selectSkeleton.setAnimation(0, "stand01", true)
         const config = getConfig()
         // 解析当前关卡的章、劫、关
         const [currentChapter, currentCalamity, currentStage] = config.userData.chapter.split('-').map(Number);
@@ -165,6 +166,16 @@ export class MapCrtl extends Component {
             }
             );
 
+    }
+
+    bossbattle() {
+        AudioMgr.inst.playOneShot("sound/other/haojiao");
+        let selectSkeleton = this.node.getChildByName("boss").getComponent(sp.Skeleton)
+        selectSkeleton.setAnimation(0, "standtostand01", false)
+        util.message.prompt({ message: "抱歉，世界boss暂未开启敬请期待！" })
+        selectSkeleton.setCompleteListener(() => {
+            selectSkeleton.setAnimation(0, "skill04", true)
+        })
     }
 
     openHotEvents() {

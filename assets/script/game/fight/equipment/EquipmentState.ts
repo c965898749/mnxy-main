@@ -32,6 +32,8 @@ export type EquipmentStateCreate = {
     //d队伍第几个
     goIntoNum: number
 
+    isSuo: number
+
     stackCount: number
 
     isChecked: number
@@ -150,6 +152,7 @@ export class EquipmentState extends BasicState<EquipmentMetaState> {
     dsDef: number
     fdDef: number
     zlDef: number
+    isSuo: number
 
 
     flyup: number
@@ -181,6 +184,7 @@ export class EquipmentState extends BasicState<EquipmentMetaState> {
         this.img = create.img
         this.name = create.name
         this.camp = create.camp
+        this.isSuo = create.isSuo
         this.id = create.id
         this.flyup = create.flyup
         this.introduce = create.introduce

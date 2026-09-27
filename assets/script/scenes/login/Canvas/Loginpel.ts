@@ -56,27 +56,36 @@ export class Loginpel extends Component {
         { "id": 2, "name": "再续前缘", "url": "https://czx.yimem.com:3004/" },
     ]
     url = localStorage.getItem("url") ?? this.serverList[0].url;
-    //更新公告内容
-    content = `<color=#FFFFFF><size=20>各位道友：</size>
-<color=#FFA500><size=19>全新五星限定卡牌、全新矿场玩法、属性上限增益重磅上线，助力各位道友潜心修炼、纵横三界，具体更新详情如下：</size>
+//更新公告内容
+content = `<color=#FFFFFF><size=20>尊敬的各位仙友：</size>
+<color=#FFA500><size=19>月满中秋，仙府同庆！《迷你神仙》中秋限定活动正式开启，全新护法【嫦娥】登场，中秋夺月副本限时开放，海量资源礼包等你来领！</size>
 
-<color=#FFFF00><size=18>▶ 全新五星卡牌：太上老君限定魂魄来袭</size><color=#FFFF00><size=18>▶ 魂魄获取方式：完成每日任务，开启活跃宝箱即可100%获取太上老君五星卡魂魄</size>
-<color=#FFFF00><size=18>▶ 卡牌合成规则：集齐180个太上老君五星魂魄，即可合成完整五星太上老君卡牌</size>
-<color=#FFA500><size=19>全新修炼玩法更新：</size>
-<color=#FFFFFF><size=17>1. 新增矿场抢夺玩法，道友可通过矿场挑战抢夺海量修炼资源，大幅提升修炼速度</size>
-<color=#FFFFFF><size=17>2. 全方位优化修炼体系，解锁全新资源获取渠道，告别修炼停滞，提速进阶</size>
-<color=#FFFFFF><size=17>3. 大幅度提升全服玩家活力上限、体力上限，解锁更多玩法次数，自由探索三界</size>
-<color=#FFFFFF><size=17>4. 活力、体力上限为永久增益，所有道友上线即可自动生效，无需手动激活</size>
-<color=#FF6347><size=19>五星太上老君卡牌专属优势：</size><color=#FF4500><size=18>★ 顶级五星仙卡资质，附带专属仙法buff，战力大幅跃升</size>
-<color=#FF4500><size=18>★ 契合修炼体系特性，搭配矿场玩法可额外提升资源获取效率</size><color=#FF4500><size=18>★ 稀有永久卡牌，属性稳定增益，助力道友登顶武道巅峰</size>
+<color=#FFFF00><size=18>▶ 新增护法：嫦娥</size>
+<color=#FFFFFF><size=17>技能1：桂影栖身
+嫦娥在场下时，每回合增加闪避，最多叠加30%。</size>
+<color=#FFFFFF><size=17>技能2：月满重生
+我方有单位阵亡时，消耗自身一定比例生命上限血量复活该单位；复活单位恢复50%最大生命值，最低消耗血量40%，且不能复活固魂单位。</size>
+<color=#FFFFFF><size=17>羁绊技能：王母协同
+与王母在同一队伍时，提升自身生命上限、攻击与速度属性。</size>
+<color=#FF4500><size=18>仙友提示：嫦娥兼具闪避叠加与复活能力，搭配王母激活羁绊，队伍生存能力大幅提升，是本次中秋版本强力辅助护法！</color>
 
-<color=#87CEFA><size=18>玩法问题咨询渠道：</size>
-<color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size>
-<color=#FFFFFF><size=16>▶ 官方①QQ群：1092641657</size>
-<color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size>
+<color=#FFFF00><size=18>▶ 限时活动副本：中秋夺月</size>
+<color=#FFFFFF><size=17>活动期间，【中秋夺月】副本限时开启。挑战副本可获取月华晶石、各类矿石等丰厚养成材料，助力仙友培养嫦娥，提升护法实力。副本难度分多档，仙友可根据自身队伍实力选择挑战。</size>
 
-<color=#FF69B4><size=18>仙卡现世助力修行，矿场争锋问鼎仙途，各位道友速速启程！</size>
-<color=#CCCCCC><size=14>【QQ神仙依梦工作室】2026年6月19日</size> `
+<color=#FFFF00><size=18>▶ 中秋专属礼包🎁</size>
+<color=#FFFFFF><size=17>礼包内含：2000青铜矿、2000玄铁矿、2000紫金矿、2000月华晶石
+礼包兑换方式：点击头像 → 点击兑换 → 输入兑换码：中秋快乐
+注意事项：兑换码有效期仅限中秋活动期间，每个账号仅可兑换一次；礼包奖励将直接发放至背包，请仙友留意查收。</size>
+
+<color=#FFA500><size=19>▶ 系统功能新增</size>
+<color=#FFFFFF><size=17>新增装备分解功能，为防止装备误分解，可点击装备详情右上角锁定装备。</size>
+
+<color=#87CEFA><size=18>▶ 版本前瞻预告</size>
+<color=#FFFFFF><size=17>国庆将开启第11章主线以及世界BOSS副本，敬请期待！</size>
+
+<color=#FF69B4><size=18>月照仙途，共贺中秋，祝各位仙友中秋安康，仙运昌隆！</size>
+<color=#CCCCCC><size=14>【迷你神仙依梦工作室】2026年09月27日</size> `
+
 
     checkUpdateToday = false;
     @property(Label)
@@ -291,6 +300,8 @@ export class Loginpel extends Component {
                 break;
             case GGHotUpdateInstanceState.HotUpdateSuc: {
                 // 热更新：成功，重启游戏
+                // 更新后清空公告缓存，下次进入重新展示公告
+                localStorage.removeItem("noticeSeen")
                 // 等一小段时间在重启
                 this.messageLabel.string = "更新成功，即将重启游戏";
                 this.scheduleOnce(() => {
@@ -333,7 +344,16 @@ export class Loginpel extends Component {
 
     private _enterLobbyScene() {
         this.node.getChildByName("update").active = false;
-        // 弹窗弹跳入场效果
+        // 检查公告缓存：没有缓存则阻止进入游戏并弹公告
+        if (!localStorage.getItem("noticeSeen")) {
+            this.ContentNode.getComponent(RichText).string = this.content
+            this.node.getChildByName("GameNotice").active = true
+            this.node.getChildByName("GameNotice").scale = new Vec3(0, 0, 0)
+            tween(this.node.getChildByName("GameNotice"))
+                .to(1, { scale: new Vec3(1, 1, 1) }, { easing: 'elasticOut' })
+                .start();
+            return
+        }
         this.enterGame()
     }
 
@@ -354,6 +374,9 @@ export class Loginpel extends Component {
     closeGameNotice() {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.node.getChildByName("GameNotice").active = false
+        // 标记公告已读，下次进入不再弹出
+        localStorage.setItem("noticeSeen", "1")
+        this.enterGame()
     }
 
     /**
