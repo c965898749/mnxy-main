@@ -186,6 +186,10 @@ export class ShopCtrl extends Component {
                             if (itemC.type == 1) {
                                 aa.getChildByName("th").getComponent(Sprite).spriteFrame =
                                     await util.bundle.load(`game/texture/frames/hero/Header/${itemC.itemId}/spriteFrame`, SpriteFrame)
+                            } else if (itemC.icon) {
+                                // 非英雄类（含 type=6 材料/矿石）：使用 game_item_base 的 icon 渲染
+                                aa.getChildByName("th").getComponent(Sprite).spriteFrame =
+                                    await util.bundle.load(itemC.icon, SpriteFrame)
                             }
                             aa.getChildByName("sell").getChildByName("Background").on("click", () => { this.clickFun(itemC.id, aa) })
                             aa.getChildByName("th").on(Node.EventType.TOUCH_START, (e: EventTouch) => {
@@ -273,6 +277,10 @@ export class ShopCtrl extends Component {
                             if (itemC.type == 1) {
                                 aa.getChildByName("th").getComponent(Sprite).spriteFrame =
                                     await util.bundle.load(`game/texture/frames/hero/Header/${itemC.itemId}/spriteFrame`, SpriteFrame)
+                            } else if (itemC.icon) {
+                                // 非英雄类（含 type=6 材料/矿石）：使用 game_item_base 的 icon 渲染
+                                aa.getChildByName("th").getComponent(Sprite).spriteFrame =
+                                    await util.bundle.load(itemC.icon, SpriteFrame)
                             }
                             if (itemC.isBuy == 1) {
                                 aa.getChildByName("sell").getChildByName("Background").getComponent(Button).interactable = false

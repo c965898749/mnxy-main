@@ -84,27 +84,46 @@ export class ActiveCtrl extends Component {
 <color=#FF69B4><size=18>狭路相逢勇者胜，擂台之上，等你来战！</size></color>
 <color=#CCCCCC><size=14>【QQ神仙依梦工作室】2025年12月21日</size></color>`
         }
-        if (this.page == "ZhongQiuSealCtrl") {
-            content = `<color=#FF4500><size=28><b>【月宫试炼】版本更新与副本探险活动公告</b></size></color>
+  if (this.page == "guoqing") {
+            content = `<color=#FF4500><size=28><b>【国庆盛典】版本更新与副本探险活动公告</b></size></color>
 <color=#FFE4B5><size=20>亲爱的仙友们：</size></color>
-
 <color=#FFA500><size=19>为优化副本探险体验，游戏将于以下时间进行版本更新：</size></color>
-<color=#FFFF00><size=18>▶ 维护时间：2026年09月28日 09:00-13:00（预计4小时）</size></color>
+<color=#FFFF00><size=18>▶ 维护时间：2026年10月7日 09:00-13:00（预计4小时）</size></color>
 <color=#FFFF00><size=18>▶ 维护范围：全服所有服务器</size></color>
 <color=#FF6347><size=18>▶ 维护补偿：灵石*5000 + 金币*10万 + 魂魄*500</size></color>
-
 <color=#FFA500><size=19>本次更新内容：</size></color>
-<color=#FFFFFF><size=17>1. 中秋副本【月宫试炼】开启，挑战可掉落传说级【嫦娥】合成材料</size></color>
-<color=#FFFFFF><size=17>2. 卡牌合成，增加传说级【嫦娥】合成图谱</size></color>
+<color=#FFFFFF><size=17>1. 第11章材料掉落继续翻倍，新增副本装备技能书掉落</size></color>
+<color=#FFFFFF><size=17>2. 新增人妖仙兽四个护：4.5星轩辕、4.5星地藏、4星谛听、4.5星三圣母</size></color>
+<color=#FFFFFF><size=17>3. 下期预告：即将开启应龙世界副本</size></color>
 <color=#87CEFA><size=18>遇到月宫阻碍？联系我们：</size></color>
 <color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
 <color=#FFFFFF><size=16>▶ 官方①QQ群：1092641657</size></color>
 <color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size></color>
-
-<color=#FF69B4><size=18>愿月华伴你前行，仙友们！</size></color>
-<color=#CCCCCC><size=14>【QQ神仙依梦工作室】2026年09月28日</size></color>`
+<color=#FF69B4><size=18>愿仙途顺遂，国庆同乐！</size></color>
+<color=#CCCCCC><size=14>【QQ神仙依梦工作室】2026年10月7日</size></color>`
 
         }
+//         if (this.page == "ZhongQiuSealCtrl") {
+//             content = `<color=#FF4500><size=28><b>【月宫试炼】版本更新与副本探险活动公告</b></size></color>
+// <color=#FFE4B5><size=20>亲爱的仙友们：</size></color>
+
+// <color=#FFA500><size=19>为优化副本探险体验，游戏将于以下时间进行版本更新：</size></color>
+// <color=#FFFF00><size=18>▶ 维护时间：2026年09月28日 09:00-13:00（预计4小时）</size></color>
+// <color=#FFFF00><size=18>▶ 维护范围：全服所有服务器</size></color>
+// <color=#FF6347><size=18>▶ 维护补偿：灵石*5000 + 金币*10万 + 魂魄*500</size></color>
+
+// <color=#FFA500><size=19>本次更新内容：</size></color>
+// <color=#FFFFFF><size=17>1. 中秋副本【月宫试炼】开启，挑战可掉落传说级【嫦娥】合成材料</size></color>
+// <color=#FFFFFF><size=17>2. 卡牌合成，增加传说级【嫦娥】合成图谱</size></color>
+// <color=#87CEFA><size=18>遇到月宫阻碍？联系我们：</size></color>
+// <color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
+// <color=#FFFFFF><size=16>▶ 官方①QQ群：1092641657</size></color>
+// <color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size></color>
+
+// <color=#FF69B4><size=18>愿月华伴你前行，仙友们！</size></color>
+// <color=#CCCCCC><size=14>【QQ神仙依梦工作室】2026年09月28日</size></color>`
+
+//         }
         if (this.page == "BlazingMaze") {
             content = `<color=#FF4500><size=28><b>【烈焰迷阵】版本更新与副本探险活动公告</b></size></color>
 <color=#FFE4B5><size=20>亲爱的烈焰勇士们：</size></color>

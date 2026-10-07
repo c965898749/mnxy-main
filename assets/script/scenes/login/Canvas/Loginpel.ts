@@ -50,41 +50,57 @@ export class Loginpel extends Component {
     isSendingCode: boolean = false;
     @property({ type: Node, tooltip: "任务列表" }) ContentNode2: Node = null;
     // redis-server.exe redis.windows.conf
-    serverList = [{ "id": 1, "name": "梦回西游", "url": "http://127.0.0.1:8889/" }]
-    // serverList = [
-    //     { "id": 1, "name": "梦回西游", "url": "https://czx.yimem.com:3002/" },
-    //     { "id": 2, "name": "再续前缘", "url": "https://czx.yimem.com:3004/" },
-    // ]
+    // serverList = [{ "id": 1, "name": "梦回西游", "url": "http://127.0.0.1:8889/" }]
+    serverList = [
+        { "id": 1, "name": "梦回西游", "url": "https://czx.yimem.com:3002/" },
+        { "id": 2, "name": "再续前缘", "url": "https://czx.yimem.com:3004/" },
+    ]
     url = localStorage.getItem("url") ?? this.serverList[0].url;
 //更新公告内容
-content = `<color=#FFFFFF><size=20>尊敬的各位仙友：</size>
-<color=#FFA500><size=19>月满中秋，仙府同庆！《迷你神仙》中秋限定活动正式开启，全新护法【嫦娥】登场，中秋夺月副本限时开放，海量资源礼包等你来领！</size>
+            content = `<color=#FF4500><size=28><b>【国庆盛典】版本更新与副本探险活动公告</b></size></color>
+<color=#FFE4B5><size=20>亲爱的仙友们：</size></color>
+<color=#FFA500><size=19>为优化副本探险体验，游戏将于以下时间进行版本更新：</size></color>
+<color=#FFFF00><size=18>▶ 维护时间：2026年10月7日 09:00-13:00（预计4小时）</size></color>
+<color=#FFFF00><size=18>▶ 维护范围：全服所有服务器</size></color>
+<color=#FF6347><size=18>▶ 维护补偿：灵石*5000 + 金币*10万 + 魂魄*500</size></color>
+<color=#FFA500><size=19>本次更新内容：</size></color>
+<color=#FFFFFF><size=17>1. 第11章材料掉落继续翻倍，新增副本装备技能书掉落</size></color>
+<color=#FFFFFF><size=17>2. 新增人妖仙兽四个护：4.5星轩辕、4.5星地藏、4星谛听、4.5星三圣母</size></color>
+<color=#FFFFFF><size=17>3. 下期预告：即将开启应龙世界副本</size></color>
+<color=#87CEFA><size=18>遇到月宫阻碍？联系我们：</size></color>
+<color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
+<color=#FFFFFF><size=16>▶ 官方①QQ群：1092641657</size></color>
+<color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size></color>
+<color=#FF69B4><size=18>愿仙途顺遂，国庆同乐！</size></color>
+<color=#CCCCCC><size=14>【QQ神仙依梦工作室】2026年10月7日</size></color>`
+// content = `<color=#FFFFFF><size=20>尊敬的各位仙友：</size>
+// <color=#FFA500><size=19>月满中秋，仙府同庆！《迷你神仙》中秋限定活动正式开启，全新护法【嫦娥】登场，中秋夺月副本限时开放，海量资源礼包等你来领！</size>
 
-<color=#FFFF00><size=18>▶ 新增护法：嫦娥</size>
-<color=#FFFFFF><size=17>技能1：桂影栖身
-嫦娥在场下时，每回合增加闪避，最多叠加30%。</size>
-<color=#FFFFFF><size=17>技能2：月满重生
-我方有单位阵亡时，消耗自身一定比例生命上限血量复活该单位；复活单位恢复50%最大生命值，最低消耗血量40%，且不能复活固魂单位。</size>
-<color=#FFFFFF><size=17>羁绊技能：王母协同
-与王母在同一队伍时，提升自身生命上限、攻击与速度属性。</size>
-<color=#FF4500><size=18>仙友提示：嫦娥兼具闪避叠加与复活能力，搭配王母激活羁绊，队伍生存能力大幅提升，是本次中秋版本强力辅助护法！</color>
+// <color=#FFFF00><size=18>▶ 新增护法：嫦娥</size>
+// <color=#FFFFFF><size=17>技能1：桂影栖身
+// 嫦娥在场下时，每回合增加闪避，最多叠加30%。</size>
+// <color=#FFFFFF><size=17>技能2：月满重生
+// 我方有单位阵亡时，消耗自身一定比例生命上限血量复活该单位；复活单位恢复50%最大生命值，最低消耗血量40%，且不能复活固魂单位。</size>
+// <color=#FFFFFF><size=17>羁绊技能：王母协同
+// 与王母在同一队伍时，提升自身生命上限、攻击与速度属性。</size>
+// <color=#FF4500><size=18>仙友提示：嫦娥兼具闪避叠加与复活能力，搭配王母激活羁绊，队伍生存能力大幅提升，是本次中秋版本强力辅助护法！</color>
 
-<color=#FFFF00><size=18>▶ 限时活动副本：中秋夺月</size>
-<color=#FFFFFF><size=17>活动期间，【中秋夺月】副本限时开启。挑战副本可获取月华晶石、各类矿石等丰厚养成材料，助力仙友培养嫦娥，提升护法实力。副本难度分多档，仙友可根据自身队伍实力选择挑战。</size>
+// <color=#FFFF00><size=18>▶ 限时活动副本：中秋夺月</size>
+// <color=#FFFFFF><size=17>活动期间，【中秋夺月】副本限时开启。挑战副本可获取月华晶石、各类矿石等丰厚养成材料，助力仙友培养嫦娥，提升护法实力。副本难度分多档，仙友可根据自身队伍实力选择挑战。</size>
 
-<color=#FFFF00><size=18>▶ 中秋专属礼包🎁</size>
-<color=#FFFFFF><size=17>礼包内含：2000青铜矿、2000玄铁矿、2000紫金矿、2000月华晶石
-礼包兑换方式：点击头像 → 点击兑换 → 输入兑换码：中秋快乐
-注意事项：兑换码有效期仅限中秋活动期间，每个账号仅可兑换一次；礼包奖励将直接发放至背包，请仙友留意查收。</size>
+// <color=#FFFF00><size=18>▶ 中秋专属礼包🎁</size>
+// <color=#FFFFFF><size=17>礼包内含：2000青铜矿、2000玄铁矿、2000紫金矿、2000月华晶石
+// 礼包兑换方式：点击头像 → 点击兑换 → 输入兑换码：中秋快乐
+// 注意事项：兑换码有效期仅限中秋活动期间，每个账号仅可兑换一次；礼包奖励将直接发放至背包，请仙友留意查收。</size>
 
-<color=#FFA500><size=19>▶ 系统功能新增</size>
-<color=#FFFFFF><size=17>新增装备分解功能，为防止装备误分解，可点击装备详情右上角锁定装备。</size>
+// <color=#FFA500><size=19>▶ 系统功能新增</size>
+// <color=#FFFFFF><size=17>新增装备分解功能，为防止装备误分解，可点击装备详情右上角锁定装备。</size>
 
-<color=#87CEFA><size=18>▶ 版本前瞻预告</size>
-<color=#FFFFFF><size=17>国庆将开启第11章主线以及世界BOSS副本，敬请期待！</size>
+// <color=#87CEFA><size=18>▶ 版本前瞻预告</size>
+// <color=#FFFFFF><size=17>国庆将开启第11章主线以及世界BOSS副本，敬请期待！</size>
 
-<color=#FF69B4><size=18>月照仙途，共贺中秋，祝各位仙友中秋安康，仙运昌隆！</size>
-<color=#CCCCCC><size=14>【迷你神仙依梦工作室】2026年09月27日</size> `
+// <color=#FF69B4><size=18>月照仙途，共贺中秋，祝各位仙友中秋安康，仙运昌隆！</size>
+// <color=#CCCCCC><size=14>【迷你神仙依梦工作室】2026年09月27日</size> `
 
 
     checkUpdateToday = false;
