@@ -20,9 +20,13 @@ export class ShopCtrl extends Component {
     @property(Node)
     find: Node
     @property(Node)
+    gongx: Node
+    @property(Node)
     itemDetail1: Node
     @property(Node)
     itemDetail2: Node
+    @property(Node)
+    itemDetail3: Node
     @property(Node)
     introduceBack: Node
     byItemDetail = null
@@ -31,6 +35,7 @@ export class ShopCtrl extends Component {
     byNum: Node
     @property({ type: Node, tooltip: "任务列表" }) ContentNode: Node = null;
     @property({ type: Node, tooltip: "任务列表" }) ContentNode2: Node = null;
+    @property({ type: Node, tooltip: "任务列表" }) ContentNode3: Node = null;
     initialized = false;
     isChongzhi = false
     start() {
@@ -170,15 +175,17 @@ export class ShopCtrl extends Component {
                                 await util.bundle.load(`image/store/store_10/spriteFrame`, SpriteFrame)
                             if (itemC.goldEdgePrice != 0) {
                                 aa.getChildByName("sell").getChildByName("Background")
-                                    .getChildByName("Label").getComponent(Label).string = itemC.goldEdgePrice
+                                    .getChildByName("Label").getComponent(Label).string = itemC.payPrice ?? itemC.goldEdgePrice
                                 aa.getChildByName("sell").getChildByName("Background").getChildByName("icon_61").getComponent(Sprite).spriteFrame =
                                     await util.bundle.load(`image/ui/icon_61/spriteFrame`, SpriteFrame)
                             } else {
                                 aa.getChildByName("sell").getChildByName("Background")
-                                    .getChildByName("Label").getComponent(Label).string = itemC.gemPrice
+                                    .getChildByName("Label").getComponent(Label).string = itemC.payPrice ?? itemC.gemPrice
                                 aa.getChildByName("sell").getChildByName("Background").getChildByName("icon_61").getComponent(Sprite).spriteFrame =
                                     await util.bundle.load(`image/ui/icon_69/spriteFrame`, SpriteFrame)
                             }
+                            // 折扣角标（后端已按折扣算好 payPrice）
+                            this.applyDiscountTag(aa, itemC)
                             aa.getChildByName("sign").getChildByName("Label").getComponent(Label).string = itemC.itemName
                             // icon_61
                             aa.getComponent(Sprite).spriteFrame =
@@ -262,15 +269,17 @@ export class ShopCtrl extends Component {
                                 await util.bundle.load(`image/store/store_10/spriteFrame`, SpriteFrame)
                             if (itemC.goldEdgePrice != 0) {
                                 aa.getChildByName("sell").getChildByName("Background")
-                                    .getChildByName("Label").getComponent(Label).string = itemC.goldEdgePrice
+                                    .getChildByName("Label").getComponent(Label).string = itemC.payPrice ?? itemC.goldEdgePrice
                                 aa.getChildByName("sell").getChildByName("Background").getChildByName("icon_61").getComponent(Sprite).spriteFrame =
                                     await util.bundle.load(`image/ui/icon_61/spriteFrame`, SpriteFrame)
                             } else {
                                 aa.getChildByName("sell").getChildByName("Background")
-                                    .getChildByName("Label").getComponent(Label).string = itemC.gemPrice
+                                    .getChildByName("Label").getComponent(Label).string = itemC.payPrice ?? itemC.gemPrice
                                 aa.getChildByName("sell").getChildByName("Background").getChildByName("icon_61").getComponent(Sprite).spriteFrame =
                                     await util.bundle.load(`image/ui/icon_69/spriteFrame`, SpriteFrame)
                             }
+                            // 折扣角标（后端已按折扣算好 payPrice）
+                            this.applyDiscountTag(aa, itemC)
                             aa.getChildByName("sign").getChildByName("Label").getComponent(Label).string = itemC.itemName
                             aa.getComponent(Sprite).spriteFrame =
                                 await util.bundle.load(`image/store/common_0${itemC.quality}/spriteFrame`, SpriteFrame)
@@ -307,6 +316,16 @@ export class ShopCtrl extends Component {
                 console.error('There was a problem with the fetch operation:', error);
             }
             );
+    }
+
+    // 折扣角标：3折/5折/8折 三个节点互斥显示，原价（discount 为 0 或老记录里没有）时全部隐藏
+    // 节点池复用，必须每次先把三个都置位，不能只置 active 的那一个
+    applyDiscountTag(aa: Node, itemC: any) {
+        const discount = Number(itemC.discount) || 0
+        for (const name of ["3", "5", "8"]) {
+            const tag = aa.getChildByName(name)
+            if (tag) tag.active = discount == Number(name)
+        }
     }
 
     // 显示所有的属性
@@ -360,6 +379,8 @@ export class ShopCtrl extends Component {
                     item.getChildByName("name").getComponent(Label).string = itemDetail.itemName
                     item.getChildByName("Count").getComponent(Label).string = itemDetail.description
                     item.getChildByName("price").getComponent(Label).string = itemDetail.gemPrice
+                    // ff5 节点池与功勋商城(init3)共用，功勋商品会隐藏限购框，这里必须复位再赋值
+                    item.getChildByName("textbox_bg").active = true
                     item.getChildByName("textbox_bg").getChildByName("num").getComponent(Label).string = "限购" + itemDetail.stock
                     item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
                         await util.bundle.load(itemDetail.icon, SpriteFrame)
@@ -372,6 +393,60 @@ export class ShopCtrl extends Component {
             }
             );
 
+    }
+
+    init3() {
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        // 功勋商城：商品来自 game_item_base（item_id>=1105000），价格由后端按品质算好放在 price 字段
+        fetch(config.ServerUrl.url + "getGongxunStore", options)
+            .then(response => {
+                return response.json(); // 解析 JSON 响应
+            })
+            .then(async data => {
+                if (data.success != '1') return
+                let items = data.data
+                const nodePool3 = util.resource.getNodePool(
+                    await util.bundle.load("prefab/ff7", Prefab)
+                )
+                const childrens = [...this.ContentNode3.children]
+                for (let i = 0; i < childrens.length; i++) {
+                    const node = childrens[i];
+                    node.getChildByName("buy").off("click")
+                    nodePool3.put(node)
+                }
+                for (let i = 0; i < items.length; i++) {
+                    let itemDetail = items[i]
+                    let item = nodePool3.get()
+                    item.getChildByName("name").getComponent(Label).string = itemDetail.itemName
+                    item.getChildByName("Count").getComponent(Label).string = itemDetail.description
+                    // 价格取后端按 quality*100 算好的 price
+                    item.getChildByName("price").getComponent(Label).string = itemDetail.price
+                    // 功勋商品无限购概念，隐藏限购框（ff5 节点池与好友商城共用，切回 init2 时会复位）
+                    item.getChildByName("textbox_bg").active = false
+                    item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
+                        await util.bundle.load(itemDetail.icon, SpriteFrame)
+                    // 功勋积分兑换暂未开启，点击只提示，不发起购买
+                    item.getChildByName("buy").on("click", () => {
+                        AudioMgr.inst.playOneShot("sound/other/click");
+                        util.message.prompt({ message: "功勋积分兑换暂未开启，暂时不支持兑换" })
+                    })
+                    this.ContentNode3.addChild(item)
+                    continue
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
     }
 
     async clickBuyFun(itemDetail) {
@@ -491,17 +566,32 @@ export class ShopCtrl extends Component {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.zhan.getComponent(Sprite).spriteFrame = await util.bundle.load('image/button/lian/spriteFrame', SpriteFrame)
         this.find.getComponent(Sprite).spriteFrame = await util.bundle.load('image/button/lian2/spriteFrame', SpriteFrame)
+        this.gongx.getComponent(Sprite).spriteFrame = await util.bundle.load('image/button/lian2/spriteFrame', SpriteFrame)
         this.itemDetail2.active = false
         this.itemDetail1.active = true
+        this.itemDetail3.active = false
         this.init("0")
     }
     async frineds() {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.zhan.getComponent(Sprite).spriteFrame = await util.bundle.load('image/button/lian2/spriteFrame', SpriteFrame)
         this.find.getComponent(Sprite).spriteFrame = await util.bundle.load('image/button/lian/spriteFrame', SpriteFrame)
+        this.gongx.getComponent(Sprite).spriteFrame = await util.bundle.load('image/button/lian2/spriteFrame', SpriteFrame)
         this.itemDetail1.active = false
         this.itemDetail2.active = true
+        this.itemDetail3.active = false
         this.init2()
+    }
+
+    async gongxun() {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.zhan.getComponent(Sprite).spriteFrame = await util.bundle.load('image/button/lian2/spriteFrame', SpriteFrame)
+        this.find.getComponent(Sprite).spriteFrame = await util.bundle.load('image/button/lian2/spriteFrame', SpriteFrame)
+        this.gongx.getComponent(Sprite).spriteFrame = await util.bundle.load('image/button/lian/spriteFrame', SpriteFrame)
+        this.itemDetail1.active = false
+        this.itemDetail2.active = false
+        this.itemDetail3.active = true
+        this.init3()
     }
 
 }

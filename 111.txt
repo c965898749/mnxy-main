@@ -1,0 +1,34 @@
+﻿diff --git a/src/main/java/com/sy/model/game/BattleManager.java b/src/main/java/com/sy/model/game/BattleManager.java
+index e034ced..051f5e8 100644
+--- a/src/main/java/com/sy/model/game/BattleManager.java
++++ b/src/main/java/com/sy/model/game/BattleManager.java
+@@ -746,6 +746,10 @@ public class BattleManager {
+     }
+     //鍚冧激鏃舵妧鑳?     private Integer triggerOnAttackedSkills(Guardian defender, Integer burnDamage,EffectType effectType){
++        return triggerOnAttackedSkills(defender, burnDamage, effectType, true);
++    }
++    //鍚冧激鏃舵妧鑳斤紱allowTransfer=false 鏃剁姝㈠啀瑙﹀彂鈥滀激瀹宠浆绉烩€濈被鎶€鑳斤紙濡傚摦澶╃姮锛夛紝闃叉杞Щ閾捐嚜閫掑綊瀵艰嚧 StackOverflowError
++    private Integer triggerOnAttackedSkills(Guardian defender, Integer burnDamage,EffectType effectType, boolean allowTransfer){
+             int[] skillLevel = CardSkillLevelUtil.calculateSkillLevels(defender.getLevel(), defender.getStar().doubleValue());
+             //瑙﹀彂鍦轰笅鎶€鑳斤紙鐜勬瀹堝崼锛屼笉鍙楀満涓婂崟浣嶆矇榛樺奖鍝嶏紝浠呭彈鐜勬鑷韩娌夐粯褰卞搷锛?         List<Guardian> xuXuanWu = defender.getCamp() == Camp.A ?
+@@ -810,7 +814,8 @@ public class BattleManager {
+                     List<Guardian> defenders = defender.getCamp() == Camp.A ?
+                             campA.stream().filter(g -> !g.isDead()&&g.getRace()==Race.ORC).collect(Collectors.toList()) :
+                             campB.stream().filter(g -> !g.isDead()&&g.getRace()==Race.ORC).collect(Collectors.toList());
+-                    if (ProbabilityBooleanUtils.randomByProbability(1.0 * defenders.size())) {
++                    // 鏈堜箣鏆楅潰浠呭湪鍦轰笂瑙﹀彂锛屽満涓嬩笉瑙﹀彂
++                    if (allowTransfer && defender.isOnField() && ProbabilityBooleanUtils.randomByProbability(1.0 * defenders.size())) {
+                         List<Guardian> shous=defenders.stream().filter(x->!x.isOnField()).collect(Collectors.toList());
+                         if (Xtool.isNotNull(shous)&&skillLevel[1] > 0){
+                             int oldBurnDamage=burnDamage;
+@@ -835,8 +840,8 @@ public class BattleManager {
+                                     effectType.MAX_HP_DOWN,
+                                     DamageType.TRUE,
+                                     "-" + transferDamage);
+-                            // 杞Щ浼ゅ缁忚繃鐩爣鐨勫噺浼ゆ妧鑳斤紙濡傝繑鐠炲綊鐪燂級
+-                            transferDamage = triggerOnAttackedSkills(g, transferDamage, EffectType.DAMAGE);
++                            // 杞Щ浼ゅ缁忚繃鐩爣鐨勫噺浼ゆ妧鑳斤紙濡傝繑鐠炲綊鐪燂級锛沘llowTransfer=false 闃绘柇鎺ユ敹绔啀娆¤Е鍙戝摦澶╃姮杞Щ锛岄伩鍏嶆棤闄愰€掑綊
++                            transferDamage = triggerOnAttackedSkills(g, transferDamage, EffectType.DAMAGE, false);
+                             // 鎵ｉ櫎鍑忎激鍚庣殑浼ゅ
+                             g.setCurrentHp(g.getCurrentHp() - transferDamage);
+                             Map<String, TargetBattleData> deadUnits = new HashMap<>();

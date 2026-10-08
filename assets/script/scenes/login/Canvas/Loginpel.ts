@@ -50,11 +50,11 @@ export class Loginpel extends Component {
     isSendingCode: boolean = false;
     @property({ type: Node, tooltip: "任务列表" }) ContentNode2: Node = null;
     // redis-server.exe redis.windows.conf
-    // serverList = [{ "id": 1, "name": "梦回西游", "url": "http://127.0.0.1:8889/" }]
-    serverList = [
-        { "id": 1, "name": "梦回西游", "url": "https://czx.yimem.com:3002/" },
-        { "id": 2, "name": "再续前缘", "url": "https://czx.yimem.com:3004/" },
-    ]
+    serverList = [{ "id": 1, "name": "梦回西游", "url": "http://127.0.0.1:8889/" }]
+    // serverList = [
+    //     { "id": 1, "name": "梦回西游", "url": "https://czx.yimem.com:3002/" },
+    //     { "id": 2, "name": "再续前缘", "url": "https://czx.yimem.com:3004/" },
+    // ]
     url = localStorage.getItem("url") ?? this.serverList[0].url;
 //更新公告内容
             content = `<color=#FF4500><size=28><b>【国庆盛典】版本更新与副本探险活动公告</b></size></color>
