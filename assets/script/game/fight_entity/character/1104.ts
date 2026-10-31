@@ -55,7 +55,7 @@ export class Character extends CharacterMetaState {
     PassiveIntroduceTwo: string = `
 
     守卫 lv{skillLv}
-    队友被攻击时，若其生命不足{healVal}%且低于自身则代承受伤害，回合结束时恢复上限40%的生命值。
+    队友遭攻击，当其生命值不足{healVal}%（最高70%） 且低于自身时，自身代为承受伤害。回合结束恢复自身上限 40% 的生命值（无守卫效果，则不恢复）
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `
@@ -79,7 +79,7 @@ export class Character extends CharacterMetaState {
         msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "").replace("{healVal}", Math.floor(10 * skill1) + "") + "\n";
         if (skill2 > 0) {
             msg += this.PassiveIntroduceTwo.replace("{skillLv}", skill2 + "")
-                .replace("{healVal}", Math.floor(10 * skill2) + "")+ "\n";
+                .replace("{healVal}", Math.min(70, Math.floor(10 * skill2)) + "") + "\n";
         } else {
             msg += this.PassiveIntroduceTwo.replace("{skillLv}", "未开启")
                 .replace("{healVal}", Math.floor(10) + "") + "\n";

@@ -16,7 +16,7 @@ const { ccclass, property } = _decorator;
 enum Style { 纯色描边, 透明衰减, 明暗衰减 }
 
 // 效果类型常量
-const CONTINUOUS_EFFECTS = ["POISON", "SILENCE", "HEAL_DOWN", "STUN", "FIXED_SOUL", "XULI1", "XULI2", "XULI3", "XULI4", "XULI5", "XULIMAN", "PHYSICAL_BARRIER"];
+const CONTINUOUS_EFFECTS = ["POISON", "SILENCE", "HEAL_DOWN", "STUN", "FIXED_SOUL", "XULI1", "XULI2", "XULI3", "XULI4", "XULI5", "XULIMAN", "PHYSICAL_BARRIER", "MAGIC_BARRIER"];
 const BUFF_UP_TYPES = ['ATTACK_UP', 'ATTACK_UP_PRET', 'ATTACK_RESIST_BOOST', 'ATTACK_RESIST_BOOST_PRET',
     'FIRE_BOOST', 'FIRE_BOOST_PRET', 'FIRE_RESIST_BOOST', 'FIRE_RESIST_BOOST_PRET',
     'POISON_BOOST', 'POISON_BOOST_PRET', 'POISON_RESIST_BOOST', 'POISON_RESIST_BOOST_PRET',
@@ -55,9 +55,19 @@ export class FightMap extends Component {
     result: boolean
     rewards = []
     levelUp = 0
+    // 战斗结算面板展示后的回调（true=胜利）：供上层（如自动探索）衔接后续流程
+    onBattleResult: (isWin: boolean) => void = null
+    // 自动探索开关：为 true 时胜利不再依赖上层外部销毁，而是由本节点延迟复用手动"确定"的干净结算销毁路径(FightSuccess.skipFight)自行销毁，销毁后经 onAutoExploreNext 回调上层继续下一关
+    autoExplore: boolean = false
+    onAutoExploreNext: () => void = null
     private timeScale: number = 1
     initialized = false;
     effectTypes = ["XULI1", "XULI2", "XULI3", "XULI4", "XULI5", "XULIMAN"];
+    // 场下物理/法术护盾重叠处理：护盾存量映射(判定是否存在与驱动交替)、交替相位与调度标记
+    private physicalShieldMap: Map<string, number> = new Map()
+    private magicShieldMap: Map<string, number> = new Map()
+    private barrierPhasePhysical: boolean = true
+    private barrierAltScheduled: boolean = false
     L1 = null;
     R1 = null;
     timer = 0
@@ -206,7 +216,7 @@ export class FightMap extends Component {
         const itemNode = this.getChracterChangXiaById(unitId)
         const characterNode = this.getCharacterById(unitId)
         if (!itemNode && !characterNode) return
-        // 护盾为0时，场上和场下的PHYSICAL_BARRIER都要隐藏
+        // 护盾为0时：场上和场下都隐藏，并从映射移除后按剩余护盾刷新交替显隐
         if (shieldRemaining <= 0) {
             if (itemNode) {
                 const barrierNode = itemNode.getChildByName("buff")?.getChildByName("PHYSICAL_BARRIER")
@@ -216,18 +226,90 @@ export class FightMap extends Component {
                 const barrierNode = characterNode.getChildByName("PHYSICAL_BARRIER")
                 if (barrierNode) barrierNode.active = false
             }
+            this.physicalShieldMap.delete(unitId)
+            this.updateBarrierAlternateState(unitId)
             return
         }
-        // 护盾大于0时，更新场下num数值
+        // 护盾>0：刷新场下 num 并着为黄色（与法术护盾蓝色区分），登记映射后刷新交替显隐
         if (itemNode) {
             const barrierNode = itemNode.getChildByName("buff")?.getChildByName("PHYSICAL_BARRIER")
             if (barrierNode) {
                 const numLabel = barrierNode.getChildByName("num")
                 if (numLabel) {
-                    numLabel.getComponent(Label).string = shieldRemaining.toString()
+                    const label = numLabel.getComponent(Label)
+                    label.string = shieldRemaining.toString()
+                    label.color = new Color(255, 210, 40, 255)
                 }
             }
         }
+        this.physicalShieldMap.set(unitId, shieldRemaining)
+        this.updateBarrierAlternateState(unitId)
+    }
+    // 更新场下MAGIC_BARRIER的num护盾数值：护盾为0(耗尽/死亡)时场上+场下都隐藏动画；>0 时刷新场下数值（循环显隐由授予/登场与 CONTINUOUS_EFFECTS 机制保持，与物理护盾一致）
+    updateMagicShieldNumLabel(unitId: string, magicShieldRemaining: number) {
+        const itemNode = this.getChracterChangXiaById(unitId)
+        const characterNode = this.getCharacterById(unitId)
+        if (!itemNode && !characterNode) return
+        if (magicShieldRemaining <= 0) {
+            if (itemNode) {
+                const barrierNode = itemNode.getChildByName("buff")?.getChildByName("MAGIC_BARRIER")
+                if (barrierNode) barrierNode.active = false
+            }
+            if (characterNode) {
+                const barrierNode = characterNode.getChildByName("MAGIC_BARRIER")
+                if (barrierNode) barrierNode.active = false
+            }
+            this.magicShieldMap.delete(unitId)
+            this.updateBarrierAlternateState(unitId)
+            return
+        }
+        if (itemNode) {
+            const barrierNode = itemNode.getChildByName("buff")?.getChildByName("MAGIC_BARRIER")
+            if (barrierNode) {
+                const numLabel = barrierNode.getChildByName("num")
+                if (numLabel) {
+                    const label = numLabel.getComponent(Label)
+                    label.string = magicShieldRemaining.toString()
+                    label.color = new Color(80, 160, 255, 255)
+                }
+            }
+        }
+        this.magicShieldMap.set(unitId, magicShieldRemaining)
+        this.updateBarrierAlternateState(unitId)
+    }
+
+    // ===== 场下物理/法术护盾重叠处理：num 颜色区分(物理黄/法术蓝)，两者同时存在时交替显示（含各自 num），单者存在时常显 =====
+    // 只切换“场下”护盾节点的可见性（场上的法盾/物盾不交替、照常同时显示，故不动 characterNode）
+    private setBarrierVisible(unitId: string, name: string, visible: boolean) {
+        const itemNode = this.getChracterChangXiaById(unitId)
+        const off = itemNode?.getChildByName("buff")?.getChildByName(name)
+        if (off) off.active = visible
+    }
+    // 依据当前交替相位与护盾存量设置场下显隐：双盾时场下只显示其一并随相位切换，单盾时常显（场上不受影响）
+    private applyBarrierPhase(unitId: string) {
+        const hasP = (this.physicalShieldMap.get(unitId) || 0) > 0
+        const hasM = (this.magicShieldMap.get(unitId) || 0) > 0
+        const dual = hasP && hasM
+        const showPhysical = hasP && (!dual || this.barrierPhasePhysical)
+        const showMagic = hasM && (!dual || !this.barrierPhasePhysical)
+        this.setBarrierVisible(unitId, "PHYSICAL_BARRIER", showPhysical)
+        this.setBarrierVisible(unitId, "MAGIC_BARRIER", showMagic)
+    }
+    // 护盾数量变化后刷新该单位显隐；首次出现双盾时启动交替调度
+    private updateBarrierAlternateState(unitId: string) {
+        const hasP = (this.physicalShieldMap.get(unitId) || 0) > 0
+        const hasM = (this.magicShieldMap.get(unitId) || 0) > 0
+        if (hasP && hasM && !this.barrierAltScheduled) this.startBarrierAlternateScheduler()
+        this.applyBarrierPhase(unitId)
+    }
+    // 每 0.7s 翻转相位，对所有有盾单位重新应用（单盾不受影响，仅双盾交替）
+    private startBarrierAlternateScheduler() {
+        this.barrierAltScheduled = true
+        this.schedule(() => {
+            this.barrierPhasePhysical = !this.barrierPhasePhysical
+            const ids = new Set<string>([...this.physicalShieldMap.keys(), ...this.magicShieldMap.keys()])
+            ids.forEach(id => this.applyBarrierPhase(id))
+        }, 0.7)
     }
     isContinuousEffect(effectType: string): boolean {
         return CONTINUOUS_EFFECTS.indexOf(effectType) !== -1
@@ -304,7 +386,13 @@ export class FightMap extends Component {
         const isLeft = this.isLeft(fp.sourceUnitId)
         let characterNode = this.Character.children[isLeft ? 0 : 1]
         characterNode.setPosition(isLeft ? -180 : 180, 0, 0)
-        let scaleNew = new Vec3(isLeft ? Math.abs(characterNode.scale.x) * -1 : Math.abs(characterNode.scale.x), characterNode.scale.y, characterNode.scale.z)
+        // 场上大头像节点是按侧共用的单节点，被“死亡→补位→复活→再补位”链路反复复用；上一占用者的登场弹性 tween 可能被后续死亡/复活流程打断，
+        // 使该节点 scale 停在 (0,0,0)。若仍用“当前 scale”推导 scaleNew，新登场单位会被弹回 0 → 精灵加载成功但不可见（“场上没有英雄图片”）。
+        // 与 handleSwap 用固定静止缩放保持一致：取绝对值并对 0 兜底为 1，符号按阵营侧决定。
+        const magX = Math.abs(characterNode.scale.x) || 1
+        const magY = Math.abs(characterNode.scale.y) || 1
+        let scaleNew = new Vec3(isLeft ? -magX : magX, magY, magY)
+        characterNode.active = true
         characterNode.scale = new Vec3(0, 0, 0)
         characterNode.getComponent(Sprite).spriteFrame =
             await util.bundle.load(`game/texture/frames/hero/${fp.sourceUnitId.replace(/[a-zA-Z]/g, '')}/spriteFrame`, SpriteFrame)
@@ -335,15 +423,22 @@ export class FightMap extends Component {
         if (enterItemNode) {
             const buffParent = enterItemNode.getChildByName("buff")
             if (buffParent) {
-                // 护盾：场下PHYSICAL_BARRIER激活时，场上也激活
-                const offBarrier = buffParent.getChildByName("PHYSICAL_BARRIER")
-                if (offBarrier && offBarrier.active) {
+                // 护盾：登场时把该单位场下期间获得的护盾同步到场上（以护盾映射为准，不读节点 active，避免受交替显隐影响），随后套用交替相位
+                if ((this.physicalShieldMap.get(fp.sourceUnitId) || 0) > 0) {
                     const onBarrier = characterNode.getChildByName("PHYSICAL_BARRIER")
                     if (onBarrier) {
                         onBarrier.active = true
                         onBarrier.getComponent(sp.Skeleton).setAnimation(0, "animation", true)
                     }
                 }
+                if ((this.magicShieldMap.get(fp.sourceUnitId) || 0) > 0) {
+                    const onMagicBarrier = characterNode.getChildByName("MAGIC_BARRIER")
+                    if (onMagicBarrier) {
+                        onMagicBarrier.active = true
+                        onMagicBarrier.getComponent(sp.Skeleton).setAnimation(0, "animation", true)
+                    }
+                }
+                this.updateBarrierAlternateState(fp.sourceUnitId)
                 // 蓄力：检查场下哪个蓄力等级激活，场上同步
                 for (const et of this.effectTypes) {
                     const offEffect = buffParent.getChildByName(et)
@@ -376,7 +471,7 @@ export class FightMap extends Component {
             if (characterNode) {
                 let skeleton = characterNode.getChildByName("POISON2").getComponent(sp.Skeleton)
                 skeleton.node.active = true; skeleton.setAnimation(0, "animation", false)
-                this.showDamageOrHealNumber(key, characterNode, -data.value, false)
+                if (data.value > 0) this.showDamageOrHealNumber(key, characterNode, -data.value, false)
                 this.updateHpOnField(key, data.hpAfter, data.hpBefore)
                 this.actionAwaitQueue.push(this.playAnimToPromise(skeleton))
             }
@@ -384,9 +479,13 @@ export class FightMap extends Component {
             if (itemNode) {
                 let skeleton = itemNode.getChildByName("buff").getChildByName("POISON2").getComponent(sp.Skeleton)
                 skeleton.node.active = true; skeleton.setAnimation(0, "animation", false)
-                await this.showBuffString(itemNode, false, "-" + data.value)
+                if (data.value > 0) await this.showBuffString(itemNode, false, "-" + data.value)
                 this.updateHpOffField(key, data.hpAfter, data.hpBefore)
                 this.actionAwaitQueue.push(this.playAnimToPromise(skeleton))
+            }
+            // 中毒被魔法护盾吸收时：同步法盾剩余值（逐跳扣减、耗尽即隐藏）
+            if (data.magicShieldRemaining !== undefined) {
+                this.updateMagicShieldNumLabel(key, data.magicShieldRemaining)
             }
         }
         await new Promise(res => setTimeout(res, 1000 / this.timeScale))
@@ -484,6 +583,9 @@ export class FightMap extends Component {
                     if (buffNode.name !== "FIXED_SOUL") buffNode.active = false;
                 });
             }
+            // 阵亡清空该单位的护盾登记，避免交替调度把已死单位的护盾又显示出来
+            this.physicalShieldMap.delete(key)
+            this.magicShieldMap.delete(key)
         }
         await new Promise(res => setTimeout(res, 200 / this.timeScale))
     }
@@ -568,6 +670,10 @@ export class FightMap extends Component {
                     if (characterNode) characterNode.getChildByName(nodeName).active = false
                 }
             }
+            // 魔法护盾：每回合同步盾量——耗尽(<=0)则隐藏场上+场下动画，否则刷新数值（授予后靠此保持常显）
+            if (data.magicShieldRemaining !== undefined) {
+                this.updateMagicShieldNumLabel(key, data.magicShieldRemaining)
+            }
         }
         await new Promise(res => setTimeout(res, 1000 / this.timeScale))
     }
@@ -582,8 +688,22 @@ export class FightMap extends Component {
             await new Promise(res => setTimeout(res, 1500 / this.timeScale))
             return
         }
-        // 月满重生 / 不屈意志：复活技能，独立处理
-        if (fp.eventType == '月满重生' || fp.eventType == '不屈意志') {
+        // 龙威：吸血+加盾+青龙回血合并为一条日志，独立处理
+        if (fp.eventType == '龙威') {
+            await this.handleLongWei(fp)
+            this.skillName.children[this.isLeft(fp.sourceUnitId) ? 0 : 1].active = false
+            await new Promise(res => setTimeout(res, 1500 / this.timeScale))
+            return
+        }
+        // 青龙吐珠：登场雷击群伤，先 shihou 施法音，随后每个被电目标各一声 leidian（类轩辕连续音效），独立处理
+        if (fp.eventType == '青龙吐珠') {
+            await this.handleQinglongTuZhu(fp)
+            this.skillName.children[this.isLeft(fp.sourceUnitId) ? 0 : 1].active = false
+            await new Promise(res => setTimeout(res, 1500 / this.timeScale))
+            return
+        }
+        // 月满重生 / 不屈意志 / 归元：复活技能，独立处理（归元=朱雀凤凰卵满血复活）
+        if (fp.eventType == '月满重生' || fp.eventType == '不屈意志' || fp.eventType == '归元') {
             await this.handleRevive(fp)
             this.skillName.children[this.isLeft(fp.sourceUnitId) ? 0 : 1].active = false
             await new Promise(res => setTimeout(res, 1500 / this.timeScale))
@@ -644,6 +764,22 @@ export class FightMap extends Component {
             this.skillName.children[this.isLeft(fp.sourceUnitId) ? 0 : 1].active = false
             await new Promise(res => setTimeout(res, 1500 / this.timeScale))
             return
+        }
+        // 焚尽八荒：朱雀消耗自身25%生命上限的火焰伤害 AOE；通用 AoE 路由只更新 multiTargetDataMap 里的敌方目标、不处理施法者自身血条，
+        // 而场上大血条(this.Hp.children[side])是按侧共享的、只有朱雀确为场上单位时才能安全写入，故按场上/场下分别补上朱雀自身的扣血表现
+        if (fp.eventType == '焚尽八荒') {
+            // 后端对焚尽八荒传的 sourceHpBefore 是“扣血前当前HP”而非生命上限（与其他技能传 maxHp 不同），
+            // 而场上/场下血条都把第三个参数当作上限分母，直接用 sourceHpBefore 会让最大血量看起来变小；故按 unitId 取真实 maxHp 作分母
+            const srcData = (this.L1 || []).find(x => x.uuid === fp.sourceUnitId) || (this.R1 || []).find(x => x.uuid === fp.sourceUnitId)
+            const srcMaxHp = (srcData && srcData.maxHp) ? srcData.maxHp : fp.sourceHpBefore
+            if (fp.sourceFieldStatus) {
+                // 场上：飘自耗伤害数字(-25%上限) + 刷新该侧场上大血条
+                const srcChar = this.getCharacterById(fp.sourceUnitId)
+                if (srcChar) this.showDamageOrHealNumber(fp.sourceUnitId, srcChar, fp.sourceHpBefore - fp.sourceHpAfter, false)
+                this.updateHpOnField(fp.sourceUnitId, fp.sourceHpAfter, srcMaxHp)
+            }
+            // 无论场上场下，都同步场下小头像血条
+            this.updateHpOffField(fp.sourceUnitId, fp.sourceHpAfter, srcMaxHp)
         }
         if (fp.sourceFieldStatus) {
             if (fp.aoe == 1) await this.handleSkillOnFieldAoe(fp)
@@ -735,17 +871,42 @@ export class FightMap extends Component {
         this.updateHpOffField(targetId, fp.targetHpAfter, fp.targetHpBefore)
 
         // 2e. 更新地藏/嫦娥生命消耗显示（sourceHpBefore=扣血前HP, sourceHpAfter=扣血后HP, value=消耗量）
+        // 归元为朱雀自身满血复活、无生命消耗，跳过 source 消耗飘字
         if (fp.sourceFieldStatus) {
             this.updateHpOnField(fp.sourceUnitId, fp.sourceHpAfter, fp.sourceHpBefore)
         }
         this.updateHpOffField(fp.sourceUnitId, fp.sourceHpAfter, fp.sourceHpBefore)
-        if (sourceItemNode) {
+        if (fp.eventType != '归元' && sourceItemNode) {
             await this.showBuffString(sourceItemNode, false, "生命 -" + fp.sourceSelfValue)
         }
 
         // 2f. 场下飘字
         if (targetItemNode && fp.extraDesc) {
             await this.showBuffString(targetItemNode, true, fp.extraDesc)
+        }
+
+        // 2g. 归元·凤凰卵形态切换：变蛋时图片路径 id 后加 _1，破壳时去掉 _1 还原（场下 header 头像 + 场上中央大图，卵留场时中央也显示蛋）
+        if (fp.eventType == '归元' && targetItemNode) {
+            const heroId = targetId.replace(/[a-zA-Z]/g, '')
+            const isEggForm = fp.extraDesc == '化身为凤凰卵'
+            const folder = isEggForm ? heroId + '_1' : heroId
+            const headerNode = targetItemNode.getChildByName("header")
+            if (headerNode) {
+                headerNode.getComponent(Sprite).spriteFrame =
+                    await util.bundle.load(`game/texture/frames/hero/Header/${folder}/spriteFrame`, SpriteFrame)
+            }
+            // 场上中央大图：卵留场时 2b 会按普通形象加载，这里覆盖为蛋图；破壳则还原普通图
+            if (targetCharacterNode && fp.targetFieldStatus) {
+                targetCharacterNode.getComponent(Sprite).spriteFrame =
+                    await util.bundle.load(`game/texture/frames/hero/${folder}/spriteFrame`, SpriteFrame)
+            }
+            // 变蛋：移除一切负面效果的动画（对应后端 clearNegative，卵为纯净肉盾）
+            if (isEggForm) {
+                const NEG_BUFFS = ["POISON", "POISON2", "SILENCE", "STUN", "HEAL_DOWN"]
+                const buffParent = targetItemNode.getChildByName("buff")
+                if (buffParent) buffParent.children.forEach(n => { if (NEG_BUFFS.indexOf(n.name) !== -1) n.active = false })
+                if (targetCharacterNode) NEG_BUFFS.forEach(name => { const n = targetCharacterNode.getChildByName(name); if (n) n.active = false })
+            }
         }
 
         await new Promise(res => setTimeout(res, 500 / this.timeScale))
@@ -759,8 +920,9 @@ export class FightMap extends Component {
         const targetItemNode = this.getChracterChangXiaById(targetId)
         // 场上角色节点：换位前在场上的单位，其 ID 还在 characterNode 上
         // sourceFieldStatus 是换位后的状态，所以反转查找
-        let characterNode = this.getCharacterById(sourceId) || this.getCharacterById(targetId)
         const isSourceLeft = this.isLeft(sourceId)
+        // 场上大头像节点按阵营 side 直取（与 handleUnitEnter 一致），避免依赖场上节点上可能未设置的 id 标签导致取不到旧上场单位、跳过换图
+        let characterNode = this.Character.children[isSourceLeft ? 0 : 1]
 
         // 1. 播放捡漏小妖场下 select 动画 + 飘技能名
         if (sourceItemNode) {
@@ -802,15 +964,22 @@ export class FightMap extends Component {
             if (newItemNode) {
                 const buffParent = newItemNode.getChildByName("buff")
                 if (buffParent) {
-                    // 护盾：场下PHYSICAL_BARRIER激活时，场上也激活
-                    const offBarrier = buffParent.getChildByName("PHYSICAL_BARRIER")
-                    if (offBarrier && offBarrier.active) {
+                    // 护盾：复活/上场时把场下期间获得的护盾同步到场上（以护盾映射为准），随后套用交替相位
+                    if ((this.physicalShieldMap.get(newOnFieldId) || 0) > 0) {
                         const onBarrier = characterNode.getChildByName("PHYSICAL_BARRIER")
                         if (onBarrier) {
                             onBarrier.active = true
                             onBarrier.getComponent(sp.Skeleton).setAnimation(0, "animation", true)
                         }
                     }
+                    if ((this.magicShieldMap.get(newOnFieldId) || 0) > 0) {
+                        const onMagicBarrier = characterNode.getChildByName("MAGIC_BARRIER")
+                        if (onMagicBarrier) {
+                            onMagicBarrier.active = true
+                            onMagicBarrier.getComponent(sp.Skeleton).setAnimation(0, "animation", true)
+                        }
+                    }
+                    this.updateBarrierAlternateState(newOnFieldId)
                     // 蓄力：检查场下哪个蓄力等级激活，场上同步
                     for (const et of this.effectTypes) {
                         const offEffect = buffParent.getChildByName(et)
@@ -899,6 +1068,20 @@ export class FightMap extends Component {
                         }
                     }
                 }
+            }
+
+            // 4e. 同步站位数据(goIntoNum)与座位点击绑定：DOM 图片已互换，站位数据与点击详情也必须跟上，否则“站位值”与“显示图片”对不上
+            const swapCamp = isSourceLeft ? this.L1 : this.R1
+            const srcCreate = swapCamp ? swapCamp.find(x => x.uuid === sourceId) : null
+            const tgtCreate = swapCamp ? swapCamp.find(x => x.uuid === targetId) : null
+            if (srcCreate && tgtCreate) {
+                const tmpGo = srcCreate.goIntoNum
+                srcCreate.goIntoNum = tgtCreate.goIntoNum
+                tgtCreate.goIntoNum = tmpGo
+                const sh = sourceItemNode.getChildByName("header")
+                const th = targetItemNode.getChildByName("header")
+                if (sh) { sh.off("click"); sh.on("click", () => this.clickFun(tgtCreate)) }
+                if (th) { th.off("click"); th.on("click", () => this.clickFun(srcCreate)) }
             }
         }
         // 更新场上HP（使用新上场单位的 HP 数据）
@@ -1087,6 +1270,122 @@ export class FightMap extends Component {
         }
     }
 
+    // --- 青龙·龙威：吸血(双方兽族掉血) + 加盾(我方) + 青龙自身吸血回血，一条日志内同时表现；施法音效 shihou，青龙回血额外 HEAL 动画+音效 ---
+    private async handleLongWei(fp) {
+        await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+        const sideIdx = this.isLeft(fp.sourceUnitId) ? 0 : 1
+        // 施法表现：场上飘技能名，场下 select 弹跳 + 飘字
+        if (fp.sourceFieldStatus) {
+            this.skillName.children[sideIdx].active = true
+            this.skillName.children[sideIdx].getChildByName("Label").getComponent(Label).string = fp.eventType
+            await new Promise(res => setTimeout(res, 800 / this.timeScale))
+        } else {
+            const srcItem = this.getChracterChangXiaById(fp.sourceUnitId)
+            if (srcItem) {
+                const sel = srcItem.getChildByName("select").getComponent(sp.Skeleton)
+                sel.node.active = true; sel.setAnimation(0, "animation", false)
+                tween(srcItem)
+                    .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
+                    .call(async () => {
+                        await this.showString(1, srcItem, new math.Color(236, 163, 61, 255), fp.eventType)
+                        await new Promise(res => setTimeout(res, 300 / this.timeScale))
+                    })
+                    .by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
+                    .start()
+                this.actionAwaitQueue.push(this.playAnimToPromise(sel))
+                await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+            }
+        }
+        // shihou 音效：龙威施法一次
+        AudioMgr.inst.playOneShot("sound/fight/skill/shihou")
+
+        let qlHealPlayed = false
+        for (const key in fp.multiTargetDataMap) {
+            const data = fp.multiTargetDataMap[key]
+            const itemNode = this.getChracterChangXiaById(key)
+            const characterNode = this.getCharacterById(key)
+            if (data.healValue > 0) {
+                // 青龙吸血回血：治疗动画 + 绿字 + HEAL 音效
+                if (characterNode) {
+                    const onHeal = characterNode.getChildByName('HEAL')?.getComponent(sp.Skeleton)
+                    if (onHeal) { onHeal.node.active = true; onHeal.setAnimation(0, "animation", false); onHeal.setCompleteListener(() => { onHeal.node.active = false }) }
+                    this.showDamageOrHealNumber(key, characterNode, data.healValue, true)
+                }
+                const offHeal = itemNode?.getChildByName("buff")?.getChildByName('HEAL')?.getComponent(sp.Skeleton)
+                if (offHeal) { offHeal.node.active = true; offHeal.setAnimation(0, "animation", false); offHeal.setCompleteListener(() => { offHeal.node.active = false }) }
+                if (!qlHealPlayed) { AudioMgr.inst.playOneShot("sound/fight/skill/HEAL"); qlHealPlayed = true }
+            } else if (data.value > 0) {
+                // 被吸血单位掉血：红字
+                if (characterNode) this.showDamageOrHealNumber(key, characterNode, -data.value, false)
+            }
+            // 血条更新（吸血掉血 / 回血后的最终 HP）
+            if (data.fieldStatus) this.updateHpOnField(key, data.hpAfter, data.hpBefore)
+            this.updateHpOffField(key, data.hpAfter, data.hpBefore)
+            // 加盾（我方 magicShieldRemaining>0），场上+场下持续循环，与物理护盾一致
+            if (data.magicShieldRemaining > 0) {
+                const offM = itemNode?.getChildByName("buff")?.getChildByName('MAGIC_BARRIER')?.getComponent(sp.Skeleton)
+                if (offM) { offM.node.active = true; offM.setAnimation(0, "animation", true) }
+                if (data.fieldStatus && characterNode) {
+                    const onM = characterNode.getChildByName('MAGIC_BARRIER')?.getComponent(sp.Skeleton)
+                    if (onM) { onM.node.active = true; onM.setAnimation(0, "animation", true) }
+                }
+                this.updateMagicShieldNumLabel(key, data.magicShieldRemaining)
+            }
+            // 场下飘字
+            if (itemNode) {
+                if (data.healValue > 0) await this.showBuffString(itemNode, true, "+" + data.healValue)
+                else if (data.value > 0) await this.showBuffString(itemNode, false, "-" + data.value)
+            }
+        }
+        await new Promise(res => setTimeout(res, 1000 / this.timeScale))
+    }
+
+    // --- 青龙·青龙吐珠：登场对敌方全体雷击群伤；先 shihou 施法音，随后每个被电目标各一声 leidian 音效+leidian 动画（类轩辕连续音效），命中可眩晕 ---
+    private async handleQinglongTuZhu(fp) {
+        await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+        const sideIdx = this.isLeft(fp.sourceUnitId) ? 0 : 1
+        // 施法：场上飘技能名 + 先播 shihou
+        this.skillName.children[sideIdx].active = true
+        this.skillName.children[sideIdx].getChildByName("Label").getComponent(Label).string = fp.eventType
+        AudioMgr.inst.playOneShot("sound/fight/skill/shihou")
+        await new Promise(res => setTimeout(res, 800 / this.timeScale))
+
+        let anyStun = false
+        for (const key in fp.multiTargetDataMap) {
+            const data = fp.multiTargetDataMap[key]
+            const characterNode = this.getCharacterById(key)
+            const itemNode = this.getChracterChangXiaById(key)
+            // 每道雷一声 leidian 音效
+            AudioMgr.inst.playOneShot("sound/fight/skill/leidian")
+            // 场上 leidian 动画（一次性，播完隐藏）
+            if (characterNode) {
+                const onL = characterNode.getChildByName('leidian')?.getComponent(sp.Skeleton)
+                if (onL) { onL.node.active = true; onL.setAnimation(0, "animation", false); onL.setCompleteListener(() => { onL.node.active = false }) }
+            }
+            // 场下 leidian 动画
+            const offL = itemNode?.getChildByName("buff")?.getChildByName('leidian')?.getComponent(sp.Skeleton)
+            if (offL) { offL.node.active = true; offL.setAnimation(0, "animation", false); offL.setCompleteListener(() => { offL.node.active = false }) }
+            // 伤害数字 + 血条
+            if (characterNode) {
+                this.showDamageOrHealNumber(key, characterNode, data.value, false)
+                if (data.fieldStatus) this.updateHpOnField(key, data.hpAfter, data.hpBefore)
+            }
+            this.updateHpOffField(key, data.hpAfter, data.hpBefore)
+            await this.showAoeBuffString(fp, key, data, itemNode)
+            // 眩晕：补挂 STUN 循环动画（音效整段统一一次）
+            if (data.stunned) {
+                anyStun = true
+                if (characterNode) {
+                    const sOn = characterNode.getChildByName('STUN')?.getComponent(sp.Skeleton)
+                    if (sOn) { sOn.node.active = true; sOn.setAnimation(0, "animation", true) }
+                }
+                const sOff = itemNode?.getChildByName("buff")?.getChildByName('STUN')?.getComponent(sp.Skeleton)
+                if (sOff) { sOff.node.active = true; sOff.setAnimation(0, "animation", true) }
+            }
+        }
+        if (anyStun) AudioMgr.inst.playOneShot("sound/fight/skill/STUN")
+    }
+
     // --- 审死回血附带驱散：隐藏单位身上可见的持续负面 buff 动画（场上+场下）---
     private hideNegativeBuffs(characterNode: Node, itemNode: Node) {
         for (const debuff of ["STUN", "SILENCE", "POISON", "HEAL_DOWN"]) {
@@ -1187,6 +1486,7 @@ export class FightMap extends Component {
             if (this.isContinuousEffect(fp.effectType)) s.setAnimation(0, "animation", true);
             else { s.setAnimation(0, "animation", false); this.actionAwaitQueue.push(this.playAnimToPromise(s)) }
         })
+        let stunSoundPlayed = false
         for (const key in fp.multiTargetDataMap) {
             const data = fp.multiTargetDataMap[key];
             const itemNode = this.getChracterChangXiaById(key)
@@ -1200,6 +1500,17 @@ export class FightMap extends Component {
             }
             await this.showAoeBuffString(fp, key, data, itemNode)
             this.updateHpOffField(key, data.hpAfter, data.hpBefore)
+            // 群体伤害日志里带 data.stunned 标记的目标（如青龙吐珠 30% 眩晕）：伤害结算后补挂眩晕动画（场上+场下，与登场眩晕一致循环）
+            if (data.stunned) {
+                // 眩晕音效：本次群伤只要有目标被晕就播一次 STUN 音（多目标不叠加）
+                if (!stunSoundPlayed) { AudioMgr.inst.playOneShot("sound/fight/skill/STUN"); stunSoundPlayed = true }
+                if (characterNode) {
+                    const sOn = characterNode.getChildByName('STUN')?.getComponent(sp.Skeleton)
+                    if (sOn) { sOn.node.active = true; sOn.setAnimation(0, "animation", true) }
+                }
+                const sOff = itemNode?.getChildByName("buff")?.getChildByName('STUN')?.getComponent(sp.Skeleton)
+                if (sOff) { sOff.node.active = true; sOff.setAnimation(0, "animation", true) }
+            }
         }
     }
     async showAoeBuffString(fp, key, data, itemNode) {
@@ -1606,13 +1917,44 @@ export class FightMap extends Component {
     }
 
     private async fightSuccess() {
-        await this.node.getChildByName("FightSuccess").getComponent(FightSuccess).read(this.rewards, this.levelUp)
+        const fightSuccessComp = this.node.getChildByName("FightSuccess").getComponent(FightSuccess)
+        await fightSuccessComp.read(this.rewards, this.levelUp)
         this.node.getChildByName("FightFailure").active = false
         this.node.getChildByName("FightSuccess").active = true
+        this.onBattleResult && this.onBattleResult(true)
+        // 胜利 + 自动探索：延迟数秒后复用手动"确定/领取"的干净结算路径(skipFight：等级刷新+主界面音乐+销毁本战斗节点)，无需玩家点击；
+        // 由本节点自行销毁，避免上层外部强杀仍活跃的 spine/音频子树导致原生闪退，销毁后再回调上层继续下一关
+        if (this.autoExplore) {
+            this.scheduleOnce(() => {
+                // 崩溃根因(已用带符号 libcocos.so 定位)：原生每帧 MiddlewareManager::render -> SkeletonRenderer::render
+                // -> RenderEntity::clearDynamicRenderDrawInfos 命中已释放的 SkeletonRenderer（销毁 spine 密集的战斗节点时，
+                // 其 SkeletonRenderer 仍留在 middleware 渲染队列中被 use-after-free）。
+                // 将 SkeletonRenderer 从渲染队列 detach 靠的是“禁用组件”而非停用节点，故销毁前先递归禁用子树内所有 sp.Skeleton，
+                // 隔一帧（让渲染器完成 detach）再走与手动一致的 skipFight 销毁，销毁后再回调上层继续下一关
+                this._detachSpineRecursively(this.node)
+                this.scheduleOnce(() => {
+                    fightSuccessComp.skipFight()
+                    this.onAutoExploreNext && this.onAutoExploreNext()
+                }, 0)
+            }, 4)
+        }
+    }
+
+    // 递归禁用子树内所有 sp.Skeleton 组件，触发其 SkeletonRenderer 从 middleware 渲染队列 detach，避免销毁后仍被渲染导致原生 use-after-free 崩溃
+    private _detachSpineRecursively(node: Node) {
+        const skeletons = node.getComponents(sp.Skeleton)
+        for (let i = 0; i < skeletons.length; i++) {
+            skeletons[i].enabled = false
+        }
+        const children = node.children
+        for (let i = 0; i < children.length; i++) {
+            this._detachSpineRecursively(children[i])
+        }
     }
     private fightEnd() {
         this.node.getChildByName("FightFailure").active = true
         this.node.getChildByName("FightSuccess").active = false
+        this.onBattleResult && this.onBattleResult(false)
     }
     public async clickFun(c) {
         console.log(c, 999);

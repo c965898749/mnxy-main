@@ -57,22 +57,25 @@ export class Loginpel extends Component {
     // ]
     url = localStorage.getItem("url") ?? this.serverList[0].url;
 //更新公告内容
-            content = `<color=#FF4500><size=28><b>【国庆盛典】版本更新与副本探险活动公告</b></size></color>
+            content = `<color=#FF4500><size=28><b>【青龙降世】版本更新公告</b></size></color>
 <color=#FFE4B5><size=20>亲爱的仙友们：</size></color>
-<color=#FFA500><size=19>为优化副本探险体验，游戏将于以下时间进行版本更新：</size></color>
-<color=#FFFF00><size=18>▶ 维护时间：2026年10月7日 09:00-13:00（预计4小时）</size></color>
-<color=#FFFF00><size=18>▶ 维护范围：全服所有服务器</size></color>
-<color=#FF6347><size=18>▶ 维护补偿：灵石*5000 + 金币*10万 + 魂魄*500</size></color>
-<color=#FFA500><size=19>本次更新内容：</size></color>
-<color=#FFFFFF><size=17>1. 第11章材料掉落继续翻倍，新增副本装备技能书掉落</size></color>
-<color=#FFFFFF><size=17>2. 新增人妖仙兽四个护：4.5星轩辕、4.5星地藏、4星谛听、4.5星三圣母</size></color>
-<color=#FFFFFF><size=17>3. 下期预告：即将开启应龙世界副本</size></color>
+<color=#FFA500><size=19>本次更新已全服上线，全新护法与玩法同步登场：</size></color>
+<color=#FFFF00><size=18>▶ 全新护法「青龙」登场：</size></color>
+<color=#FFFFFF><size=17>技能1「青龙吐珠」：登场即引九天阳雷，对敌方全体造成雷击伤害</size></color>
+<color=#FFFFFF><size=17>技能2「龙威」：回合结束时吸取我方全体兽族单位一定比例生命，回复青龙自身，并为我方全体附加等量魔法护盾（可抵挡火焰/飞弹/毒素伤害并免疫眩晕，吸取比例最多 50%）</size></color>
+<color=#FF6347><size=18>▶ 全新道具「青龙许愿福袋」：开启可得青龙魂魄 1~10 枚及青铜矿/玄铁矿/紫金矿</size></color>
+<color=#FFA500><size=18>▶ PVE 新增「自动探索」：勾选后战斗胜利自动连续探索，直至通关、失败或体力不足</size></color>
+<color=#FFFFFF><size=17>▶ 体力 / 活力上限由 2000 提升至 5000</size></color>
+<color=#FFFF00><size=18>▶ 全新法器专属宝石「风珠」与「血玉」：</size></color>
+<color=#FFFFFF><size=17>「风珠」每级 +1% 速度、「血玉」每级 +1% 生命，仅可镶嵌于法器（其他装备不可镶嵌）</size></color>
+<color=#FFFFFF><size=17>▶ 修复宝石镶嵌后属性加成未生效的问题，现已正常叠加</size></color>
+<color=#FFFFFF><size=17>▶ 为平衡装备的提升效果，将卡牌飞升每级全属性加成由 3% 提升至 5%</size></color>
 <color=#87CEFA><size=18>遇到月宫阻碍？联系我们：</size></color>
 <color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
 <color=#FFFFFF><size=16>▶ 官方①QQ群：1092641657</size></color>
 <color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size></color>
-<color=#FF69B4><size=18>愿仙途顺遂，国庆同乐！</size></color>
-<color=#CCCCCC><size=14>【QQ神仙依梦工作室】2026年10月7日</size></color>`
+<color=#FF69B4><size=18>愿仙途顺遂，游戏愉快！</size></color>
+<color=#CCCCCC><size=14>【QQ神仙依梦工作室】2026年10月19日</size></color>`
 // content = `<color=#FFFFFF><size=20>尊敬的各位仙友：</size>
 // <color=#FFA500><size=19>月满中秋，仙府同庆！《迷你神仙》中秋限定活动正式开启，全新护法【嫦娥】登场，中秋夺月副本限时开放，海量资源礼包等你来领！</size>
 

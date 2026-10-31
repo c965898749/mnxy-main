@@ -157,6 +157,7 @@ export class ShopCtrl extends Component {
                     // let shopUpdate = map["shopUpdate"]
                     // this.shopUpdate = shopUpdate
                     let picked = map["picked"]
+                    let redian = map["redian"]
                     let chongzhi = map["chongzhi"]
                     let userInfo = map["userInfo"]
                     config.userData.diamond = userInfo.diamond
@@ -171,6 +172,11 @@ export class ShopCtrl extends Component {
                         for (let j = 0; j < group.length; j++) {
                             const itemC = group[j];
                             let aa = item.getChildByName("arms").children[j];
+                            // 热点角标 r：商品 itemId 等于用户 redian 时显示，否则隐藏
+                            const rNode = aa.getChildByName("r")
+                            if (rNode) {
+                                rNode.active = (redian != null && itemC.itemId != null && Number(itemC.itemId) === Number(redian))
+                            }
                             aa.getChildByName("sell").getChildByName("Background").getComponent(Sprite).spriteFrame =
                                 await util.bundle.load(`image/store/store_10/spriteFrame`, SpriteFrame)
                             if (itemC.goldEdgePrice != 0) {
@@ -254,6 +260,7 @@ export class ShopCtrl extends Component {
                     let shopUpdate = map["shopUpdate"]
                     this.shopUpdate = shopUpdate
                     let picked = map["picked"]
+                    let redian = map["redian"]
                     let chongzhi = map["chongzhi"]
                     this.chongzhiNode.getComponent(Label).string = chongzhi + "  (" + config.userData.diamond + ")"
                     let objArray = picked
@@ -265,6 +272,11 @@ export class ShopCtrl extends Component {
                         for (let j = 0; j < group.length; j++) {
                             const itemC = group[j];
                             let aa = item.getChildByName("arms").children[j];
+                            // 热点角标 r：商品 itemId 等于用户 redian 时显示，否则隐藏
+                            const rNode = aa.getChildByName("r")
+                            if (rNode) {
+                                rNode.active = (redian != null && itemC.itemId != null && Number(itemC.itemId) === Number(redian))
+                            }
                             aa.getChildByName("sell").getChildByName("Background").getComponent(Sprite).spriteFrame =
                                 await util.bundle.load(`image/store/store_10/spriteFrame`, SpriteFrame)
                             if (itemC.goldEdgePrice != 0) {
@@ -414,7 +426,10 @@ export class ShopCtrl extends Component {
             })
             .then(async data => {
                 if (data.success != '1') return
-                let items = data.data
+                // 后端现返回 {items, gongxun}：items 用于渲染，gongxun 为该用户当前剩余功勋
+                let items = data.data.items || []
+                config.userData.gongxun = data.data.gongxun || 0
+                localStorage.setItem("UserConfigData", JSON.stringify(config))
                 const nodePool3 = util.resource.getNodePool(
                     await util.bundle.load("prefab/ff7", Prefab)
                 )
@@ -429,16 +444,16 @@ export class ShopCtrl extends Component {
                     let item = nodePool3.get()
                     item.getChildByName("name").getComponent(Label).string = itemDetail.itemName
                     item.getChildByName("Count").getComponent(Label).string = itemDetail.description
-                    // 价格取后端按 quality*100 算好的 price
-                    item.getChildByName("price").getComponent(Label).string = itemDetail.price
+                    // 价格取后端按 quality*100 算好的 price，并附上用户剩余功勋
+                    item.getChildByName("price").getComponent(Label).string =
+                        itemDetail.price + " (剩余" + config.userData.gongxun + ")"
                     // 功勋商品无限购概念，隐藏限购框（ff5 节点池与好友商城共用，切回 init2 时会复位）
                     item.getChildByName("textbox_bg").active = false
                     item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
                         await util.bundle.load(itemDetail.icon, SpriteFrame)
-                    // 功勋积分兑换暂未开启，点击只提示，不发起购买
+                    // 点击兑换：消耗功勋、物品进背包，成功后刷新（价格+剩余功勋）
                     item.getChildByName("buy").on("click", () => {
-                        AudioMgr.inst.playOneShot("sound/other/click");
-                        util.message.prompt({ message: "功勋积分兑换暂未开启，暂时不支持兑换" })
+                        this.gongxunBuy(itemDetail)
                     })
                     this.ContentNode3.addChild(item)
                     continue
@@ -592,6 +607,41 @@ export class ShopCtrl extends Component {
         this.itemDetail2.active = false
         this.itemDetail3.active = true
         this.init3()
+    }
+
+    // 功勋商城兑换：调用 buyGongxunStore（token.id 传 itemId），成功后刷新剩余功勋与列表
+    async gongxunBuy(itemDetail) {
+        AudioMgr.inst.playOneShot("sound/other/click");
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+            id: itemDetail.itemId + "",
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "buyGongxunStore", options)
+            .then(response => response.json())
+            .then(async data => {
+                if (data.success == '1') {
+                    // 后端返回最新用户信息(含 gongxun)，更新本地并重新拉取列表刷新“价格(剩余功勋)”
+                    if (data.data && data.data.gongxun !== undefined) {
+                        config.userData.gongxun = data.data.gongxun
+                        localStorage.setItem("UserConfigData", JSON.stringify(config))
+                    }
+                    await util.message.prompt({ message: "兑换成功" })
+                    this.init3()
+                } else {
+                    util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
     }
 
 }

@@ -56,7 +56,7 @@ export class Character extends CharacterMetaState {
     PassiveIntroduceTwo: string = `
    
     吾乃轩辕 lv{skillLv}
-    攻击后，对敌我全体护法追加{healVal}%的物理伤害（最大40%），我每存在一个人族敌方护法造成的追加伤害提升20%我方护法造成的追加伤害减少20%。
+    攻击后，对敌我全体护法追加{healVal}%的物理伤害（最大40%），我方每拥有1名人族护法：敌方追加伤害提升20%，我方追加伤害降低20%。
        `.replace(/ /ig, "")
 
     SkillIntroduce: string = `

@@ -65,7 +65,7 @@ export class Character extends CharacterMetaState {
     与王母在同一队伍时，增加自身{healVal}点生命上限，{healVal2}点物理抗性，{healVal3}点速度
     `.replace(/ /ig, "")
 
-    introduce: string = "明月寄相思，桂香伴中秋。"
+    introduce: string = "宝莲灯明，华山永镇。"
 
     skillValue: string = `遁让 破除禁锢 王母协同`
 

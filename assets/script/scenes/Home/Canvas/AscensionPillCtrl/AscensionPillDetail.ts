@@ -81,7 +81,7 @@ let message = `<size=24><color=#FFD700><b>QQ神仙·飞升系统</b></color></si
 
 <size=22><color=#FFFFFF><b>飞升额外加成规则</b></size>
 <size=18><color=#E0E0E0>
-- 每完成一轮飞升，卡牌全属性永久提升<color=#00FF99>3%</color>
+- 每完成一轮飞升，卡牌全属性永久提升<color=#00FF99>5%</color>
 - 境界达到地仙后解锁专属金色飞升边框
 - 境界达到大罗后解锁专属动态流光特效
 - 境界达到道祖解锁全服专属飞升播报

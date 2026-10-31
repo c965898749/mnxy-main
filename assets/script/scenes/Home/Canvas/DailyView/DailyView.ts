@@ -219,6 +219,8 @@ export class DailyView extends Component {
                     config.userData.bronze = userInfo.bronze
                     config.userData.darkSteel = userInfo.darkSteel
                     config.userData.purpleGold = userInfo.purpleGold
+                    // 开启宝箱获得的功勋（后端已累加并随 userInfo.gongxun 下发）
+                    config.userData.gongxun = (userInfo.gongxun == null ? config.userData.gongxun : userInfo.gongxun)
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
                     const rewardsFab = await util.bundle.load("prefab/rewards", Prefab)
                     const rewards = instantiate(rewardsFab)
@@ -274,6 +276,8 @@ export class DailyView extends Component {
                     config.userData.bronze = userInfo.bronze
                     config.userData.darkSteel = userInfo.darkSteel
                     config.userData.purpleGold = userInfo.purpleGold
+                    // 开启宝箱获得的功勋（后端已累加并随 userInfo.gongxun 下发）
+                    config.userData.gongxun = (userInfo.gongxun == null ? config.userData.gongxun : userInfo.gongxun)
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
                     const rewardsFab = await util.bundle.load("prefab/rewards", Prefab)
                     const rewards = instantiate(rewardsFab)

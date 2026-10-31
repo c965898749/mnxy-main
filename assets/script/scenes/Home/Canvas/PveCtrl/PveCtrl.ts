@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Node, tween, v3, sp, director, Prefab, instantiate, find, Sprite, SpriteFrame, Button } from 'cc';
+import { _decorator, Component, Label, Node, tween, v3, sp, director, Prefab, instantiate, find, Sprite, SpriteFrame, Button, Toggle } from 'cc';
 import { L } from 'db://assets/script/common/common/Language';
 import { battleCache, BattleLogItem, getConfig, getToken, updateTiAndHuoli } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
@@ -43,7 +43,7 @@ export class PveCtrl extends Component {
     BossList: Node
     chapter: string
     @property({ tooltip: "固定尺寸" })
-    MaxEnergy: 2000//最大体力值
+    MaxEnergy = 5000//最大体力值
     @property({ tooltip: "固定尺寸" })
     energy = 0
     huoliEnergy = 0
@@ -59,6 +59,8 @@ export class PveCtrl extends Component {
     baoCount = 20
     @property(Node)
     shangxianNode: Node
+    @property(Toggle)
+    zidong: Toggle
     start() {
         this.refresh()
     }
@@ -218,9 +220,9 @@ export class PveCtrl extends Component {
         }
         const config = getConfig()
         var LeaveEnergy = this.GetLeaveEnergy();
-        this.Tili.getChildByName("TiliCount").getComponent(Label).string = LeaveEnergy + "/2000";
+        this.Tili.getChildByName("TiliCount").getComponent(Label).string = LeaveEnergy + "/" + this.MaxEnergy;
         this.Tili.getChildByName("user_tl").getChildByName("Bar").setScale(
-            LeaveEnergy /2000,
+            LeaveEnergy / this.MaxEnergy,
             1,
             1
         )
@@ -324,8 +326,11 @@ export class PveCtrl extends Component {
                                 const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
                                 const holAnimationNode = instantiate(holAnimationPrefab)
                                 this.node.parent.addChild(holAnimationNode)
-                                await holAnimationNode
-                                    .getComponent(FightMap)
+                                const fightMapComp = holAnimationNode.getComponent(FightMap)
+                                // 自动探索：把开关传入 FightMap，胜利后由其自身延迟复用手动"确定"路径干净结算并销毁，销毁后回调继续下一关；失败/通关/体力不足自然中断
+                                fightMapComp.autoExplore = !!(this.zidong && this.zidong.isChecked)
+                                fightMapComp.onAutoExploreNext = () => this.tanSuo()
+                                await fightMapComp
                                     .render(battle.id, rewards, levelUp)
                                 find('Canvas').getComponent(HomeCanvas).audioSource.pause()
                                 this.node.parent.getChildByName("FightMap").active = true

@@ -21,6 +21,7 @@ export class ArenaDetailCrtl extends Component {
     Huoli: Node
     @property(Node)
     Tili: Node
+    MaxEnergy = 5000//最大体力/活力值
     @property(Node)
     TiliCount
     @property(Node)
@@ -96,12 +97,12 @@ export class ArenaDetailCrtl extends Component {
                     const gameArenaBattle = map['gameArenaBattle'];
                     const ranking = map['ranking'];
                     var LeaveEnergy = this.GetLeaveHuoliEnergy();
-                    this.Huoli.getChildByName("HuoliCount").getComponent(Label).string = LeaveEnergy + "/2000";
+                    this.Huoli.getChildByName("HuoliCount").getComponent(Label).string = LeaveEnergy + "/" + this.MaxEnergy;
                     this.TiliCount.getComponent(Label).string = "本界还能战斗 " + userInfo.arenaCount + " 次"
                     this.winCount.getComponent(Label).string = gameArenaSignup.winNum + " 场"
                     this.ranking.getComponent(Label).string = ranking
                     this.Huoli.getChildByName("user_tl").getChildByName("Bar").setScale(
-                        LeaveEnergy /2000,
+                        LeaveEnergy / this.MaxEnergy,
                         1,
                         1
                     )
@@ -314,12 +315,12 @@ export class ArenaDetailCrtl extends Component {
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
                     this.node.parent.addChild(holAnimationNode)
                     var LeaveEnergy = this.GetLeaveHuoliEnergy();
-                    this.Huoli.getChildByName("HuoliCount").getComponent(Label).string = LeaveEnergy + "/2000";
+                    this.Huoli.getChildByName("HuoliCount").getComponent(Label).string = LeaveEnergy + "/" + this.MaxEnergy;
                     this.TiliCount.getComponent(Label).string = "本界还能战斗 " + userInfo.arenaCount + " 次"
                     this.winCount.getComponent(Label).string = gameArenaSignup.winNum + " 场"
                     this.ranking.getComponent(Label).string = ranking
                     this.Huoli.getChildByName("user_tl").getChildByName("Bar").setScale(
-                        LeaveEnergy /2000,
+                        LeaveEnergy / this.MaxEnergy,
                         1,
                         1
                     )

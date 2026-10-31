@@ -125,7 +125,8 @@ export class HeroCharacterDetailPorperty extends Component {
             material.setProperty('enable', 1);
             material.setProperty('outerActive', 1);
             material.setProperty('outerStyle', Style.透明衰减);
-            material.setProperty('outerColor', cc[create.flyup - 1]);
+            // 野怪等 flyup 可能超出 cc 的 20 档范围，夹到合法下标，避免 cc[flyup-1] 为 undefined 导致 outerColor(FLOAT4) 上传崩溃
+            material.setProperty('outerColor', cc[Math.min(Math.max(create.flyup, 1), cc.length) - 1]);
             material?.setProperty('outerWidth', 0.5);
             material.setProperty('innerActive', 0);
             material.setProperty('brightness', 1);
@@ -186,16 +187,54 @@ export class HeroCharacterDetailPorperty extends Component {
                 }
                 n.getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
                     await util.bundle.load(`game/texture/frames/emp/${eqCharacters.id.split('_')[0]}/spriteFrame`, SpriteFrame)
+                // 飞9以上装备显示并循环播放特效（gf），否则隐藏
+                const gfNode = n.getChildByName("gf");
+                if (gfNode) {
+                    if (eqCharacters.flyup >= 9) {
+                        gfNode.active = true;
+                        gfNode.getComponent(sp.Skeleton)?.setAnimation(0, "animation", true);
+                    } else {
+                        gfNode.active = false;
+                    }
+                }
+                // 渲染装备星级
+                this.renderSlotStar(n, eqCharacters.star);
             } else {
                 n.getChildByName("Label").getComponent(Label).string = nameNode[index]
                 n.getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame = null
                 const label = n.getChildByName("header_qitiandashen")?.getChildByName("flyup")?.getComponent(Label);
                 if (label) label.string = "";
+                const gfNode = n.getChildByName("gf");
+                if (gfNode) gfNode.active = false;
+                const starNode = n.getChildByName("Star");
+                if (starNode) starNode.active = false;
 
 
             }
             n.on("click", () => this.empOnclick(create, index))
         })
+    }
+
+    // 渲染装备槽位星级（参考面板 Star：满星 children[0]、半星 children[1]）
+    private renderSlotStar(slot: Node, star: number) {
+        const starNode = slot.getChildByName("Star");
+        if (!starNode) return;
+        starNode.active = true;
+        starNode.children.forEach(sn => {
+            sn.active = false;
+            if (sn.children[0]) sn.children[0].active = false;
+            if (sn.children[1]) sn.children[1].active = false;
+        });
+        const max = Math.min(5, starNode.children.length);
+        for (let i = 0; i < max; i++)
+            starNode.children[i].active = true
+        for (let i = 0; i < star; i++) {
+            if (i >= starNode.children.length) break;
+            starNode.children[i].children[0].active = true
+            if (i + 0.5 == star) {
+                starNode.children[i].children[1].active = true
+            }
+        }
     }
 
     async empOnclick(create, empType) {
@@ -269,6 +308,11 @@ export class HeroCharacterDetailPorperty extends Component {
                     this.empNode.children[empType].getChildByName("Label").getComponent(Label).string = nameNode[empType]
                     this.empNode.children[empType].getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame = null
                     this.empNode.children[empType].getChildByName("header_qitiandashen").getChildByName("flyup").getComponent(Label).string = ""
+                    // 卸下装备：隐藏特效
+                    const gfNode1 = this.empNode.children[empType].getChildByName("gf");
+                    if (gfNode1) gfNode1.active = false;
+                    const starNode1 = this.empNode.children[empType].getChildByName("Star");
+                    if (starNode1) starNode1.active = false;
                     node.getChildByName("sell").active = false
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
@@ -313,6 +357,18 @@ export class HeroCharacterDetailPorperty extends Component {
                     this.empNode.children[empType].getChildByName("header_qitiandashen").getChildByName("flyup").getComponent(Label).color = new Color(this.rankColorDict[cahracterQueue[0].flyup]);
                     this.empNode.children[empType].getChildByName("header_qitiandashen").getComponent(Sprite).spriteFrame =
                         await util.bundle.load(`game/texture/frames/emp/${cahracterQueue[0].id.split('_')[0]}/spriteFrame`, SpriteFrame)
+                    // 穿上装备：飞9以上显示并循环播放特效（gf），否则隐藏
+                    const gfNode2 = this.empNode.children[empType].getChildByName("gf");
+                    if (gfNode2) {
+                        if (cahracterQueue[0].flyup >= 9) {
+                            gfNode2.active = true;
+                            gfNode2.getComponent(sp.Skeleton)?.setAnimation(0, "animation", true);
+                        } else {
+                            gfNode2.active = false;
+                        }
+                    }
+                    // 渲染装备星级
+                    this.renderSlotStar(this.empNode.children[empType], cahracterQueue[0].star);
 
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })

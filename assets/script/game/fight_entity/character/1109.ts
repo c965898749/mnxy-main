@@ -69,55 +69,46 @@ export class Character extends CharacterMetaState {
 
     skillValue: string = `撞击 返璞归真 地藏协同`
 
-public getSkillDesc(state: CharacterState): string {
-    const lv = state.lv;
-    const star = state.star;
-    const [skill1, skill2, skill3] = CardSkillLevelUtil.calculateSkillLevels(lv, star);
 
-    // 一技能：10 * skill1，上限20
-    const rawVal1 = 1 * skill1;
-    const val1 = Math.floor(math.clamp(rawVal1, 0, 20));
 
-    // 二技能：10 * skill2，上限100
-    const rawVal2 = 10 * skill2;
-    const val2 = Math.floor(math.clamp(rawVal2, 0, 100));
+    public getSkillDesc(state: CharacterState): string {
+        const lv = state.lv;
+        const star = state.star;
+        const [skill1, skill2, skill3, skill4] = CardSkillLevelUtil.calculateSkillLevels(lv, star);
 
-    const val3Hp = Math.floor(352 * skill3);
-    const val3Atk = Math.floor(176 * skill3);
-    const val3Spd = Math.floor(176 * skill3);
-
-    // 封装替换方法
-    const replaceText = (text: string, map: Record<string, string>) => {
-        let res = text;
-        for (const key in map) {
-            res = res.replace(`{${key}}`, map[key]);
+        // ========== 二技能：每级+10%，上限40% ==========
+        let skill2Percent = skill2 * 10;
+        if (skill2Percent > 100) {
+            skill2Percent = 100;
         }
-        return res;
-    };
 
-    const passive1 = replaceText(this.PassiveIntroduceOne, {
-        skillLv: skill1.toString(),
-        healVal: val1.toString()
-    });
+        let msg = "";
+        msg += this.PassiveIntroduceOne.replace("{skillLv}", skill1 + "").replace("{healVal}", Math.min(20, Math.floor(1 * skill1)) + "") + "\n";
 
-    const passive2Map = skill2 > 0
-        ? { skillLv: skill2.toString(), healVal: val2.toString() }
-        : { skillLv: "未开启", healVal: "—" };
-    const passive2 = replaceText(this.PassiveIntroduceTwo, passive2Map);
-
-    const skill3Map = skill3 > 0
-        ? {
-            skillLv: skill3.toString(),
-            healVal: val3Hp.toString(),
-            healVal2: val3Atk.toString(),
-            healVal3: val3Spd.toString()
+        if (skill2 > 0) {
+            msg += this.PassiveIntroduceTwo
+                .replace("{skillLv}", skill2 + "")
+                .replace("{healVal}", skill2Percent + "") + "\n";
+        } else {
+            msg += this.PassiveIntroduceTwo
+                .replace("{skillLv}", "未开启")
+                .replace("{healVal}", "100") + "\n";
         }
-        : { skillLv: "未开启", healVal: "—", healVal2: "—", healVal3: "—" };
-    const skill3Str = replaceText(this.SkillIntroduce, skill3Map);
 
-    return `${passive1}\n${passive2}\n${skill3Str}`;
-}
-
-
+        if (skill3 > 0) {
+            msg += this.SkillIntroduce
+                .replace("{skillLv}", skill3 + "")
+                .replace("{healVal}", Math.floor(352 * skill3) + "")
+                .replace("{healVal2}", Math.floor(176 * skill3) + "")
+                .replace("{healVal3}", Math.floor(176 * skill3) + "") + "\n";
+        } else {
+            msg += this.SkillIntroduce
+                .replace("{skillLv}", "未开启")
+                .replace("{healVal}", Math.floor(352) + "")
+                .replace("{healVal2}", Math.floor(176) + "")
+                .replace("{healVal3}", Math.floor(176) + "") + "\n";
+        }
+        return msg;
+    }
 
 }

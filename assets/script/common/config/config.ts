@@ -68,6 +68,8 @@ class UserData extends Resource {
     public darkSteel: number = 0
     public purpleGold: number = 0
     public crystal: number = 0
+    // 功勋：活跃宝箱产出、功勋商城消耗的货币
+    public gongxun: number = 0
     public myCode: string
 
 
@@ -94,6 +96,7 @@ class UserData extends Resource {
         this.darkSteel = or.darkSteel || 0
         this.purpleGold = or.purpleGold || 0
         this.crystal = or.crystal || 0
+        this.gongxun = or.gongxun || 0
         this.stopLevel = or.stopLevel || 0
         this.weiwanCount = or.weiwanCount || 0
         this.useCardCount = or.useCardCount || "0/0"
