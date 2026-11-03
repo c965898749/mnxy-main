@@ -55,7 +55,7 @@ export class Character extends CharacterMetaState {
     PassiveIntroduceTwo: string = `
 
     守卫 lv{skillLv}
-    队友遭攻击，当其生命值不足{healVal}%（最高70%） 且低于自身时，自身代为承受伤害。回合结束恢复自身上限 40% 的生命值（无守卫效果，则不恢复）
+    队友遭攻击，当其生命值不足{healVal}%（最高70%） 且低于自身时，自身代为承受伤害（若为物理伤害且该队友场上有物理结界，先扣除其物理盾，多余部分才转移给玄武承受）。回合结束恢复自身上限 40% 的生命值（无守卫效果，则不恢复）
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `

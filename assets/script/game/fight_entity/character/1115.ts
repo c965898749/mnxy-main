@@ -48,7 +48,7 @@ export class Character extends CharacterMetaState {
     PassiveIntroduceOne: string = `
 
     灵佑 Lv{skillLv}
-    回合开始时消耗自身生命上限{healVal}%%血量（最高20%），为场上我方单位施加等同于扣血数值 2倍 的物理结界
+    回合开始时消耗自身生命上限{healVal}%血量（最高20%），为场上我方单位施加等同于扣血数值 2倍 的物理结界
        `.replace(/ /ig, "")
 
 
@@ -64,7 +64,7 @@ export class Character extends CharacterMetaState {
     与青龙在同一队伍时，增加自身{healVal}点生命上限，{healVal2}点攻击，{healVal3}点速度
     `.replace(/ /ig, "")
 
-    introduce: string = "四圣兽之一，代表东方的灵兽。东方属木，其色青，故称青龙，主春生、能兴云布雨。"
+    introduce: string = "四圣兽之一，代表西方的灵兽。西方属金，其色白，故称白虎，主杀伐、掌兵戈。"
 
     skillValue: string = `灵佑 血战到底 青龙协同`
 
@@ -73,21 +73,25 @@ export class Character extends CharacterMetaState {
         const star = state.star;
         const [skill1, skill2, skill3, skill4] = CardSkillLevelUtil.calculateSkillLevels(lv, star);
 
-        // ========== 二技能：吸血比例 = 技能等级%，封顶 50%（与后端 processLongWei 一致） ==========
-        let skill2Percent = Math.min(50, skill2);
+        // ========== 一技能（灵佑）：自耗血比例 = 技能等级*2%，封顶 20%（与后端 processRoundStartEffects 一致） ==========
+        let costPercent = Math.min(2 * skill1, 20);
 
        let msg = "";
         msg += this.PassiveIntroduceOne
-            .replace("{skillLv}", skill1 + "") + "\n";
+            .replace("{skillLv}", skill1 + "")
+            .replace("{healVal}", costPercent + "") + "\n";
 
+        // ========== 二技能（血战到底）：每层 +生命上限 技能等级*1000、+攻击 技能等级*200 ==========
         if (skill2 > 0) {
             msg += this.PassiveIntroduceTwo
                 .replace("{skillLv}", skill2 + "")
-                .replace("{healVal}", skill2Percent + "") + "\n";
+                .replace("{healVal}", (1000 * skill2) + "")
+                .replace("{healVal1}", (200 * skill2) + "") + "\n";
         } else {
             msg += this.PassiveIntroduceTwo
                 .replace("{skillLv}", "未开启")
-                .replace("{healVal}", skill2Percent + "") + "\n";
+                .replace("{healVal}", 1000 + "")
+                .replace("{healVal1}", 200 + "") + "\n";
         }
 
         if (skill3 > 0) {

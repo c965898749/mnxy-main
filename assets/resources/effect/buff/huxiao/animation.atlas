@@ -1,0 +1,20 @@
+
+animation.png
+size: 2172,157
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+frame_0
+  rotate: false
+  xy: 24, 12
+  size: 171, 132
+  orig: 171, 132
+  offset: 0, 0
+  index: -1
+frame_1
+  rotate: false
+  xy: 219, 2
+  size: 215, 153
+  orig: 215, 153
+  offset: 0, 0
+  index: -1

@@ -43,7 +43,7 @@ export class FightMap extends Component {
     @property(Node) name0
     @property(Node) name1
     @property(Node) skillName
-
+    @property(Node) bossSkill
     currentRound: number = 1
     isPlayAnimation: boolean = true
     allRoundQueue: Map<number, Function[]> = new Map
@@ -210,6 +210,102 @@ export class FightMap extends Component {
     async showBuffString(changXiaNode, isBuff: boolean, text: string) {
         const color = isBuff ? new math.Color(0, 255, 0) : new math.Color(255, 0, 0)
         await this.showString(1, changXiaNode, color, text)
+    }
+    // 应龙逆鳞阈值→简称（场下图标飘字用，仅本次新跨越的阈值才提示）
+    private static readonly YINJI_TIERS: Array<[number, string]> = [
+        [5, "血限不降"], [10, "物抗+"], [15, "净化负面"], [20, "敌方中毒"],
+        [25, "敌物抗↓"], [30, "应龙飞弹"], [35, "印记复活"], [40, "狂暴"],
+    ]
+    // 各应龙上一次已知的印记数，用于判定阈值跨越
+    private lastYinjiByUnit: Record<string, number> = {}
+    // 各应龙当前是否处于狂暴(≥印记40)视觉态：守护 baozou2→baozou 异步衔接，跌破40时置 false
+    private berserkVisual: Record<string, boolean> = {}
+    // 刷新应龙场下 yinji 动画与 num 印记数量（count<=0 隐藏）；跨越新阈值时图标弹动并简短飘字
+    updateYinjiNumLabel(unitId: string, yinjiCount: number) {
+        const itemNode = this.getChracterChangXiaById(unitId)
+        if (!itemNode) return
+        const yinjiNode = itemNode.getChildByName("buff")?.getChildByName("yinji")
+        if (!yinjiNode) return
+        if (yinjiCount > 0) {
+            yinjiNode.active = true
+            const sk = yinjiNode.getComponent(sp.Skeleton)
+            if (sk) { sk.node.active = true; sk.setAnimation(0, "animation", true) }
+            const numLabel = yinjiNode.getChildByName("num")
+            if (numLabel) numLabel.getComponent(Label).string = yinjiCount.toString()
+        } else {
+            yinjiNode.active = false
+        }
+        // 阈值跨越提示：印记增加且首次跨过某档位时，取本次跨过的最高档位飘一条简短文字
+        const prev = this.lastYinjiByUnit[unitId] || 0
+        if (yinjiCount > prev) {
+            const crossed = FightMap.YINJI_TIERS.filter(([t]) => t > prev && t <= yinjiCount)
+            if (crossed.length) {
+                const [tier, name] = crossed[crossed.length - 1]
+                // 印记阈值触发：场下图标统一走 select 弹动 + 简短飘字
+                this.playChangXiaSelect(itemNode, `印记${tier}·${name}`)
+            }
+        }
+        // 狂暴（印记≥40）视觉：首次跨越先播 baozou2+颤动→循环 baozou；跌破印记40移除动画
+        this.updateBerserkVisual(unitId, itemNode, prev, yinjiCount)
+        this.lastYinjiByUnit[unitId] = yinjiCount
+    }
+
+    // 狂暴视觉：印记≥40 首次跨越→场下 buff/baozou2 播一次性(轨道 animation-01)+颤动，完成后接 buff/baozou 循环(轨道 animation)；跌破印记40→移除两者
+    private updateBerserkVisual(unitId: string, itemNode: Node, prev: number, yinjiCount: number) {
+        const buffNode = itemNode.getChildByName("buff")
+        const baozou = buffNode?.getChildByName("baozou")
+        const baozou2 = buffNode?.getChildByName("baozou2")
+        if (yinjiCount >= 40) {
+            if (prev < 40) {
+                this.berserkVisual[unitId] = true
+                const startLoop = () => {
+                    if (this.berserkVisual[unitId] !== true) return
+                    if (baozou) { const s = baozou.getComponent(sp.Skeleton); if (s) { baozou.active = true; s.node.active = true; s.setAnimation(0, "animation", true) } }
+                }
+                const s2 = baozou2?.getComponent(sp.Skeleton)
+                if (s2) {
+                    baozou2!.active = true; s2.node.active = true
+                    s2.setAnimation(0, "animation-01", false)
+                    this.shakeNode(baozou2!)
+                    s2.setCompleteListener(() => { baozou2!.active = false; s2.setCompleteListener(null); startLoop() })
+                } else { startLoop() }
+            } else if (baozou && !baozou.active && !(baozou2 && baozou2.active)) {
+                // 已处于狂暴态但循环动画被重置（如重新登场）：确保 baozou 循环在播
+                const s = baozou.getComponent(sp.Skeleton); if (s) { baozou.active = true; s.node.active = true; s.setAnimation(0, "animation", true) }
+            }
+        } else {
+            this.berserkVisual[unitId] = false
+            if (baozou) { const s = baozou.getComponent(sp.Skeleton); if (s) { s.setAnimation(0, "animation", false); s.setCompleteListener(null) }; baozou.active = false }
+            if (baozou2) { const s = baozou2.getComponent(sp.Skeleton); if (s) { s.setAnimation(0, "animation-01", false); s.setCompleteListener(null) }; baozou2.active = false }
+        }
+    }
+
+    // 场下图标颤动：围绕当前位置做数次小幅抖动
+    private shakeNode(node: Node) {
+        const p0 = node.position.clone()
+        tween(node)
+            .to(0.05, { position: new Vec3(p0.x + 5, p0.y + 4, p0.z) })
+            .to(0.05, { position: new Vec3(p0.x - 5, p0.y - 4, p0.z) })
+            .to(0.05, { position: new Vec3(p0.x + 4, p0.y - 4, p0.z) })
+            .to(0.05, { position: new Vec3(p0.x - 4, p0.y + 4, p0.z) })
+            .to(0.05, { position: new Vec3(p0.x + 2, p0.y + 2, p0.z) })
+            .to(0.05, { position: p0 })
+            .start()
+    }
+
+    // 场下图标 select 弹动（统一的施法/触发高亮）：select 骨骼播一次 + itemNode 弹性上下缩放，可选飘字
+    private playChangXiaSelect(itemNode: Node, text?: string) {
+        const sel = itemNode.getChildByName("select")?.getComponent(sp.Skeleton)
+        if (sel) {
+            sel.node.active = true
+            sel.setAnimation(0, "animation", false)
+            sel.setCompleteListener(() => { sel.node.active = false; sel.setCompleteListener(null) })
+        }
+        let t = tween(itemNode)
+            .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
+        if (text) t = t.call(() => { this.showBuffString(itemNode, true, text) })
+        t.by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
+            .start()
     }
     // 更新场下PHYSICAL_BARRIER的num护盾数值
     updateShieldNumLabel(unitId: string, shieldRemaining: number) {
@@ -583,9 +679,9 @@ export class FightMap extends Component {
                     if (buffNode.name !== "FIXED_SOUL") buffNode.active = false;
                 });
             }
-            // 阵亡清空该单位的护盾登记，避免交替调度把已死单位的护盾又显示出来
-            this.physicalShieldMap.delete(key)
-            this.magicShieldMap.delete(key)
+            // 阵亡：法盾/物理盾及其上方数值一并清除（走护盾=0的隐藏分支：场上+场下节点都隐藏、映射移除、刷新交替显隐）
+            this.updateShieldNumLabel(key, 0)
+            this.updateMagicShieldNumLabel(key, 0)
         }
         await new Promise(res => setTimeout(res, 200 / this.timeScale))
     }
@@ -649,6 +745,9 @@ export class FightMap extends Component {
                 if (buffNode.name !== "FIXED_SOUL") buffNode.active = false;
             })
         }
+        // 阵亡：清除法盾/物理盾映射（否则交替调度器会继续显示已死单位的护盾）
+        this.updateShieldNumLabel(targetId, 0)
+        this.updateMagicShieldNumLabel(targetId, 0)
         // 4. 更新献祭护法血条（即死无前置伤害日志驱动，此处补上：场下小图标血条必更，场上按死亡前状态）
         if (fp.targetFieldStatus) {
             this.updateHpOnField(targetId, fp.targetHpAfter, fp.targetHpBefore)
@@ -681,6 +780,10 @@ export class FightMap extends Component {
     // ========== 技能事件分发 ==========
     private async handleSkillEvent(fp) {
         await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+        // 应龙印记：任意应龙相关日志回写了 yinjiCount 时，刷新该应龙场下 yinji 动画的 num（这些日志 sourceUnitId 均为应龙自身）
+        if (fp.yinjiCount !== null && fp.yinjiCount !== undefined) {
+            this.updateYinjiNumLabel(fp.sourceUnitId, fp.yinjiCount)
+        }
         // 乌江之殇：回合开始被动，独立处理
         if (fp.eventType == '乌江之殇') {
             await this.handleWujiangSkill(fp)
@@ -691,6 +794,77 @@ export class FightMap extends Component {
         // 龙威：吸血+加盾+青龙回血合并为一条日志，独立处理
         if (fp.eventType == '龙威') {
             await this.handleLongWei(fp)
+            this.skillName.children[this.isLeft(fp.sourceUnitId) ? 0 : 1].active = false
+            await new Promise(res => setTimeout(res, 1500 / this.timeScale))
+            return
+        }
+        // 白虎·灵佑：回合开始白虎自耗血 + 全体物理结界，独立处理
+        if (fp.eventType == '灵佑') {
+            await this.handleLingYou(fp)
+            this.skillName.children[this.isLeft(fp.sourceUnitId) ? 0 : 1].active = false
+            await new Promise(res => setTimeout(res, 1500 / this.timeScale))
+            return
+        }
+        // 白虎·血战到底：兽族死亡触发全队叠生命上限/攻击，独立处理
+        if (fp.eventType == '血战到底') {
+            await this.handleXueZhan(fp)
+            this.skillName.children[this.isLeft(fp.sourceUnitId) ? 0 : 1].active = false
+            await new Promise(res => setTimeout(res, 1500 / this.timeScale))
+            return
+        }
+        // 应龙·龙血刻印：护法自损→应龙+1印记（施法者=应龙），独立处理
+        if (fp.eventType == '龙血刻印') {
+            await this.handleLongXueKeYin(fp)
+            this.skillName.children[this.isLeft(fp.sourceUnitId) ? 0 : 1].active = false
+            await new Promise(res => setTimeout(res, 1500 / this.timeScale))
+            return
+        }
+        // 应龙·血刻加命：友方受增益→+10×印记 生命上限，独立处理
+        if (fp.eventType == '血刻加命') {
+            await this.handleXueKeJiaMing(fp)
+            this.skillName.children[this.isLeft(fp.sourceUnitId) ? 0 : 1].active = false
+            await new Promise(res => setTimeout(res, 1500 / this.timeScale))
+            return
+        }
+        // 应龙·苍龙吸水：吸全场护盾 + 结界溢出恢复应龙自身生命，独立处理
+        if (fp.eventType == '苍龙吸水') {
+            await this.handleCangLongXiShui(fp)
+            this.skillName.children[this.isLeft(fp.sourceUnitId) ? 0 : 1].active = false
+            await new Promise(res => setTimeout(res, 1500 / this.timeScale))
+            return
+        }
+        // 应龙·应龙逆鳞阈值40 狂暴：先红字掉10%上限血、再绿字加攻速，独立处理（仅 ATTACK_UP 命中，其余应龙逆鳞阈值仍走通用路由）
+        if (fp.eventType == '应龙逆鳞' && fp.effectType == 'ATTACK_UP') {
+            await this.handleKuangbao(fp)
+            this.skillName.children[this.isLeft(fp.sourceUnitId) ? 0 : 1].active = false
+            await new Promise(res => setTimeout(res, 1500 / this.timeScale))
+            return
+        }
+        // 应龙·免疫致命：消耗印记替我方挡下超生命上限10%的致死伤害（受保者=目标单位），独立处理
+        if (fp.eventType == '免疫致命') {
+            await this.handleMianYiZhiMing(fp)
+            this.skillName.children[this.isLeft(fp.sourceUnitId) ? 0 : 1].active = false
+            // 免疫致命为无伤害的被动反馈，无血条/数值动画可看，空尾压到 600ms 以免响应迟滞
+            await new Promise(res => setTimeout(res, 600 / this.timeScale))
+            return
+        }
+        // 应龙·龙炎群伤：消耗1印记对敌全体火焰伤害 AOE，独立处理
+        if (fp.eventType == '龙炎群伤') {
+            await this.handleLongYanQunShang(fp)
+            this.skillName.children[this.isLeft(fp.sourceUnitId) ? 0 : 1].active = false
+            await new Promise(res => setTimeout(res, 1500 / this.timeScale))
+            return
+        }
+        // 应龙·还魂：消耗30印记给随机阵亡友方施加还魂（该单位仍阵亡），场下持续播放 huanhun 动画，独立处理
+        if (fp.eventType == '还魂') {
+            await this.handleHuanhun(fp)
+            this.skillName.children[this.isLeft(fp.sourceUnitId) ? 0 : 1].active = false
+            await new Promise(res => setTimeout(res, 1500 / this.timeScale))
+            return
+        }
+        // 应龙·还魂复活：还魂倒计时结束，满血复活并移除 huanhun 动画，独立处理
+        if (fp.eventType == '还魂复活') {
+            await this.handleYinjiFuhuo(fp)
             this.skillName.children[this.isLeft(fp.sourceUnitId) ? 0 : 1].active = false
             await new Promise(res => setTimeout(res, 1500 / this.timeScale))
             return
@@ -780,6 +954,15 @@ export class FightMap extends Component {
             }
             // 无论场上场下，都同步场下小头像血条
             this.updateHpOffField(fp.sourceUnitId, fp.sourceHpAfter, srcMaxHp)
+        }
+        // 死亡之焰：应龙印记≥100 boss技，在 bossSkill 覆盖节点上播放一次 skill2 动画（不循环、播完自动隐藏），随后落到下方通用 AOE 路由做伤害/血条/死亡表现
+        if (fp.eventType == '死亡之焰') {
+            const bsSk = this.bossSkill?.getComponent(sp.Skeleton)
+            if (bsSk) {
+                this.bossSkill.active = true; bsSk.node.active = true
+                bsSk.setAnimation(0, "skill2", false)
+                bsSk.setCompleteListener(() => { this.bossSkill.active = false; bsSk.node.active = false; bsSk.setCompleteListener(null) })
+            }
         }
         if (fp.sourceFieldStatus) {
             if (fp.aoe == 1) await this.handleSkillOnFieldAoe(fp)
@@ -1195,6 +1378,541 @@ export class FightMap extends Component {
         await new Promise(res => setTimeout(res, 500 / this.timeScale))
     }
 
+    // --- 白虎·灵佑：回合开始白虎自耗血 + 全体存活友方获得物理结界（2×耗血），与乌江之殇同为 PHYSICAL_BARRIER 持续效果 ---
+    private async handleLingYou(fp) {
+        const sideIdx = this.isLeft(fp.sourceUnitId) ? 0 : 1
+        const sourceItemNode = this.getChracterChangXiaById(fp.sourceUnitId)
+        if (fp.sourceFieldStatus) {
+            this.skillName.children[sideIdx].active = true
+            this.skillName.children[sideIdx].getChildByName("Label").getComponent(Label).string = fp.eventType
+        } else {
+            if (sourceItemNode) {
+                let selectSkeleton = sourceItemNode.getChildByName("select").getComponent(sp.Skeleton)
+                selectSkeleton.node.active = true
+                selectSkeleton.setAnimation(0, "animation", false)
+                // 白虎在场下释放灵佑：场下 buff/huxiao 播放呼哨施法动画（一次性，播完隐藏），同时播 shihou 施法音效
+                const hx = sourceItemNode.getChildByName("buff")?.getChildByName("huxiao")?.getComponent(sp.Skeleton)
+                if (hx) { hx.node.active = true; hx.setAnimation(0, "animation", false); hx.setCompleteListener(() => { hx.node.active = false }); AudioMgr.inst.playOneShot("sound/fight/skill/shihou") }
+                tween(sourceItemNode)
+                    .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
+                    .call(async () => {
+                        await this.showString(1, sourceItemNode, new math.Color(236, 163, 61, 255), fp.eventType)
+                        await new Promise(res => setTimeout(res, 300 / this.timeScale))
+                    })
+                    .by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
+                    .start()
+                this.actionAwaitQueue.push(this.playAnimToPromise(selectSkeleton))
+            }
+            await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+        }
+        await new Promise(res => setTimeout(res, 800 / this.timeScale))
+        AudioMgr.inst.playOneShot("sound/fight/skill/HEAL")
+        for (const key in fp.multiTargetDataMap) {
+            const data = fp.multiTargetDataMap[key]
+            const characterNode = this.getCharacterById(key)
+            const itemNode = this.getChracterChangXiaById(key)
+            // 仅施法者白虎自耗血飘红字（value=hpCost），其余友方仅加盾不掉血
+            if (data.value > 0 && characterNode) {
+                this.showNumber(this.isLeft(key), characterNode, -data.value, new math.Color(255, 176, 126, 255), 40)
+            }
+            if (data.fieldStatus) this.updateHpOnField(key, data.hpAfter, data.hpBefore)
+            this.updateHpOffField(key, data.hpAfter, data.hpBefore)
+            // PHYSICAL_BARRIER：仅真正吃到护盾的目标(shieldRemaining>0)播放盾动画与刷新盾数值（白虎场下自耗 shieldRemaining=0 只掉血不加盾）
+            if (data.shieldRemaining > 0 && itemNode) {
+                const bnode = itemNode.getChildByName("buff")?.getChildByName("PHYSICAL_BARRIER")
+                if (bnode) { const sk = bnode.getComponent(sp.Skeleton); sk.node.active = true; sk.setAnimation(0, "animation", true) }
+                this.updateShieldNumLabel(key, data.shieldRemaining)
+                // 场下图标飘字：本次获得物盾（绿字"物盾+xxx"）
+                if (data.shieldChange > 0) await this.showBuffString(itemNode, true, "物盾+" + data.shieldChange)
+            }
+            if (data.shieldRemaining > 0 && data.fieldStatus && characterNode) {
+                const onB = characterNode.getChildByName("PHYSICAL_BARRIER")?.getComponent(sp.Skeleton)
+                if (onB) { onB.node.active = true; onB.setAnimation(0, "animation", true) }
+            }
+        }
+        // 灵佑自耗致死：前端直接判断施法者HP归零即显示dead + 清盾（不依赖后端UNIT_DEATH日志）
+        if (fp.sourceHpAfter <= 0) {
+            const srcId = fp.sourceUnitId
+            const srcChar = this.getCharacterById(srcId)
+            if (srcChar) {
+                srcChar.getComponent(Sprite).spriteFrame = null
+                srcChar.children.forEach(n => { n.active = false })
+            }
+            if (sourceItemNode) {
+                sourceItemNode.getChildByName("dead").active = true
+                const bp = sourceItemNode.getChildByName("buff")
+                if (bp) bp.children.forEach(n => { if (n.name !== "FIXED_SOUL") n.active = false })
+            }
+            this.updateShieldNumLabel(srcId, 0)
+            this.updateMagicShieldNumLabel(srcId, 0)
+        }
+    }
+
+    // --- 白虎·血战到底：兽族死亡触发全队叠层，每个存活友方 maxHp/攻击增长（同时回等量血：加血动画+绿字+血条上限增长） ---
+    private async handleXueZhan(fp) {
+        await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+        const sideIdx = this.isLeft(fp.sourceUnitId) ? 0 : 1
+        if (fp.sourceFieldStatus) {
+            this.skillName.children[sideIdx].active = true
+            this.skillName.children[sideIdx].getChildByName("Label").getComponent(Label).string = fp.eventType
+        } else {
+            const srcItem = this.getChracterChangXiaById(fp.sourceUnitId)
+            if (srcItem) {
+                const sel = srcItem.getChildByName("select").getComponent(sp.Skeleton)
+                sel.node.active = true; sel.setAnimation(0, "animation", false)
+                tween(srcItem)
+                    .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
+                    .call(async () => {
+                        await this.showString(1, srcItem, new math.Color(236, 163, 61, 255), fp.eventType)
+                        await new Promise(res => setTimeout(res, 300 / this.timeScale))
+                    })
+                    .by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
+                    .start()
+                this.actionAwaitQueue.push(this.playAnimToPromise(sel))
+                await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+            }
+        }
+        AudioMgr.inst.playOneShot("sound/fight/skill/HP_UP")
+        for (const key in fp.multiTargetDataMap) {
+            const data = fp.multiTargetDataMap[key]
+            const characterNode = this.getCharacterById(key)
+            const itemNode = this.getChracterChangXiaById(key)
+            // 提高生命上限同时回复等量生命：播放加血(HEAL)动画（场上角色 + 场下 buff 节点）
+            if (data.fieldStatus && characterNode) {
+                const onSk = characterNode.getChildByName("HEAL")?.getComponent(sp.Skeleton)
+                if (onSk) { onSk.node.active = true; onSk.setAnimation(0, "animation", false); onSk.setCompleteListener(() => { onSk.node.active = false }); this.actionAwaitQueue.push(this.playAnimToPromise(onSk)) }
+            }
+            if (itemNode) {
+                const offSk = itemNode.getChildByName("buff")?.getChildByName("HEAL")?.getComponent(sp.Skeleton)
+                if (offSk) { offSk.node.active = true; offSk.setAnimation(0, "animation", false); offSk.setCompleteListener(() => { offSk.node.active = false }); this.actionAwaitQueue.push(this.playAnimToPromise(offSk)) }
+            }
+            // 生命上限增长：场上绿字 + 血条上限（hpBefore=新上限maxHp）同步增长
+            if (characterNode) this.showDamageOrHealNumber(key, characterNode, data.value, true)
+            if (data.fieldStatus) this.updateHpOnField(key, data.hpAfter, data.hpBefore)
+            this.updateHpOffField(key, data.hpAfter, data.hpBefore)
+            if (itemNode && fp.extraDesc) await this.showBuffString(itemNode, true, fp.extraDesc)
+        }
+        await new Promise(res => setTimeout(res, 1000 / this.timeScale))
+    }
+
+    // --- 应龙·龙血刻印：①护法自损→应龙+印记（单目标）；②苍龙吸水印记分发（单条多目标日志：应龙减 need、每个后方护法+3） ---
+    private async handleLongXueKeYin(fp) {
+        await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+        const sideIdx = this.isLeft(fp.sourceUnitId) ? 0 : 1
+        const srcItem = this.getChracterChangXiaById(fp.sourceUnitId)
+        if (fp.sourceFieldStatus) {
+            this.skillName.children[sideIdx].active = true
+            this.skillName.children[sideIdx].getChildByName("Label").getComponent(Label).string = fp.eventType
+            await new Promise(res => setTimeout(res, 800 / this.timeScale))
+        } else if (srcItem) {
+            const sel = srcItem.getChildByName("select").getComponent(sp.Skeleton)
+            sel.node.active = true; sel.setAnimation(0, "animation", false)
+            tween(srcItem)
+                .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
+                .call(async () => {
+                    await this.showString(1, srcItem, new math.Color(236, 163, 61, 255), fp.eventType)
+                    await new Promise(res => setTimeout(res, 300 / this.timeScale))
+                })
+                .by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
+                .start()
+            this.actionAwaitQueue.push(this.playAnimToPromise(sel))
+            await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+        }
+        AudioMgr.inst.playOneShot("sound/fight/skill/HP_UP")
+        const targets = fp.multiTargetDataMap ? Object.keys(fp.multiTargetDataMap) : []
+        if (targets.length > 0) {
+            // 苍龙吸水·印记分发（合并为一条日志）：应龙自身减 need（红字，num 已由 handleSkillEvent 按 yinjiCount 刷新）
+            if (srcItem && fp.extraDesc) await this.showBuffString(srcItem, false, fp.extraDesc)
+            // 再对每个后方护法：刷新其场下印记 num + 并行飘“印记+X”绿字
+            for (const key of targets) {
+                const data = fp.multiTargetDataMap[key]
+                if (data.yinjiCount !== null && data.yinjiCount !== undefined) this.updateYinjiNumLabel(key, data.yinjiCount)
+            }
+            await Promise.all(targets.map(key => {
+                const data = fp.multiTargetDataMap[key]
+                const item = this.getChracterChangXiaById(key)
+                return (item && data.value) ? this.showBuffString(item, true, "印记+" + data.value) : Promise.resolve()
+            }))
+        } else {
+            // 龙血刻印·应龙自增（护法自损→应龙+10）：仅应龙身上飘字（num 已由 handleSkillEvent 统一刷新）
+            if (srcItem && fp.extraDesc) await this.showBuffString(srcItem, true, fp.extraDesc)
+            // 场上应龙获得印记：角色身上播放一次 yinji2（不循环，播完自动隐藏）
+            if (fp.sourceFieldStatus) {
+                const charNode = this.getCharacterById(fp.sourceUnitId)
+                const yinji2 = charNode?.getChildByName("yinji2")
+                const sk = yinji2?.getComponent(sp.Skeleton)
+                if (sk) {
+                    yinji2.active = true; sk.node.active = true
+                    sk.setAnimation(0, "animation", false)
+                    sk.setCompleteListener(() => { yinji2.active = false; sk.setCompleteListener(null) })
+                }
+            }
+        }
+    }
+
+    // --- 应龙·血刻加命：友方受增益→全体+10×印记生命上限（与血战到底同：绿字+刷新血条上限） ---
+    private async handleXueKeJiaMing(fp) {
+        await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+        const sideIdx = this.isLeft(fp.sourceUnitId) ? 0 : 1
+        if (fp.sourceFieldStatus) {
+            this.skillName.children[sideIdx].active = true
+            this.skillName.children[sideIdx].getChildByName("Label").getComponent(Label).string = fp.eventType
+        } else {
+            const srcItem = this.getChracterChangXiaById(fp.sourceUnitId)
+            if (srcItem) {
+                const sel = srcItem.getChildByName("select").getComponent(sp.Skeleton)
+                sel.node.active = true; sel.setAnimation(0, "animation", false)
+                tween(srcItem)
+                    .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
+                    .call(async () => {
+                        await this.showString(1, srcItem, new math.Color(236, 163, 61, 255), fp.eventType)
+                        await new Promise(res => setTimeout(res, 300 / this.timeScale))
+                    })
+                    .by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
+                    .start()
+                this.actionAwaitQueue.push(this.playAnimToPromise(sel))
+                await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+            }
+        }
+        AudioMgr.inst.playOneShot("sound/fight/skill/HP_UP")
+        for (const key in fp.multiTargetDataMap) {
+            const data = fp.multiTargetDataMap[key]
+            const characterNode = this.getCharacterById(key)
+            const itemNode = this.getChracterChangXiaById(key)
+            // HP_UP 增益动画：场上播角色身上 HP_UP spine + 绿字；场下播 itemNode/buff/HP_UP spine（与血战到底等 buff 一致，保证反向提升的兽族施法者在场下也有动画）
+            if (data.fieldStatus && characterNode) {
+                const onSk = characterNode.getChildByName("HP_UP")?.getComponent(sp.Skeleton)
+                if (onSk) { onSk.node.active = true; onSk.setAnimation(0, "animation", false); onSk.setCompleteListener(() => { onSk.node.active = false }) }
+                this.showDamageOrHealNumber(key, characterNode, data.value, true)
+            } else if (itemNode) {
+                const offSk = itemNode.getChildByName("buff")?.getChildByName("HP_UP")?.getComponent(sp.Skeleton)
+                if (offSk) {
+                    offSk.node.active = true; offSk.setAnimation(0, "animation", false)
+                    offSk.setCompleteListener(() => { offSk.node.active = false })
+                    this.actionAwaitQueue.push(this.playAnimToPromise(offSk))
+                }
+            }
+            if (data.fieldStatus) this.updateHpOnField(key, data.hpAfter, data.hpBefore)
+            this.updateHpOffField(key, data.hpAfter, data.hpBefore)
+            if (itemNode && fp.extraDesc) await this.showBuffString(itemNode, true, fp.extraDesc)
+        }
+        await new Promise(res => setTimeout(res, 1000 / this.timeScale))
+    }
+
+    // --- 应龙·苍龙吸水：护盾刷新(应龙获得吸收的物/法盾) + 结界溢出治疗(应龙自恢复)，两种日志共用一个处理器 ---
+    private async handleCangLongXiShui(fp) {
+        await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+        const sideIdx = this.isLeft(fp.sourceUnitId) ? 0 : 1
+        if (fp.sourceFieldStatus) {
+            this.skillName.children[sideIdx].active = true
+            this.skillName.children[sideIdx].getChildByName("Label").getComponent(Label).string = fp.eventType
+            await new Promise(res => setTimeout(res, 800 / this.timeScale))
+        } else {
+            const srcItem = this.getChracterChangXiaById(fp.sourceUnitId)
+            if (srcItem) {
+                const sel = srcItem.getChildByName("select").getComponent(sp.Skeleton)
+                sel.node.active = true; sel.setAnimation(0, "animation", false)
+                tween(srcItem)
+                    .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
+                    .call(async () => {
+                        await this.showString(1, srcItem, new math.Color(236, 163, 61, 255), fp.eventType)
+                        await new Promise(res => setTimeout(res, 300 / this.timeScale))
+                    })
+                    .by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
+                    .start()
+                this.actionAwaitQueue.push(this.playAnimToPromise(sel))
+                await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+            }
+        }
+        // 护盾吸取日志用 shihou 施法音；生命上限削减复用阎王·生死簿的 MAX_HP_DOWN 音效；结界溢出治疗用 HEAL 加血音
+        AudioMgr.inst.playOneShot(fp.effectType == 'MAX_HP_DOWN' ? "sound/fight/skill/MAX_HP_DOWN" : (fp.effectType == 'HEAL' ? "sound/fight/skill/HEAL" : "sound/fight/skill/shihou"))
+        for (const key in fp.multiTargetDataMap) {
+            const data = fp.multiTargetDataMap[key]
+            const characterNode = this.getCharacterById(key)
+            const itemNode = this.getChracterChangXiaById(key)
+            // 生命上限削减（苍龙吸水·结界溢出削敌）：复用阎王·生死簿的 MAX_HP_DOWN 动画（场上+场下 spine）+ 红字
+            if (fp.effectType == 'MAX_HP_DOWN') {
+                if (data.fieldStatus && characterNode) {
+                    const onSk = characterNode.getChildByName("MAX_HP_DOWN")?.getComponent(sp.Skeleton)
+                    if (onSk) { onSk.node.active = true; onSk.setAnimation(0, "animation", false); onSk.setCompleteListener(() => { onSk.node.active = false }) }
+                }
+                const offSk = itemNode?.getChildByName("buff")?.getChildByName("MAX_HP_DOWN")?.getComponent(sp.Skeleton)
+                if (offSk) { offSk.node.active = true; offSk.setAnimation(0, "animation", false); this.actionAwaitQueue.push(this.playAnimToPromise(offSk)) }
+                if (characterNode && data.value > 0) this.showDamageOrHealNumber(key, characterNode, -data.value, false)
+                if (data.fieldStatus) this.updateHpOnField(key, data.hpAfter, data.hpBefore)
+                this.updateHpOffField(key, data.hpAfter, data.hpBefore)
+                if (itemNode && fp.extraDesc) await this.showBuffString(itemNode, false, "生命上限 -" + data.value)
+                continue
+            }
+            // 结界溢出治疗（苍龙吸水·超上限差值恢复自身及前后护法）：加血(HEAL)动画 + 绿字 + 血条上升
+            if (fp.effectType == 'HEAL') {
+                if (data.fieldStatus && characterNode) {
+                    const onSk = characterNode.getChildByName("HEAL")?.getComponent(sp.Skeleton)
+                    if (onSk) { onSk.node.active = true; onSk.setAnimation(0, "animation", false); onSk.setCompleteListener(() => { onSk.node.active = false }); this.actionAwaitQueue.push(this.playAnimToPromise(onSk)) }
+                    this.showDamageOrHealNumber(key, characterNode, data.value, true)
+                }
+                if (itemNode) {
+                    const offSk = itemNode.getChildByName("buff")?.getChildByName("HEAL")?.getComponent(sp.Skeleton)
+                    if (offSk) { offSk.node.active = true; offSk.setAnimation(0, "animation", false); offSk.setCompleteListener(() => { offSk.node.active = false }); this.actionAwaitQueue.push(this.playAnimToPromise(offSk)) }
+                }
+                if (data.fieldStatus) this.updateHpOnField(key, data.hpAfter, data.hpBefore)
+                this.updateHpOffField(key, data.hpAfter, data.hpBefore)
+                if (itemNode) await this.showBuffString(itemNode, true, "生命值+" + data.value)
+                continue
+            }
+            // 护盾数值刷新（应龙吸收后的护盾总量）
+            if (data.shieldRemaining !== undefined && data.shieldRemaining > 0) {
+                this.updateShieldNumLabel(key, data.shieldRemaining)
+                const pb = itemNode?.getChildByName("buff")?.getChildByName("PHYSICAL_BARRIER")
+                if (pb) { const sk = pb.getComponent(sp.Skeleton); sk.node.active = true; sk.setAnimation(0, "animation", true) }
+            }
+            if (data.magicShieldRemaining !== undefined && data.magicShieldRemaining > 0) {
+                this.updateMagicShieldNumLabel(key, data.magicShieldRemaining)
+                const mb = itemNode?.getChildByName("buff")?.getChildByName("MAGIC_BARRIER")
+                if (mb) { const sk = mb.getComponent(sp.Skeleton); sk.node.active = true; sk.setAnimation(0, "animation", true) }
+            }
+            // 血条（生命上限削减后新上限 hpBefore 会变小）
+            if (data.fieldStatus) this.updateHpOnField(key, data.hpAfter, data.hpBefore)
+            this.updateHpOffField(key, data.hpAfter, data.hpBefore)
+            // 吸盾飘字：被吸单位红字"物盾-x"/"法盾-x"，应龙自身绿字"物盾+x"/"法盾+x"
+            if (itemNode) {
+                if (data.shieldChange > 0) await this.showBuffString(itemNode, true, "物盾+" + data.shieldChange)
+                else if (data.shieldChange < 0) await this.showBuffString(itemNode, false, "物盾-" + Math.abs(data.shieldChange))
+                if (data.magicShieldChange > 0) await this.showBuffString(itemNode, true, "法盾+" + data.magicShieldChange)
+                else if (data.magicShieldChange < 0) await this.showBuffString(itemNode, false, "法盾-" + Math.abs(data.magicShieldChange))
+            }
+        }
+        await new Promise(res => setTimeout(res, 1000 / this.timeScale))
+    }
+
+    // --- 应龙·应龙逆鳞阈值40 狂暴：先红字掉10%生命上限的血+血条下降，再绿字加攻击/速度（sourceSelfValue=hpCost、extraDesc=攻击+X 速度+X） ---
+    private async handleKuangbao(fp) {
+        await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+        const ylId = fp.sourceUnitId
+        const sideIdx = this.isLeft(ylId) ? 0 : 1
+        const charNode = this.getCharacterById(ylId)
+        const itemNode = this.getChracterChangXiaById(ylId)
+        // 施法表现：场上飘技能名，场下 select 弹跳 + 飘字
+        if (fp.sourceFieldStatus) {
+            this.skillName.children[sideIdx].active = true
+            this.skillName.children[sideIdx].getChildByName("Label").getComponent(Label).string = fp.eventType
+            await new Promise(res => setTimeout(res, 800 / this.timeScale))
+        } else if (itemNode) {
+            const sel = itemNode.getChildByName("select").getComponent(sp.Skeleton)
+            sel.node.active = true; sel.setAnimation(0, "animation", false)
+            tween(itemNode)
+                .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
+                .call(async () => {
+                    await this.showString(1, itemNode, new math.Color(236, 163, 61, 255), fp.eventType)
+                    await new Promise(res => setTimeout(res, 300 / this.timeScale))
+                })
+                .by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
+                .start()
+            this.actionAwaitQueue.push(this.playAnimToPromise(sel))
+            await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+        }
+        // 1) 红字：掉 10% 生命上限的血（-hpCost）+ 血条下降
+        const hpCost = fp.sourceSelfValue
+        AudioMgr.inst.playOneShot("sound/fight/skill/DAMAGE")
+        if (charNode) this.showDamageOrHealNumber(ylId, charNode, -hpCost, false)
+        if (itemNode) await this.showBuffString(itemNode, false, "生命 -" + hpCost)
+        if (fp.sourceFieldStatus) this.updateHpOnField(ylId, fp.sourceHpAfter, fp.sourceHpBefore)
+        this.updateHpOffField(ylId, fp.sourceHpAfter, fp.sourceHpBefore)
+        await new Promise(res => setTimeout(res, 500 / this.timeScale))
+        // 2) 绿字：加攻击/速度（HP_UP 动画 + 绿字 extraDesc）
+        AudioMgr.inst.playOneShot("sound/fight/skill/HP_UP")
+        if (charNode) {
+            const sk = charNode.getChildByName("HP_UP")?.getComponent(sp.Skeleton)
+            if (sk) { sk.node.active = true; sk.setAnimation(0, "animation", false); sk.setCompleteListener(() => { sk.node.active = false }) }
+        }
+        if (itemNode) {
+            const offSk = itemNode.getChildByName("buff")?.getChildByName("HP_UP")?.getComponent(sp.Skeleton)
+            if (offSk) { offSk.node.active = true; offSk.setAnimation(0, "animation", false); offSk.setCompleteListener(() => { offSk.node.active = false }) }
+            await this.showBuffString(itemNode, true, fp.extraDesc)
+        }
+        await new Promise(res => setTimeout(res, 500 / this.timeScale))
+    }
+
+    // --- 应龙·免疫致命：消耗应龙印记替友军挡下致死伤害（受保单位不掉血，仅飘名+提示），单目标 ---
+    private async handleMianYiZhiMing(fp) {
+        await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+        const sideIdx = this.isLeft(fp.sourceUnitId) ? 0 : 1
+        const defItem = this.getChracterChangXiaById(fp.targetUnitId)
+        if (fp.sourceFieldStatus) {
+            this.skillName.children[sideIdx].active = true
+            this.skillName.children[sideIdx].getChildByName("Label").getComponent(Label).string = fp.eventType
+            await new Promise(res => setTimeout(res, 800 / this.timeScale))
+        } else if (defItem) {
+            const sel = defItem.getChildByName("select").getComponent(sp.Skeleton)
+            sel.node.active = true; sel.setAnimation(0, "animation", false)
+            tween(defItem)
+                .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
+                .call(async () => {
+                    await this.showString(1, defItem, new math.Color(120, 200, 255, 255), fp.eventType)
+                    await new Promise(res => setTimeout(res, 300 / this.timeScale))
+                })
+                .by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
+                .start()
+            this.actionAwaitQueue.push(this.playAnimToPromise(sel))
+            await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+        }
+        AudioMgr.inst.playOneShot("sound/fight/skill/shihou")
+        // 受保者护盾/受保动画：场上播角色身上 PHYSICAL_BARRIER spine，场下播 itemNode/buff/PHYSICAL_BARRIER spine（与血刻加命场下动画一致，保证免疫致命触发时场下单位也有可见表现）
+        const defChar = this.getCharacterById(fp.targetUnitId)
+        if (fp.targetFieldStatus && defChar) {
+            const onSk = defChar.getChildByName("PHYSICAL_BARRIER")?.getComponent(sp.Skeleton)
+            if (onSk) { onSk.node.active = true; onSk.setAnimation(0, "animation", false); onSk.setCompleteListener(() => { onSk.node.active = false }) }
+        } else if (defItem) {
+            const offSk = defItem.getChildByName("buff")?.getChildByName("PHYSICAL_BARRIER")?.getComponent(sp.Skeleton)
+            if (offSk) {
+                offSk.node.active = true; offSk.setAnimation(0, "animation", false)
+                offSk.setCompleteListener(() => { offSk.node.active = false })
+                this.actionAwaitQueue.push(this.playAnimToPromise(offSk))
+            }
+        }
+        // 免疫=本次伤害未生效，HP与受击前一致，按当前值刷新血条，并飘“免疫致命”
+        if (fp.targetFieldStatus) this.updateHpOnField(fp.targetUnitId, fp.targetHpAfter, fp.targetHpBefore)
+        this.updateHpOffField(fp.targetUnitId, fp.targetHpAfter, fp.targetHpBefore)
+        // extraDesc 与 eventType 同为“免疫致命”时不再多飘一次（否则屏幕出现两个“免疫致命”）；仅当后端给了不同的补充文案才显示
+        if (defItem && fp.extraDesc && fp.extraDesc !== fp.eventType) await this.showBuffString(defItem, true, fp.extraDesc)
+        // 应龙消耗1层印记：显式刷新应龙场下印记数（幂等）+ 飘“印记-1”红字（免疫致命常被龙血刻印 +10 掩盖，需明确提示扣减）
+        if (fp.yinjiCount !== null && fp.yinjiCount !== undefined) {
+            this.updateYinjiNumLabel(fp.sourceUnitId, fp.yinjiCount)
+            const ylItem = this.getChracterChangXiaById(fp.sourceUnitId)
+            if (ylItem) await this.showBuffString(ylItem, false, "印记-1")
+        }
+    }
+
+    // --- 应龙·龙炎群伤：消耗1印记对敌全体火焰伤害 AOE（红字+扣血，死亡另走 UNIT_DEATH） ---
+    private async handleLongYanQunShang(fp) {
+        await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+        const sideIdx = this.isLeft(fp.sourceUnitId) ? 0 : 1
+        if (fp.sourceFieldStatus) {
+            this.skillName.children[sideIdx].active = true
+            this.skillName.children[sideIdx].getChildByName("Label").getComponent(Label).string = fp.eventType
+            await new Promise(res => setTimeout(res, 800 / this.timeScale))
+        } else {
+            const srcItem = this.getChracterChangXiaById(fp.sourceUnitId)
+            if (srcItem) {
+                const sel = srcItem.getChildByName("select").getComponent(sp.Skeleton)
+                sel.node.active = true; sel.setAnimation(0, "animation", false)
+                tween(srcItem)
+                    .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
+                    .call(async () => {
+                        await this.showString(1, srcItem, new math.Color(236, 163, 61, 255), fp.eventType)
+                        await new Promise(res => setTimeout(res, 300 / this.timeScale))
+                    })
+                    .by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
+                    .start()
+                this.actionAwaitQueue.push(this.playAnimToPromise(sel))
+                await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+            }
+        }
+        AudioMgr.inst.playOneShot("sound/fight/skill/FIRE_DAMAGE")
+        for (const key in fp.multiTargetDataMap) {
+            const data = fp.multiTargetDataMap[key]
+            const characterNode = this.getCharacterById(key)
+            if (characterNode) this.showDamageOrHealNumber(key, characterNode, data.value, false)
+            if (data.fieldStatus) this.updateHpOnField(key, data.hpAfter, data.hpBefore)
+            this.updateHpOffField(key, data.hpAfter, data.hpBefore)
+        }
+        await new Promise(res => setTimeout(res, 1000 / this.timeScale))
+    }
+
+    // --- 应龙·还魂：消耗印记给随机阵亡友方施加还魂（该单位仍处阵亡态），场下持续循环播放 huanhun 动画，复活时由 handleYinjiFuhuo 移除 ---
+    private async handleHuanhun(fp) {
+        await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+        const sideIdx = this.isLeft(fp.sourceUnitId) ? 0 : 1
+        if (fp.sourceFieldStatus) {
+            this.skillName.children[sideIdx].active = true
+            this.skillName.children[sideIdx].getChildByName("Label").getComponent(Label).string = fp.eventType
+            await new Promise(res => setTimeout(res, 800 / this.timeScale))
+        } else {
+            const srcItem = this.getChracterChangXiaById(fp.sourceUnitId)
+            if (srcItem) {
+                const sel = srcItem.getChildByName("select").getComponent(sp.Skeleton)
+                sel.node.active = true; sel.setAnimation(0, "animation", false)
+                tween(srcItem)
+                    .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
+                    .call(async () => {
+                        await this.showString(1, srcItem, new math.Color(236, 163, 61, 255), fp.eventType)
+                        await new Promise(res => setTimeout(res, 300 / this.timeScale))
+                    })
+                    .by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
+                    .start()
+                this.actionAwaitQueue.push(this.playAnimToPromise(sel))
+                await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+            }
+        }
+        AudioMgr.inst.playOneShot("sound/fight/skill/HEAL")
+        // 还魂目标（仍阵亡、在场下）：持续循环播放 itemNode/buff/huanhun 动画，直到复活（不减血、不清 dead 标记）
+        const targetItem = this.getChracterChangXiaById(fp.targetUnitId)
+        if (targetItem) {
+            const hh = targetItem.getChildByName("buff")?.getChildByName("huanhun")
+            if (hh) {
+                hh.active = true
+                const sk = hh.getComponent(sp.Skeleton)
+                if (sk) { sk.node.active = true; sk.setAnimation(0, "animation-01", true) }
+            }
+            if (fp.extraDesc) await this.showBuffString(targetItem, true, fp.extraDesc)
+        }
+    }
+
+    // --- 应龙·还魂复活：还魂倒计时结束，满血复活（应龙无生命消耗），参考 handleRevive 但不加固魂/不飘自耗 ---
+    private async handleYinjiFuhuo(fp) {
+        await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+        const sideIdx = this.isLeft(fp.sourceUnitId) ? 0 : 1
+        const srcItem = this.getChracterChangXiaById(fp.sourceUnitId)
+        if (fp.sourceFieldStatus) {
+            this.skillName.children[sideIdx].active = true
+            this.skillName.children[sideIdx].getChildByName("Label").getComponent(Label).string = fp.eventType
+        } else if (srcItem) {
+            const sel = srcItem.getChildByName("select").getComponent(sp.Skeleton)
+            sel.node.active = true; sel.setAnimation(0, "animation", false)
+            tween(srcItem)
+                .by(0.5, { position: new Vec3(0, 20, 0), scale: new Vec3(0.2, 0.2, 0.2) }, { easing: 'elasticOut' })
+                .call(async () => {
+                    await this.showString(1, srcItem, new math.Color(236, 163, 61, 255), fp.eventType)
+                    await new Promise(res => setTimeout(res, 300 / this.timeScale))
+                })
+                .by(0.5, { position: new Vec3(0, -20, 0), scale: new Vec3(-0.2, -0.2, -0.2) }, { easing: 'elasticIn' })
+                .start()
+            this.actionAwaitQueue.push(this.playAnimToPromise(sel))
+            await Promise.all(this.actionAwaitQueue); this.actionAwaitQueue = []
+        }
+        AudioMgr.inst.playOneShot("sound/fight/skill/HEAL")
+        const targetId = fp.targetUnitId
+        const targetItemNode = this.getChracterChangXiaById(targetId)
+        // 复活生效：移除场下 huanhun 持续动画
+        if (targetItemNode) {
+            const hh = targetItemNode.getChildByName("buff")?.getChildByName("huanhun")
+            if (hh) { const sk = hh.getComponent(sp.Skeleton); if (sk) sk.setAnimation(0, "animation-01", false); hh.active = false }
+        }
+        const targetCharacterNode = this.getCharacterById(targetId)
+        const isTargetLeft = this.isLeft(targetId)
+        // 清除场下死亡标记
+        if (targetItemNode) {
+            const deadNode = targetItemNode.getChildByName("dead")
+            if (deadNode) deadNode.active = false
+        }
+        // 复活登场：仅当复活单位确在场上时恢复精灵 + 弹出动画
+        if (targetCharacterNode && fp.targetFieldStatus) {
+            targetCharacterNode.getComponent(Sprite).spriteFrame =
+                await util.bundle.load(`game/texture/frames/hero/${targetId.replace(/[a-zA-Z]/g, '')}/spriteFrame`, SpriteFrame)
+            const scaleNew = new Vec3(
+                isTargetLeft ? Math.abs(targetCharacterNode.scale.x) * -1 : Math.abs(targetCharacterNode.scale.x),
+                targetCharacterNode.scale.y, targetCharacterNode.scale.z)
+            targetCharacterNode.scale = new Vec3(0, 0, 0)
+            this.actionAwaitQueue.push(this.tweenToPromise(targetCharacterNode, 0.8, { scale: scaleNew }, { easing: 'elasticOut' }))
+            targetCharacterNode.getChildByName("id").active = true
+            targetCharacterNode.getChildByName("id").getComponent(Label).string = targetId
+        }
+        // 复活单位血条（targetHpBefore=生命上限, targetHpAfter=复活血量）
+        if (fp.targetFieldStatus) this.updateHpOnField(targetId, fp.targetHpAfter, fp.targetHpBefore)
+        this.updateHpOffField(targetId, fp.targetHpAfter, fp.targetHpBefore)
+        if (targetItemNode && fp.extraDesc) await this.showBuffString(targetItemNode, true, fp.extraDesc)
+    }
+
     // --- 乌江之殇：回合开始扣血+物理结界（持续效果） ---
     private async handleWujiangSkill(fp) {
         const sideIdx = this.isLeft(fp.sourceUnitId) ? 0 : 1
@@ -1335,6 +2053,8 @@ export class FightMap extends Component {
             if (itemNode) {
                 if (data.healValue > 0) await this.showBuffString(itemNode, true, "+" + data.healValue)
                 else if (data.value > 0) await this.showBuffString(itemNode, false, "-" + data.value)
+                // 本次获得法盾（绿字"法盾+xxx"）
+                if (data.magicShieldChange > 0) await this.showBuffString(itemNode, true, "法盾+" + data.magicShieldChange)
             }
         }
         await new Promise(res => setTimeout(res, 1000 / this.timeScale))
@@ -1348,6 +2068,12 @@ export class FightMap extends Component {
         this.skillName.children[sideIdx].active = true
         this.skillName.children[sideIdx].getChildByName("Label").getComponent(Label).string = fp.eventType
         AudioMgr.inst.playOneShot("sound/fight/skill/shihou")
+        // 青龙在场上释放：自身播放 longxiao 施法动画（一次性，播完隐藏）
+        if (fp.sourceFieldStatus) {
+            const caster = this.getCharacterById(fp.sourceUnitId)
+            const lx = caster?.getChildByName("longxiao")?.getComponent(sp.Skeleton)
+            if (lx) { lx.node.active = true; lx.setAnimation(0, "animation", false); lx.setCompleteListener(() => { lx.node.active = false }) }
+        }
         await new Promise(res => setTimeout(res, 800 / this.timeScale))
 
         let anyStun = false
@@ -1404,8 +2130,10 @@ export class FightMap extends Component {
         await new Promise(res => setTimeout(res, 800 / this.timeScale))
         // 吾乃轩辕使用 DAMAGE 音效（即 effectType 同名音效），其余技能同样沿用 effectType 同名音效
         const isWuNaiXuanYuan = fp.eventType == "吾乃轩辕"
+        // 应龙·应龙逆鳞阈值15 净化（驱散负面）：场上动画沿用厚土"大地净化"的 HOU_JH（含其音效），故跳过通用 effectType(HEAL) 音效
+        const isYlPurge = fp.eventType == '应龙逆鳞' && fp.effectType == 'HEAL'
         // 吾乃轩辕：DAMAGE 音效在场上动画结束后播放；其余技能在开头播放
-        if (!isWuNaiXuanYuan) {
+        if (!isWuNaiXuanYuan && !isYlPurge) {
             AudioMgr.inst.playOneShot("sound/fight/skill/" + fp.effectType);
         }
         let skeletons: sp.Skeleton[] = []
@@ -1469,6 +2197,8 @@ export class FightMap extends Component {
         for (const key in fp.multiTargetDataMap) {
             let itemNode = this.getChracterChangXiaById(key)
             let characterNode = this.getCharacterById(key)
+            // 净化：不在每个目标身上播通用 HEAL 受击动画，改为隐藏其持续负面 buff 动画（HOU_JH 场上动画稍后在施法者应龙身上统一播放）
+            if (isYlPurge) { this.hideNegativeBuffs(characterNode, itemNode); continue }
             if (characterNode) skeletons.push(characterNode.getChildByName(fp.effectType).getComponent(sp.Skeleton))
             skeletons.push(itemNode.getChildByName("buff").getChildByName(fp.effectType).getComponent(sp.Skeleton))
             // 破除禁锢 / 审死回血：在 HEAL 之外额外播放 hpUp2 动画（HP_UP 节点用的就是 hpUp2 spine 资源）
@@ -1481,6 +2211,17 @@ export class FightMap extends Component {
             // 审死/破除禁锢回血附带驱散：隐藏该友方身上的持续负面 buff 动画
             if ((fp.eventType == "审死" || fp.eventType == "破除禁锢") && fp.effectType == 'HEAL') this.hideNegativeBuffs(characterNode, itemNode)
         }
+        // 应龙净化：沿用厚土"大地净化"的 HOU_JH 场上驱散动画（施法者在场上，节点按侧共用必带 HOU_JH），含 HOU_JH 音效
+        if (isYlPurge) {
+            AudioMgr.inst.playOneShot("sound/fight/skill/HOU_JH")
+            const houNode = this.getCharacterById(fp.sourceUnitId)?.getChildByName('HOU_JH')
+            if (houNode) {
+                const sk = houNode.getComponent(sp.Skeleton)
+                sk.node.active = true; sk.setAnimation(0, "animation", false)
+                sk.setCompleteListener(() => { sk.node.active = false })
+                this.actionAwaitQueue.push(this.playAnimToPromise(sk))
+            }
+        }
         skeletons.forEach(s => {
             s.node.active = true
             if (this.isContinuousEffect(fp.effectType)) s.setAnimation(0, "animation", true);
@@ -1492,7 +2233,7 @@ export class FightMap extends Component {
             const itemNode = this.getChracterChangXiaById(key)
             const characterNode = this.getCharacterById(key)
             if (characterNode) {
-                if (fp.effectType != 'POISON') {
+                if (fp.effectType != 'POISON' && !(fp.eventType == '应龙逆鳞' && fp.effectType == 'HEAL')) {
                     const isHeal = fp.effectType == 'HEAL' || fp.effectType == 'HP_UP' || fp.effectType == 'SPEED_UP'
                     this.showDamageOrHealNumber(key, characterNode, data.value, isHeal)
                 }
@@ -1515,7 +2256,8 @@ export class FightMap extends Component {
     }
     async showAoeBuffString(fp, key, data, itemNode) {
         const et = fp.effectType
-        if (et == 'STUN') await this.showBuffString(itemNode, false, "眩晕2回合")
+        if (fp.eventType == '应龙逆鳞' && et == 'HEAL') await this.showBuffString(itemNode, true, "净化")
+        else if (et == 'STUN') await this.showBuffString(itemNode, false, "眩晕2回合")
         else if (et == 'POISON') await this.showBuffString(itemNode, false, "中毒+" + data.value)
         else if (et == 'POISON_RESIST_BOOST_PRET') await this.showBuffString(itemNode, true, "中毒-" + data.value + "%")
         else if (et == 'MAX_HP_DOWN') {
@@ -1799,11 +2541,14 @@ export class FightMap extends Component {
             const itemNode = this.getChracterChangXiaById(key)
             const targetChar = this.getCharacterById(key)
             if (targetChar) {
-                const isHeal = fp.effectType == 'HEAL' || fp.effectType == 'HP_UP'
-                this.showDamageOrHealNumber(key, targetChar, data.value, isHeal)
+                if (!(fp.eventType == '应龙逆鳞' && fp.effectType == 'HEAL')) {
+                    const isHeal = fp.effectType == 'HEAL' || fp.effectType == 'HP_UP'
+                    this.showDamageOrHealNumber(key, targetChar, data.value, isHeal)
+                }
                 this.updateHpOnField(key, data.hpAfter, data.hpBefore)
             }
             if (fp.effectType == 'MAX_HP_DOWN') await this.showBuffString(itemNode, false, "生命上限 -" + data.value)
+            else if (fp.eventType == '应龙逆鳞' && fp.effectType == 'HEAL') await this.showBuffString(itemNode, true, "净化")
             else if (fp.effectType == 'HP_UP' || fp.effectType == 'HEAL') await this.showBuffString(itemNode, true, "+" + data.value)
             else await this.showBuffString(itemNode, false, "-" + data.value)
             this.updateHpOffField(key, data.hpAfter, data.hpBefore)
@@ -1821,6 +2566,9 @@ export class FightMap extends Component {
                 await this.showBuffString(characterItemNode, false, "-" + fp.sourceSelfValue)
                 this.updateHpOffField(fp.sourceUnitId, fp.sourceHpAfter, fp.sourceHpBefore)
             }
+            // buff/debuff类型在场上角色节点统一用 HP_UP/MAX_HP_DOWN 动画节点
+            else if (this.isBuffUpEffect(fp.effectType)) effectTypeName = 'HP_UP'
+            else if (this.isDebuffDownEffect(fp.effectType)) effectTypeName = 'MAX_HP_DOWN'
             let sk = targetChar.getChildByName(effectTypeName).getComponent(sp.Skeleton)
             sk.node.active = true
             if (this.isContinuousEffect(fp.effectType)) sk.setAnimation(0, "animation", true)

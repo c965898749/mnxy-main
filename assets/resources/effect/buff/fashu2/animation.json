@@ -1,7 +1,7 @@
 {
   "skeleton": {
     "hash": " ",
-    "spine": "3.8.75",
+    "spine": "4.2.43",
     "x": 0,
     "y": 0,
     "width": 0,
@@ -29,86 +29,56 @@
           "frame_0": {
             "x": 0,
             "y": 0,
-            "width": 500,
-            "height": 350
+            "width": 140,
+            "height": 80
           },
           "frame_1": {
             "x": 0,
             "y": 0,
-            "width": 500,
-            "height": 350
+            "width": 140,
+            "height": 80
           },
           "frame_2": {
             "x": 0,
             "y": 0,
-            "width": 500,
-            "height": 350
+            "width": 140,
+            "height": 80
           },
           "frame_3": {
             "x": 0,
             "y": 0,
-            "width": 500,
-            "height": 350
+            "width": 140,
+            "height": 80
           },
           "frame_4": {
             "x": 0,
             "y": 0,
-            "width": 500,
-            "height": 350
+            "width": 140,
+            "height": 80
           },
           "frame_5": {
             "x": 0,
             "y": 0,
-            "width": 500,
-            "height": 350
+            "width": 140,
+            "height": 80
           },
           "frame_6": {
             "x": 0,
             "y": 0,
-            "width": 500,
-            "height": 350
+            "width": 140,
+            "height": 80
           },
           "frame_7": {
             "x": 0,
             "y": 0,
-            "width": 500,
-            "height": 350
+            "width": 140,
+            "height": 80
           },
           "frame_8": {
             "x": 0,
             "y": 0,
-            "width": 500,
-            "height": 350
-          },
-          "frame_9": {
-            "x": 0,
-            "y": 0,
-            "width": 500,
-            "height": 350
-          },
-          "frame_10": {
-            "x": 0,
-            "y": 0,
-            "width": 500,
-            "height": 350
-          },
-          "frame_11": {
-            "x": 0,
-            "y": 0,
-            "width": 500,
-            "height": 350
-          },
-          "frame_12": {
-            "x": 0,
-            "y": 0,
-            "width": 500,
-            "height": 350
-          },
-          "frame_13": {
-            "x": 0,
-            "y": 0,
-            "width": 500,
-            "height": 350
+            "width": 140,
+            "height": 80
           }
         }
       }
@@ -157,26 +127,6 @@
             },
             {
               "time": 0.6,
-              "name": "frame_9"
-            },
-            {
-              "time": 0.6666666666666666,
-              "name": "frame_10"
-            },
-            {
-              "time": 0.7333333333333333,
-              "name": "frame_11"
-            },
-            {
-              "time": 0.8,
-              "name": "frame_12"
-            },
-            {
-              "time": 0.8666666666666667,
-              "name": "frame_13"
-            },
-            {
-              "time": 0.9333333333333333,
               "name": "frame_0"
             }
           ]

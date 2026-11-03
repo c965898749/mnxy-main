@@ -1,4 +1,4 @@
-import { _decorator, Component, find, instantiate, Label, Node, Prefab, Sprite, SpriteFrame, tween, v3 } from 'cc';
+import { _decorator, Component, find, instantiate, Label, Node, Prefab, Sprite, SpriteFrame, Toggle, tween, v3 } from 'cc';
 import { battleCache, BattleLogItem, getConfig, getToken } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
@@ -28,6 +28,8 @@ export class TrialTowerCrtl extends Component {
     nextImageNumbers = []
     @property(Node)
     cailiao: Node
+    @property(Toggle)
+    zidong: Toggle
     // 二维坐标数组 (x, y)，最常用、最简洁，强烈推荐
     points: [number, number][] = [
         [-290, -380],    // 原点
@@ -148,6 +150,8 @@ export class TrialTowerCrtl extends Component {
                         this.bossNode.getChildByName("boss").children.forEach((item) => {
                             item.active = true
                         })
+                        // 自动爬塔：翻层动画展示出新的一页后，继续下一层探索
+                        this._continueAutoExplore()
                     })
                     .start();
             } else {
@@ -158,6 +162,8 @@ export class TrialTowerCrtl extends Component {
                         this.PvE_default.children[this.index].getChildByName("boss").children.forEach((item) => {
                             item.active = true
                         })
+                        // 自动爬塔：翻层动画展示出新的一页后，继续下一层探索
+                        this._continueAutoExplore()
                     })
                     .start();
             }
@@ -210,9 +216,11 @@ export class TrialTowerCrtl extends Component {
                         const holAnimationPrefab = await util.bundle.load("prefab/FightMap", Prefab)
                         const holAnimationNode = instantiate(holAnimationPrefab)
                         this.node.parent.addChild(holAnimationNode)
-                        await holAnimationNode
-                            .getComponent(FightMap)
-                            .render(battle.id, rewards, null)
+                        const fightMapComp = holAnimationNode.getComponent(FightMap)
+                        // 勾选"自动"时：胜利后由 FightMap 复用手动"确定"的干净结算路径自行销毁，销毁后回调继续下一层（参考 PveCtrl 自动探索）；失败/网络异常自然中断
+                        fightMapComp.autoExplore = !!(this.zidong && this.zidong.isChecked)
+                        fightMapComp.onAutoExploreNext = () => this.tanSuo()
+                        await fightMapComp.render(battle.id, rewards, null)
                         find('Canvas').getComponent(HomeCanvas).audioSource.pause()
                         this.node.parent.getChildByName("FightMap").active = true
 
@@ -265,6 +273,13 @@ export class TrialTowerCrtl extends Component {
                     console.error('There was a problem with the fetch operation:', error);
                 }
                 );
+        }
+    }
+
+    // 自动爬塔：勾选"自动"时，在翻层动画结束后短暂延迟再衔接下一次探索，形成连续爬塔
+    private _continueAutoExplore() {
+        if (this.zidong && this.zidong.isChecked) {
+            this.scheduleOnce(() => this.tanSuo(), 0.3)
         }
     }
 
