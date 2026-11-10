@@ -2,6 +2,7 @@ import { _decorator, Component, Label, Node, Prefab, Sprite, SpriteFrame, UIOpac
 import { getConfig, getToken } from 'db://assets/script/common/config/config';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
+import { questionCrtl } from '../questionCrtl/questionCrtl';
 const { ccclass, property } = _decorator;
 
 @ccclass('MapRankingCrtl')
@@ -10,6 +11,7 @@ export class MapRankingCrtl extends Component {
     @property(Node)
     ff3: Node
     initialized: boolean = false
+    worldBossRanking = [];
     qingtongRanking = [];
     baiyingRanking = [];
     huangjinRanking = [];
@@ -41,14 +43,17 @@ export class MapRankingCrtl extends Component {
     }
 
     async render(map) {
+        this.worldBossRanking = [];
         this.tanglangRanking = [];
         this.qingtongRanking = [];
         this.baiyingRanking = [];
         this.huangjinRanking = [];
+        this.worldBossRanking = map["worldBossRanking"];
         this.tanglangRanking = map["tanglangRanking"];
         this.qingtongRanking = map["qingtongRanking"];
         this.baiyingRanking = map["baiyingRanking"];
         this.huangjinRanking = map["huangjinRanking"];
+        // 默认展示第一个按钮：世界BOSS
         this.selectType(null, "1")
     }
 
@@ -70,6 +75,35 @@ export class MapRankingCrtl extends Component {
             nodePool.put(node)
         }
         if (customEventData == "1") {
+            // ===== 世界BOSS伤害排行 =====
+            const userlist = this.worldBossRanking || [];
+            const myIndex = userlist.findIndex((item) => item.userId === config.userData.userId)
+            const myRecord = myIndex === -1 ? null : userlist[myIndex]
+            this.ff3.getChildByName("Label").getComponent(Label).string = "lv " + config.userData.lv
+            this.ff3.getChildByName("yxjm_df_txk").getChildByName("header").getComponent(Sprite).spriteFrame =
+                await util.bundle.load(config.userData.gameImg, SpriteFrame)
+            this.ff3.getChildByName("name").getComponent(Label).string = config.userData.nickname
+            this.ff3.getChildByName("jingdu").getComponent(Label).string = "我的伤害：" + this.formatDamage(myRecord ? myRecord.totalDamage : 0)
+            if (myIndex === -1) {
+                this.ff3.getChildByName("ranking").getChildByName("num").getComponent(Label).string = "暂未上榜"
+            } else {
+                this.ff3.getChildByName("ranking").getChildByName("num").getComponent(Label).string =
+                    (myRecord.bossRank ? myRecord.bossRank : (myIndex + 1)).toString()
+            }
+            for (let i = 0; i < userlist.length; i++) {
+                let item = nodePool.get()
+                item.getChildByName("titleName").getComponent(Label).string = "世界BOSS讨伐"
+                item.getChildByName("jieName").getComponent(Label).string = "伤害 " + this.formatDamage(userlist[i].totalDamage)
+                item.getChildByName("guanName").getComponent(Label).string = "攻击 " + (userlist[i].hitCount || 0) + "次"
+                item.getChildByName("name").getComponent(Label).string = userlist[i].nickname
+                item.getChildByName("Lv").getComponent(Label).string = "lv " + userlist[i].lv
+                item.getChildByName("ranking").getChildByName("num").getComponent(Label).string = (userlist[i].bossRank ? userlist[i].bossRank : (i + 1)).toString()
+                item.getChildByName("yxjm_df_txk").getChildByName("header").getComponent(Sprite).spriteFrame =
+                    await util.bundle.load(userlist[i].gameImg, SpriteFrame)
+                this.ContentNode.addChild(item)
+                continue
+            }
+        } else if (customEventData == "2") {
 
             const userlist = this.tanglangRanking;
             this.ff3.getChildByName("Label").getComponent(Label).string = "lv " + config.userData.lv
@@ -100,12 +134,20 @@ export class MapRankingCrtl extends Component {
             }
         } else {
             let userlist = []
-            if (customEventData == "2") {
+            let towerName = "青铜塔"
+            let myFloor = config.userData.bronze1
+            if (customEventData == "3") {
                 userlist = this.qingtongRanking;
-            } else if (customEventData == "3") {
-                userlist = this.baiyingRanking;
+                towerName = "青铜塔"
+                myFloor = config.userData.bronze1
             } else if (customEventData == "4") {
+                userlist = this.baiyingRanking;
+                towerName = "白银塔"
+                myFloor = config.userData.silvertower
+            } else if (customEventData == "5") {
                 userlist = this.huangjinRanking;
+                towerName = "黄金塔"
+                myFloor = config.userData.goldentower
             }
             console.log(userlist, 333);
             this.ff3.getChildByName("Label").getComponent(Label).string = "lv " + config.userData.lv
@@ -113,7 +155,7 @@ export class MapRankingCrtl extends Component {
                 await util.bundle.load(config.userData.gameImg, SpriteFrame)
             this.ff3.getChildByName("name").getComponent(Label).string = config.userData.nickname
             const index = userlist.findIndex((item) => item.userId === config.userData.userId)
-            this.ff3.getChildByName("jingdu").getComponent(Label).string = "我当前进度：第 " + (config.userData.bronze1 == 1 ? 1 : config.userData.bronze1-1)  + " 层"
+            this.ff3.getChildByName("jingdu").getComponent(Label).string = "我当前进度：第 " + (myFloor == 1 ? 1 : myFloor - 1) + " 层"
             if (index === -1) {
                 this.ff3.getChildByName("ranking").getChildByName("num").getComponent(Label).string = "暂未上榜"
             } else {
@@ -122,7 +164,7 @@ export class MapRankingCrtl extends Component {
             }
             for (let i = 0; i < userlist.length; i++) {
                 let item = nodePool.get()
-                item.getChildByName("titleName").getComponent(Label).string = "青铜塔"
+                item.getChildByName("titleName").getComponent(Label).string = towerName
                 item.getChildByName("jieName").getComponent(Label).string = "第" + userlist[i].floorNum + "层"
                 item.getChildByName("guanName").getComponent(Label).string = this.formatToAncientDate(userlist[i].passTime)
                 item.getChildByName("name").getComponent(Label).string = userlist[i].nickname
@@ -136,6 +178,45 @@ export class MapRankingCrtl extends Component {
 
         }
 
+    }
+
+    async questry() {
+        var message = `<size=28><color=#FFD700>排行榜奖励说明</color></size><br/>`
+        message += `<color=#FFA500><size=20>▶ 世界BOSS讨伐榜</size></color><br/>`
+        message += `<color=#FFFFFF><size=17>按当日累计伤害排名，每天23:05（BOSS结束后）自动结算，以兑换码礼包发放（有效期1个月，点击头像→兑换）：</size></color><br/>`
+        message += `<color=#FFFF00><size=17>第1名：魂*4 + 功勋2000 + 钻石1000 + 金币500万</size></color><br/>`
+        message += `<color=#FFFF00><size=17>第2-10名：魂*2 + 功勋1000 + 钻石500 + 金币250万</size></color><br/>`
+        message += `<color=#FFFF00><size=17>第11-100名：魂*1 + 功勋500 + 钻石250 + 金币125万</size></color><br/>`
+        message += `<color=#FFA500><size=20>▶ 探险榜（章节进度）</size></color><br/>`
+        message += `<color=#FFFFFF><size=17>每周日晚22:00结算发放（兑换码礼包）：</size></color><br/>`
+        message += `<color=#FFFF00><size=17>第1名：灵石5000 + 刷新符*15</size></color><br/>`
+        message += `<color=#FFFF00><size=17>第2-10名：灵石2000 + 刷新符*10</size></color><br/>`
+        message += `<color=#FFFF00><size=17>第11-100名：灵石500 + 刷新符*5</size></color><br/>`
+        message += `<color=#FFA500><size=20>▶ 青铜塔榜</size></color><br/>`
+        message += `<color=#FFFFFF><size=17>每周日晚22:00结算发放（兑换码礼包）：</size></color><br/>`
+        message += `<color=#FFFF00><size=17>第1名：青铜矿*2000　第2-10名：青铜矿*1000　第11-100名：青铜矿*500</size></color><br/>`
+        message += `<color=#FFA500><size=20>▶ 白银塔榜</size></color><br/>`
+        message += `<color=#FFFFFF><size=17>每周日晚22:00结算发放（兑换码礼包）：</size></color><br/>`
+        message += `<color=#FFFF00><size=17>第1名：玄铁矿*2000　第2-10名：玄铁矿*1000　第11-100名：玄铁矿*500</size></color><br/>`
+        message += `<color=#FFA500><size=20>▶ 黄金塔榜</size></color><br/>`
+        message += `<color=#FFFFFF><size=17>每周日晚22:00结算发放（兑换码礼包）：</size></color><br/>`
+        message += `<color=#FFFF00><size=17>第1名：紫金矿*2000　第2-10名：紫金矿*1000　第11-100名：紫金矿*500</size></color><br/>`
+        await this.node.parent.getChildByName("questionCrtl")
+            .getComponent(questionCrtl)
+            .read(message)
+    }
+
+    /**
+     * 伤害数值格式化：>=1亿 转「x.x亿」，>=1万 转「x.x万」，否则原值
+     */
+    formatDamage(value: number): string {
+        const num = Number(value) || 0
+        if (num >= 100000000) {
+            return (num / 100000000).toFixed(1) + "亿"
+        } else if (num >= 10000) {
+            return (num / 10000).toFixed(1) + "万"
+        }
+        return num.toString()
     }
 
     /**

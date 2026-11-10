@@ -2,6 +2,7 @@ import { _decorator, Button, Component, Node, Prefab } from 'cc';
 import { util } from '../util/util';
 import { EquipmentStateCreate } from '../game/fight/equipment/EquipmentState';
 import { HolEqCharacterAvatar } from './HolEqCharacterAvatar';
+import { renderListInChunks } from '../util/ListLoader';
 const { ccclass, property } = _decorator;
 
 @ccclass('HolEqCharactersQueue')
@@ -10,7 +11,7 @@ export class HolEqCharactersQueue extends Component {
     @property(Node)
     ContentNode: Node
 
-    // 渲染函数
+    // 渲染函数：分帧创建节点避免单帧卡页；setCharacter 内部已并行预取贴图，此处不 await
     async render(characters: EquipmentStateCreate[] , clickFun?: (characters: EquipmentStateCreate , node: Node) => any) {
         const nodePool = util.resource.getNodePool(
             await util.bundle.load("prefab/HeroEqCardItem" , Prefab)
@@ -23,17 +24,16 @@ export class HolEqCharactersQueue extends Component {
             nodePool.put(node)
         }
         console.log(characters,5555)
-        for (const character of characters) {
+        renderListInChunks(this, this.ContentNode, characters, (character) => {
             const node = nodePool.get()
             const characterAvatar = node.getComponent(HolEqCharacterAvatar)
             characterAvatar.setCharacter(character)
             node.getComponent(Button).transition = 3
             node.getComponent(Button).zoomScale = 0.9
-            this.ContentNode.addChild(node)
             // 绑定事件
             node.on("click" , () => {if (clickFun) clickFun(character , node)})
-            continue
-        }
+            return node
+        })
         return
     }
 }

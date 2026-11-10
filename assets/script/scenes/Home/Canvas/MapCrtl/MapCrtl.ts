@@ -20,11 +20,17 @@ export class MapCrtl extends Component {
     tiles = ["踏上旅途", "冲向妖界", "龙宫探宝", "地府改命", "大闹天宫", "西天取经", "修成正果", "血色禁地", "极西之地", "不周山下","大荒神文"]
     // 世界BOSS挑战CD（与服务端 1 分钟 Redis CD 对齐）：记录冷却结束的时间戳，跨场景切换也能保持
     bossCdEndTs: number = 0
-    private _lastShownCd: number = -1
+    // 世界BOSS当日排班状态（worldBossInfo 返回）：hasSchedule/startTime/endTime/hpRate/serverTime
+    private bossSchedule: any = null
+    // 服务器时间-本地时间(毫秒)，用 worldBossInfo 返回的 serverTime 校准，防设备时钟偏差
+    private bossClockOffset: number = 0
+    // 最近一次渲染到 boss/num 的文案，变化时才重绘
+    private _lastBossLabel: string = ""
     start() {
         this.Title.getComponent(Label).string = "踏上旅途 1/11"
         this.bossCdEndTs = parseInt(localStorage.getItem("WorldBossCdEnd") || "0") || 0
         this.refresh()
+        this.fetchWorldBossInfo()
     }
     onEnable() {
         if (!this.initialized) {
@@ -32,6 +38,7 @@ export class MapCrtl extends Component {
             this.initialized = true;
         } else {
             this.refresh()
+            this.fetchWorldBossInfo()
         }
 
     }
@@ -86,12 +93,8 @@ export class MapCrtl extends Component {
         }
     }
     update(deltaTime: number) {
-        // 每秒刷新 boss/num 上显示的世界BOSS剩余CD（取整秒变化时才重绘）
-        const remain = this.getBossCdRemaining()
-        if (remain !== this._lastShownCd) {
-            this._lastShownCd = remain
-            this.renderBossCd(remain)
-        }
+        // 每秒评估排班状态与剩余CD，渲染 boss/num 文案（未到点倒计时/已结束/已被击败/冷却秒数）
+        this.renderBossState()
     }
     right() {
         AudioMgr.inst.playOneShot("sound/other/click");
@@ -180,10 +183,16 @@ export class MapCrtl extends Component {
     }
 
     bossbattle() {
-        AudioMgr.inst.playOneShot("sound/other/haojiao");
         const boss = this.node.getChildByName("boss")
         if (!boss) return
         const selectSkeleton = boss.getComponent(sp.Skeleton)
+        // 排班状态门控：无排班/已被击败/未到点/已结束均禁用挑战，不发起请求（unknown=排班未拉到，放行交由服务端兜底）
+        const status = this.getBossStatus()
+        if (status !== 'open' && status !== 'unknown') {
+            util.message.prompt({ message: this.blockMessage(status) })
+            return
+        }
+        AudioMgr.inst.playOneShot("sound/other/haojiao");
         // 冷却中：仅播动作并提示，不发起挑战请求
         const remain = this.getBossCdRemaining()
         if (remain > 0) {
@@ -220,6 +229,8 @@ export class MapCrtl extends Component {
                         localStorage.setItem("UserConfigData", JSON.stringify(config))
                     }
                     this.startBossCd(60)
+                    // 重新拉取排班：本次若击杀BOSS(hp_rate=0)，按钮立即切换为“已被击败”状态
+                    this.fetchWorldBossInfo()
                     const battle = info && info.battle
                     if (battle && battle.json) {
                         // 服务端已返回战斗数据：与试炼塔/PVE 一致进入战斗画面（先缓存战报→加载 FightMap 预制体播放）
@@ -244,6 +255,11 @@ export class MapCrtl extends Component {
                     // 服务端判定仍在冷却（如前端本地CD丢失）：同步本地CD
                     if (data.errorMsg && data.errorMsg.indexOf("冷却") >= 0) {
                         this.startBossCd(60)
+                    }
+                    // 服务端判定状态变化（击败/结束/未到点/无排班）：同步排班状态
+                    if (data.errorMsg && (data.errorMsg.indexOf("击败") >= 0 || data.errorMsg.indexOf("结束") >= 0
+                        || data.errorMsg.indexOf("开启") >= 0 || data.errorMsg.indexOf("排班") >= 0)) {
+                        this.fetchWorldBossInfo()
                     }
                 }
             })
@@ -272,25 +288,119 @@ export class MapCrtl extends Component {
     private startBossCd(seconds: number) {
         this.bossCdEndTs = Date.now() + seconds * 1000
         localStorage.setItem("WorldBossCdEnd", this.bossCdEndTs.toString())
-        this._lastShownCd = this.getBossCdRemaining()
-        this.renderBossCd(this._lastShownCd)
+        this.renderBossState()
     }
 
-    // 将剩余CD渲染到 boss 节点下的 num 节点（有CD时显示秒数，无CD时隐藏）
-    private renderBossCd(remain: number) {
+    // 拉取当天世界BOSS排班（startTime/endTime/hpRate/serverTime），并校准服务器时钟
+    fetchWorldBossInfo() {
+        const config = getConfig()
+        const token = getToken()
+        const postData = {
+            token: token,
+            userId: config.userData.userId,
+        };
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData),
+        };
+        fetch(config.ServerUrl.url + "worldBossInfo", options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success == '1' && data.data) {
+                    this.bossSchedule = data.data;
+                    // serverTime 为当天 HH:mm(:ss)，换算成今天的时间戳与本地时钟求差
+                    this.bossClockOffset = this.todayTsFrom(data.data.serverTime) - Date.now();
+                }
+            })
+            .catch(error => {
+                console.error('获取世界BOSS排班失败:', error);
+            });
+    }
+
+    // 把 "HH:mm"/"HH:mm:ss" 换算为按服务器时钟校准后的当天时间戳（ms）；无效返回 NaN
+    private todayTsFrom(hhmmss: string): number {
+        if (!hhmmss) return NaN
+        const parts = String(hhmmss).split(":")
+        const d = new Date(Date.now() + this.bossClockOffset)
+        d.setHours(parseInt(parts[0]) || 0, parseInt(parts[1]) || 0, parseInt(parts[2]) || 0, 0)
+        return d.getTime()
+    }
+
+    // 排班状态：unknown=未拉到(放行交服务端) / none=无排班 / dead=已被击败 / pre=未到点 / over=已结束 / open=时间窗内
+    // 优先级与服务端 worldBossChallenge 拦截顺序一致：先击败，再时间窗
+    private getBossStatus(): string {
+        const s = this.bossSchedule
+        if (!s) return 'unknown'
+        if (!s.hasSchedule) return 'none'
+        if (parseFloat(s.hpRate == null ? "1" : String(s.hpRate)) <= 0) return 'dead'
+        const now = Date.now() + this.bossClockOffset
+        if (s.startTime && now < this.todayTsFrom(s.startTime)) return 'pre'
+        if (s.endTime && now > this.todayTsFrom(s.endTime)) return 'over'
+        return 'open'
+    }
+
+    // 禁用挑战时的提示文案
+    private blockMessage(status: string): string {
+        switch (status) {
+            case 'none': return "今日无世界BOSS"
+            case 'dead': return "今日BOSS已被击败，明日重置后再来挑战"
+            case 'pre': return "世界BOSS将于 " + this.trimHHMM(this.bossSchedule && this.bossSchedule.startTime) + " 开启，敬请等待"
+            case 'over': return "今日世界BOSS挑战已结束"
+            default: return "服务器异常"
+        }
+    }
+
+    // "09:00:00" -> "09:00"
+    private trimHHMM(hhmmss: string): string {
+        if (!hhmmss) return ""
+        const p = String(hhmmss).split(":")
+        return p.length >= 2 ? p[0] + ":" + p[1] : String(hhmmss)
+    }
+
+    // 剩余时长文本：超过1小时为 h:mm:ss，否则 mm:ss
+    private fmtDuration(ms: number): string {
+        const total = Math.max(0, Math.ceil(ms / 1000))
+        const h = Math.floor(total / 3600)
+        const m = Math.floor((total % 3600) / 60)
+        const sec = total % 60
+        const mm = (m < 10 ? "0" : "") + m
+        const ss = (sec < 10 ? "0" : "") + sec
+        return h > 0 ? h + ":" + mm + ":" + ss : mm + ":" + ss
+    }
+
+    // 渲染 boss/num 文案：未到点“09:00 开启(倒计时)”/过点“今日已结束”/击败“今日BOSS已被击败”/时间窗内显示剩余CD
+    private renderBossState() {
         const boss = this.node.getChildByName("boss")
         if (!boss) return
         const num = boss.getChildByName("num")
         if (!num) return
         const label = num.getComponent(Label)
         if (!label) return
-        if (remain > 0) {
-            num.active = true
-            label.string = remain + "s"
+        const status = this.getBossStatus()
+        let text = ""
+        if (status === 'pre') {
+            const remainMs = this.todayTsFrom(this.bossSchedule.startTime) - (Date.now() + this.bossClockOffset)
+            text = this.trimHHMM(this.bossSchedule.startTime) + " 开启(" + this.fmtDuration(remainMs) + ")"
+        } else if (status === 'over') {
+            text = "今日已结束"
+        } else if (status === 'dead') {
+            text = "今日BOSS已被击败"
+        } else if (status === 'none') {
+            text = "今日无世界BOSS"
         } else {
-            num.active = false
-            label.string = ""
+            const remain = this.getBossCdRemaining()
+            text = remain > 0 ? remain + "s" : ""
         }
+        if (text === this._lastBossLabel) return
+        this._lastBossLabel = text
+        num.active = text != ""
+        label.string = text
     }
 
     openHotEvents() {

@@ -30,6 +30,8 @@ export class ShopCtrl extends Component {
     @property(Node)
     introduceBack: Node
     byItemDetail = null
+    // 当前详情弹窗(byItemDetail)是否为功勋商城商品：buyBtn 据此分流到 buyStore2 / buyGongxunStore
+    byIsGongxun = false
     timer = 0
     @property(Node)
     byNum: Node
@@ -419,7 +421,7 @@ export class ShopCtrl extends Component {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(postData),
         };
-        // 功勋商城：商品来自 game_item_base（item_id>=1105000），价格由后端按品质算好放在 price 字段
+        // 功勋商城：商品与价格均由后端配置表 game_gongxun_shop 驱动，价格已下发在 price 字段
         fetch(config.ServerUrl.url + "getGongxunStore", options)
             .then(response => {
                 return response.json(); // 解析 JSON 响应
@@ -444,16 +446,16 @@ export class ShopCtrl extends Component {
                     let item = nodePool3.get()
                     item.getChildByName("name").getComponent(Label).string = itemDetail.itemName
                     item.getChildByName("Count").getComponent(Label).string = itemDetail.description
-                    // 价格取后端按 quality*100 算好的 price，并附上用户剩余功勋
+                    // 价格取后端配置表 game_gongxun_shop 下发的 price，并附上用户剩余功勋
                     item.getChildByName("price").getComponent(Label).string =
                         itemDetail.price + " (剩余" + config.userData.gongxun + ")"
                     // 功勋商品无限购概念，隐藏限购框（ff5 节点池与好友商城共用，切回 init2 时会复位）
                     item.getChildByName("textbox_bg").active = false
                     item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
                         await util.bundle.load(itemDetail.icon, SpriteFrame)
-                    // 点击兑换：消耗功勋、物品进背包，成功后刷新（价格+剩余功勋）
+                    // 点击兑换：先打开数量弹窗，确认后由 buyBtn 分流到 gongxunBuy（支持数量调整）
                     item.getChildByName("buy").on("click", () => {
-                        this.gongxunBuy(itemDetail)
+                        this.clickGongxunBuy(itemDetail)
                     })
                     this.ContentNode3.addChild(item)
                     continue
@@ -470,8 +472,27 @@ export class ShopCtrl extends Component {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.introduceBack.active = true
         this.byItemDetail = itemDetail
+        // 好友/钻石商城：buyBtn 走 buyStore2；数量复位为 1
+        this.byIsGongxun = false
+        this.byNum.getComponent(Label).string = "1"
         this.introduceBack.getChildByName("name").getComponent(Label).string = itemDetail.itemName
         this.introduceBack.getChildByName("price").getComponent(Label).string = itemDetail.gemPrice + " (剩余" + config.userData.diamond + ")"
+        this.introduceBack.getChildByName("yxjm_df_txk").getChildByName("header").getComponent(Sprite).spriteFrame =
+            await util.bundle.load(itemDetail.icon, SpriteFrame)
+    }
+
+    // 功勋商城：点击兑换先打开与好友商城相同的数量弹窗(introduceBack)，确认后由 buyBtn 分流到 gongxunBuy
+    async clickGongxunBuy(itemDetail) {
+        const config = getConfig()
+        AudioMgr.inst.playOneShot("sound/other/click");
+        this.introduceBack.active = true
+        this.byItemDetail = itemDetail
+        this.byIsGongxun = true
+        this.byNum.getComponent(Label).string = "1"
+        this.introduceBack.getChildByName("name").getComponent(Label).string = itemDetail.itemName
+        // 单价(功勋) + 当前剩余功勋
+        this.introduceBack.getChildByName("price").getComponent(Label).string =
+            itemDetail.price + " (剩余" + (config.userData.gongxun || 0) + ")"
         this.introduceBack.getChildByName("yxjm_df_txk").getChildByName("header").getComponent(Sprite).spriteFrame =
             await util.bundle.load(itemDetail.icon, SpriteFrame)
     }
@@ -484,6 +505,11 @@ export class ShopCtrl extends Component {
         var playerItemCount = Number(this.byNum.getComponent(Label).string)
         if (!playerItemCount || playerItemCount < 1) {
             return await util.message.prompt({ message: "请选择商品数量" })
+        }
+        // 功勋商城：数量弹窗确认后走兑换逻辑（消耗 单价×数量 功勋）
+        if (this.byIsGongxun) {
+            await this.gongxunBuy(this.byItemDetail, playerItemCount)
+            return
         }
         const config = getConfig()
         const token = getToken()
@@ -529,6 +555,7 @@ export class ShopCtrl extends Component {
         AudioMgr.inst.playOneShot("sound/other/click");
         this.introduceBack.active = false
         this.byItemDetail = null
+        this.byIsGongxun = false
     }
 
     clickFun(id: any, aa: Node) {
@@ -609,8 +636,8 @@ export class ShopCtrl extends Component {
         this.init3()
     }
 
-    // 功勋商城兑换：调用 buyGongxunStore（token.id 传 itemId），成功后刷新剩余功勋与列表
-    async gongxunBuy(itemDetail) {
+    // 功勋商城兑换：调用 buyGongxunStore（token.id 传 itemId、str 传数量），成功后关闭弹窗并刷新剩余功勋与列表
+    async gongxunBuy(itemDetail, count: number = 1) {
         AudioMgr.inst.playOneShot("sound/other/click");
         const config = getConfig()
         const token = getToken()
@@ -618,6 +645,7 @@ export class ShopCtrl extends Component {
             token: token,
             userId: config.userData.userId,
             id: itemDetail.itemId + "",
+            str: (count && count >= 1 ? count : 1) + "",
         };
         const options = {
             method: 'POST',
@@ -633,6 +661,11 @@ export class ShopCtrl extends Component {
                         config.userData.gongxun = data.data.gongxun
                         localStorage.setItem("UserConfigData", JSON.stringify(config))
                     }
+                    // 关闭数量弹窗并复位状态
+                    this.introduceBack.active = false
+                    this.byItemDetail = null
+                    this.byIsGongxun = false
+                    this.byNum.getComponent(Label).string = "1"
                     await util.message.prompt({ message: "兑换成功" })
                     this.init3()
                 } else {

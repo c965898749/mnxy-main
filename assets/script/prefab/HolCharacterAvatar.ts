@@ -1,7 +1,7 @@
-import { _decorator, Color, Component, Label, Node, Sprite, SpriteFrame, UITransform, Vec2 } from 'cc';
+import { _decorator, Color, Component, Label, Node, Sprite, UITransform, Vec2 } from 'cc';
 import { CharacterStateCreate } from '../game/fight/character/CharacterState';
-import { util } from '../util/util';
 import { CharacterEnum } from '../game/fight/character/CharacterEnum';
+import { loadSpriteFramesParallel } from '../util/ListLoader';
 const { ccclass, property } = _decorator;
 enum Style { 纯色描边, 透明衰减, 明暗衰减 }
 @ccclass('HolCharacterAvatar')
@@ -85,8 +85,13 @@ export class HolCharacterAvatar extends Component {
             new Color(20, 20, 30, 200)
         ];
         const meta = CharacterEnum[create.id]
-        this.AvatarNode.getComponent(Sprite).spriteFrame =
-            await util.bundle.load(meta.AvatarPath, SpriteFrame)
+        // 并行预取本卡全部贴图（一次 IO 取代多处串行 await），后续填充顺序与原逻辑一致
+        const pingzhiPath = create.star >= 3 ? `image/ui/pingzhi_0${create.star}/spriteFrame` : null
+        const qualityPath = create.star < 4 ? `image/ui/card1/spriteFrame` : `image/ui/card2/spriteFrame`
+        const bottomPath = create.star < 4 ? `image/ui/quality_01/spriteFrame` : `image/ui/quality_05/spriteFrame`
+        const campPath = `image/camp_icon/${meta.CharacterCamp}/spriteFrame`
+        const frames = await loadSpriteFramesParallel([meta.AvatarPath, pingzhiPath, qualityPath, bottomPath, campPath])
+        this.AvatarNode.getComponent(Sprite).spriteFrame = frames.get(meta.AvatarPath) || null
         let material = this.AvatarNode.getComponent(Sprite).getMaterialInstance(0);
         if (create.flyup == 0) {
             material.setProperty('enable', 0);
@@ -107,12 +112,7 @@ export class HolCharacterAvatar extends Component {
         } else {
             this.LegendBorderNode.active = true
         }
-        if (create.star >= 3) {
-            this.Pingzhi.getComponent(Sprite).spriteFrame =
-                await util.bundle.load(`image/ui/pingzhi_0${create.star}/spriteFrame`, SpriteFrame)
-        } else {
-            this.Pingzhi.getComponent(Sprite).spriteFrame = null
-        }
+        this.Pingzhi.getComponent(Sprite).spriteFrame = pingzhiPath ? frames.get(pingzhiPath) || null : null
         if (create.goIntoNum != 0) {
             this.isBattle.active = true
         } else {
@@ -127,26 +127,13 @@ export class HolCharacterAvatar extends Component {
         } else {
             this.StackCount.getComponent(Label).string = null
         }
-        if (create.star < 4) {
-            this.Quality.getComponent(Sprite).spriteFrame =
-                await util.bundle.load(`image/ui/card1/spriteFrame`, SpriteFrame)
-            this.Bottom.getComponent(Sprite).spriteFrame =
-                await util.bundle.load(`image/ui/quality_01/spriteFrame`, SpriteFrame)
-        } else if (create.star >= 4) {
-            this.Quality.getComponent(Sprite).spriteFrame =
-                await util.bundle.load(`image/ui/card2/spriteFrame`, SpriteFrame)
-            this.Bottom.getComponent(Sprite).spriteFrame =
-                await util.bundle.load(`image/ui/quality_05/spriteFrame`, SpriteFrame)
-        } else {
-            this.Quality.getComponent(Sprite).spriteFrame = null
-            this.Bottom.getComponent(Sprite).spriteFrame = null
-        }
-        this.CampNode.getComponent(Sprite).spriteFrame =
-            await util.bundle.load(`image/camp_icon/${meta.CharacterCamp}/spriteFrame`, SpriteFrame)
+        this.Quality.getComponent(Sprite).spriteFrame = frames.get(qualityPath) || null
+        this.Bottom.getComponent(Sprite).spriteFrame = frames.get(bottomPath) || null
+        this.CampNode.getComponent(Sprite).spriteFrame = frames.get(campPath) || null
         this.LvNode.getComponent(Label).string = 'Lv: ' + create.lv
         this.Name.getComponent(Label).string = meta.name
         // 渲染星级
-        this.Star.children.forEach(n => n.active = false)
+        this.Star.children.forEach(n => { n.active = false; if (n.children.length > 0) n.children[0].active = false; })
 
         for (let i = 0; i < create.star; i++) {
             this.Star.children[i].active = true

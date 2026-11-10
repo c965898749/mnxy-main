@@ -141,7 +141,7 @@ export class RecuitCardItem extends Component {
         // this.LvNode.getComponent(Label).string = 'Lv: ' + heroInfo.lv
         this.Name.getComponent(Label).string = heroInfo.name
         // 渲染星级
-        this.Star.children.forEach(n => n.active = false)
+        this.Star.children.forEach(n => { n.active = false; if (n.children.length > 0) n.children[0].active = false; })
 
         for (let i = 0; i < heroInfo.star; i++) {
             this.Star.children[i].active = true

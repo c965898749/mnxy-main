@@ -238,7 +238,7 @@ export class TrialTowerCrtl extends Component {
                             config.userData.silvertower = user.silvertower
                             this.cailiao.getChildByName("num").getComponent(Label).string = user.darkSteel.toString()
                         } else if (this.customEventData == 'goldentower') {
-                            config.userData.silvertower = user.silvertower
+                            config.userData.goldentower = user.goldentower
                             this.cailiao.getChildByName("num").getComponent(Label).string = user.purpleGold.toString()
                         }
 

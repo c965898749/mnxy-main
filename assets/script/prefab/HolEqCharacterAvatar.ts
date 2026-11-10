@@ -1,7 +1,7 @@
-import { _decorator, Component, Label, Node, Sprite, SpriteFrame } from 'cc';
-import { util } from '../util/util';
+import { _decorator, Component, Label, Node, Sprite } from 'cc';
 import { EquipmentStateCreate } from '../game/fight/equipment/EquipmentState';
 import { EquipmentEnum } from '../game/fight/equipment/EquipmentEnum';
+import { loadSpriteFramesParallel } from '../util/ListLoader';
 const { ccclass, property } = _decorator;
 
 @ccclass('HolEqCharacterAvatar')
@@ -50,20 +50,20 @@ export class HolEqCharacterAvatar extends Component {
     async setCharacter(create: EquipmentStateCreate) {
         console.log(create, '--- IGNORE ---')
         const meta = EquipmentEnum[create.id]
-        this.AvatarNode.getComponent(Sprite).spriteFrame =
-            await util.bundle.load(`game/texture/frames/emp/${create.id.split('_')[0]}/spriteFrame`, SpriteFrame)
+        // 并行预取本装备全部贴图（一次 IO 取代多处串行 await），后续填充顺序与原逻辑一致
+        const avatarPath = `game/texture/frames/emp/${create.id.split('_')[0]}/spriteFrame`
+        const pingzhiPath = create.star >= 3 ? `image/ui/pingzhi_0${create.star}/spriteFrame` : null
+        const qualityPath = create.star < 4 ? `image/ui/card1/spriteFrame` : `image/ui/card2/spriteFrame`
+        const bottomPath = create.star < 4 ? `image/ui/quality_01/spriteFrame` : `image/ui/quality_05/spriteFrame`
+        const frames = await loadSpriteFramesParallel([avatarPath, pingzhiPath, qualityPath, bottomPath])
+        this.AvatarNode.getComponent(Sprite).spriteFrame = frames.get(avatarPath) || null
         if (create.star < 4.5) {
             this.LegendBorderNode.active = false
         } else {
             this.LegendBorderNode.active = true
         }
         this.eqType.getComponent(Label).string = this.iconMap[create.eqType]
-        if (create.star >= 3) {
-            this.Pingzhi.getComponent(Sprite).spriteFrame =
-                await util.bundle.load(`image/ui/pingzhi_0${create.star}/spriteFrame`, SpriteFrame)
-        } else {
-            this.Pingzhi.getComponent(Sprite).spriteFrame = null
-        }
+        this.Pingzhi.getComponent(Sprite).spriteFrame = pingzhiPath ? frames.get(pingzhiPath) || null : null
         if (create.goIntoNum != 0) {
             this.isBattle.active = true
         } else {
@@ -78,24 +78,12 @@ export class HolEqCharacterAvatar extends Component {
         } else {
             this.StackCount.getComponent(Label).string = null
         }
-        if (create.star < 4) {
-            this.Quality.getComponent(Sprite).spriteFrame =
-                await util.bundle.load(`image/ui/card1/spriteFrame`, SpriteFrame)
-            this.Bottom.getComponent(Sprite).spriteFrame =
-                await util.bundle.load(`image/ui/quality_01/spriteFrame`, SpriteFrame)
-        } else if (create.star >= 4) {
-            this.Quality.getComponent(Sprite).spriteFrame =
-                await util.bundle.load(`image/ui/card2/spriteFrame`, SpriteFrame)
-            this.Bottom.getComponent(Sprite).spriteFrame =
-                await util.bundle.load(`image/ui/quality_05/spriteFrame`, SpriteFrame)
-        } else {
-            this.Quality.getComponent(Sprite).spriteFrame = null
-            this.Bottom.getComponent(Sprite).spriteFrame = null
-        }
+        this.Quality.getComponent(Sprite).spriteFrame = frames.get(qualityPath) || null
+        this.Bottom.getComponent(Sprite).spriteFrame = frames.get(bottomPath) || null
         this.LvNode.getComponent(Label).string = 'Lv: ' + create.lv
         this.Name.getComponent(Label).string = create.name
         // 渲染星级
-        this.Star.children.forEach(n => n.active = false)
+        this.Star.children.forEach(n => { n.active = false; if (n.children.length > 0) n.children[0].active = false; })
 
         for (let i = 0; i < create.star; i++) {
             this.Star.children[i].active = true

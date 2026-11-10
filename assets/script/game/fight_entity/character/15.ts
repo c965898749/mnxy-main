@@ -71,13 +71,13 @@ export class Character extends CharacterMetaState {
     PassiveIntroduceThree: string = `
     
     苍龙吸水 Lv{skillLv}
-    回合结束时吸取全场每个单位{drain}点物理结界与魔法护盾并将自身的印记给后方单位各3层；若应龙结界总数超过自身生命上限，则自身以及前后护法恢复超出差值生命值。
+    回合结束时吸取全场每个单位当前物理结界与魔法护盾的各50%并将自身的印记给后方单位各3层；若应龙结界总数超过自身生命上限，则自身以及前后护法恢复超出差值生命值。
     `.replace(/ /ig, "")
 
     SkillIntroduce: string = `
 
     龙族始祖 Lv{skillLv}
-    位居1号位置时，增加自身{healVal}点生命上限，{healVal1}点攻击，{healVal2}点速度，（世界boss应龙免疫沉默、换位）
+    世界boss应龙免疫沉默、换位、眩晕
     `.replace(/ /ig, "")
 
     introduce: string = "云从龙，风从虎。应龙乃有翼之龙、四象之长，行雨破阵、以血养魂。"
@@ -96,7 +96,7 @@ export class Character extends CharacterMetaState {
         const missileVal = 100 * skill2;  // 阈值30 对位飞弹基础伤害
         const atk = 100 * skill2;     // 阈值40 狂暴攻击加成
         const speed = 100 * skill2;   // 阈值40 狂暴速度加成
-        const drain = 1000 * skill3;   // 苍龙吸水 每单位吸取量
+        // 苍龙吸水：世界boss应龙固定吸取每单位当前盾值各50%，无按等级计算的吸取量（应龙·祖魂1116仍为1000*skill3点）
 
         // 拼接基础文本，替换占位符
         let msg = "";
@@ -121,20 +121,10 @@ export class Character extends CharacterMetaState {
         }
 
         msg += this.PassiveIntroduceThree
-            .replace("{skillLv}", skill3 + "")
-            .replace(/\{drain\}/g, drain + "") + "\n";
+            .replace("{skillLv}", skill3 + "") + "\n";
 
-        if (skill4 > 0) {
-            msg += this.SkillIntroduce.replace("{skillLv}", skill4 + "")
-                .replace("{healVal}", Math.floor(352 * skill4) + "")
-                .replace("{healVal1}", Math.floor(176 * skill4) + "")
-                .replace("{healVal2}", Math.floor(176 * skill4) + "") + "\n";
-        } else {
-            msg += this.SkillIntroduce.replace("{skillLv}", "未开启")
-                .replace("{healVal}", Math.floor(352) + "")
-                .replace("{healVal1}", Math.floor(176) + "")
-                .replace("{healVal2}", Math.floor(176) + "") + "\n";
-        }
+        // 龙族始祖（世界boss应龙）：已移除1号位属性加成，仅保留免疫沉默/换位/眩晕（后端 isYinglongBoss 守卫），无动态数值
+        msg += this.SkillIntroduce.replace("{skillLv}", skill4 > 0 ? skill4 + "" : "未开启") + "\n";
 
         return msg;
     }
