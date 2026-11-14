@@ -49,35 +49,35 @@ export class Loginpel extends Component {
     severeLabel: Label;
     isSendingCode: boolean = false;
     @property({ type: Node, tooltip: "任务列表" }) ContentNode2: Node = null;
-    // 
-    serverList = [{ "id": 1, "name": "梦回西游", "url": "http://127.0.0.1:8889/" }]
-    // serverList = [
-    //     { "id": 1, "name": "梦回西游", "url": "https://czx.yimem.com:3002/" },
-    //     { "id": 2, "name": "再续前缘", "url": "https://czx.yimem.com:3004/" },
-    // ]
+    // redis-server.exe redis.windows.conf
+    // serverList = [{ "id": 1, "name": "梦回西游", "url": "http://127.0.0.1:8889/" }]
+    serverList = [
+        { "id": 1, "name": "梦回西游", "url": "https://czx.yimem.com:3002/" },
+        { "id": 2, "name": "再续前缘", "url": "https://czx.yimem.com:3004/" },
+    ]
     url = localStorage.getItem("url") ?? this.serverList[0].url;
 //更新公告内容
-            content = `<color=#FF4500><size=28><b>【器魂觉醒】版本更新公告</b></size></color>
+            content = `<color=#FF4500><size=28><b>【知彼知己】版本更新公告</b></size></color>
 <color=#FFE4B5><size=20>亲爱的仙友们：</size></color>
-<color=#FFA500><size=19>本次更新已全服上线，全新护法「伏羲」与备受期待的「装备技能书」系统同步登场：</size></color>
-<color=#FFFF00><size=18>▶ 全新护法英雄「伏羲」登场：</size></color>
-<color=#FFFFFF><size=17>人文始祖伏羲驾临！技能「守卫」可在危急时刻替残血队友承受物理伤害；「卦象」蓄力满层后为全体友方施加物理结界并回复生命；与神农同队可激活协同羁绊，进一步提升生存与输出。</size></color>
-<color=#FFFF00><size=18>▶ 装备技能书系统上线：</size></color>
-<color=#FFFFFF><size=17>装备可领悟专属被动技能：使用初级/中级/高级技能书随机领悟（对应普通绿 / 优秀紫 / 极品金品质），领悟瞬间新增专属揭示动画与弹框呈现。</size></color>
-<color=#FFFFFF><size=17>领悟到的技能需消耗凝神石保存写入装备；首次领悟自动保存，之后领悟到不同技能可自选是否保存；相同技能无法重复领悟。</size></color>
-<color=#FFFFFF><size=17>每件装备最多可习得 5 个技能，同一时间仅一个「使用中」技能生效，可在技能列表中自由替换切换。</size></color>
-<color=#FFFFFF><size=17>技能等级由装备镶嵌的宝石决定，换宝石后等级实时变化，效果数值 = 每级数值 × 技能等级。</size></color>
-<color=#FFFF00><size=18>▶ 功勋商城兑换优化：</size></color>
-<color=#FFFFFF><size=17>功勋商城兑换支持数量调整，可一次自选数量、批量兑换，按实际数量结算功勋消耗。</size></color>
-<color=#FFFFFF><size=17>放宽功勋商城可上架的道具范围，技能书、凝神石等养成道具均可定向兑换获取。</size></color>
-<color=#87CEFA><size=18>▶ 显示体验优化：</size></color>
-<color=#FFFFFF><size=17>技能名称、等级与完整描述分栏清晰展示；切换使用中技能、更换宝石后，装备详情的技能信息同步自动刷新。</size></color>
+<color=#FFA500><size=19>本次更新已全服上线，开放「查看对方战队」，动手之前先摸一摸对手的家底：</size></color>
+<color=#FFFF00><size=18>▶ 新增：点击对方头像查看对方战队：</size></color>
+<color=#FFFFFF><size=17>面板内列出对方 5 张上阵卡牌的头像（没上阵的卡位不显示），并给出双方战力对比「对方 xxxx vs 我方 xxxx」，战力算法与自己主界面完全同源；看完点「确定」按钮关闭。</size></color>
+<color=#FFFF00><size=18>▶ 以下入口已全部接入：</size></color>
+<color=#FFFFFF><size=17>· 擂台赛：战报列表、对阵挑战、擂台排行榜都能点对方头像，看到的是对方本周在该级擂台报名的阵容（未报名会直接提示），战力对比按擂台口径并带「擂台」前缀</size></color>
+<color=#FFFFFF><size=17>· 抢夺列表：飞升丹与银两的可抢夺玩家列表都能点对方头像，动手前先看看对方阵容值不值得抢</size></color>
+<color=#FFFFFF><size=17>· 排行榜 / 好友列表：点对方头像查看榜单对手与好友的队伍；世界BOSS榜是两个服务器合并在一张榜上的，名字前标了服务器，别服玩家的战队同样能点开看</size></color>
+<color=#FFFFFF><size=17>· 聊天频道：点对方昵称即可查看，原本点消息播放录像不受影响</size></color>
+<color=#FFFF00><size=18>▶ 对方卡牌详情可细看（只读）：</size></color>
+<color=#FFFFFF><size=17>在战队面板点任意一张卡牌头像，可展开这张卡的属性、装备与宝石明细。查看对方卡牌只能阅读，升级、出售、上下阵、穿脱装备等操作一律不会生效；查看自己的卡牌照旧一切正常。</size></color>
+<color=#87CEFA><size=18>▶ 版本前瞻预告：</size></color>
+<color=#FFFFFF><size=17>「称呼系统」继续推进：仙友可获得并佩戴专属称号，在榜单、聊天与战斗亮相中展示。</size></color>
+<color=#FFFFFF><size=17>同批推进「装备技能实装」：已领悟的装备技能将正式在战斗中生效，被动效果按技能等级实际结算，敬请期待！</size></color>
 <color=#87CEFA><size=18>遇到更新问题请联系：</size></color>
 <color=#FFFFFF><size=16>▶ 游戏内：祭坛-客服石碑</size></color>
 <color=#FFFFFF><size=16>▶ 官方①QQ群：1092641657</size></color>
 <color=#FFFFFF><size=16>▶ GM邮箱：chengzhixiang2023@163.com</size></color>
 <color=#FF69B4><size=18>愿仙途顺遂，游戏愉快！</size></color>
-<color=#CCCCCC><size=14>【QQ神仙依梦工作室】2026年11月9日</size></color>`
+<color=#CCCCCC><size=14>【QQ神仙依梦工作室】2026年11月12日</size></color>`
 // content = `<color=#FFFFFF><size=20>尊敬的各位仙友：</size>
 // <color=#FFA500><size=19>月满中秋，仙府同庆！《迷你神仙》中秋限定活动正式开启，全新护法【嫦娥】登场，中秋夺月副本限时开放，海量资源礼包等你来领！</size>
 

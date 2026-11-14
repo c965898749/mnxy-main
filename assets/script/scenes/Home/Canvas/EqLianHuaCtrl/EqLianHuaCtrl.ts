@@ -579,8 +579,10 @@ export class EqLianHuaCtrl extends Component {
 <color=#E0E0E0>· 列表中非使用中技能旁有“替换”按钮，点击可切换使用中（使用中技能不显示该按钮）。</color><br/><br/>
 
 <color=#FFFFFF>五、技能等级与数值</color><br/>
-<color=#E0E0E0>· 技能等级由镶嵌宝石决定，换宝石后等级会动态变化。</color><br/>
-<color=#E0E0E0>· 效果数值 = 每级数值 × 技能等级。</color><br/><br/>
+<color=#E0E0E0>· 技能等级 = 镶嵌宝石等级合计 ÷ 宝石槽数（最高 50 级），换宝石后等级实时变化。</color><br/>
+<color=#E0E0E0>· 宝石槽数随星级增加；升星后新槽是空的，会拉低平均等级，镶满即恢复。</color><br/>
+<color=#E0E0E0>· 未镶宝石时按 1 级计算。</color><br/>
+<color=#E0E0E0>· 效果数值 = 每级数值 × 技能等级，描述里显示的就是换算后的最终值。</color><br/><br/>
 
 <color=#FFFFFF>六、重置</color><br/>
 <color=#E0E0E0>· 点“重置”清空当前选择与预览（不影响已保存技能）。</color><br/><br/>

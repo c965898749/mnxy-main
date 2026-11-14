@@ -4,6 +4,7 @@ import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 import { FightMap } from '../../../Fight/Canvas/FightMap';
 import { HomeCanvas } from '../../HomeCanvas';
+import { DzDetailCtrl } from 'db://assets/script/prefab/DzDetailCtrl';
 const { ccclass, property } = _decorator;
 
 @ccclass('kuanJinjiCtrl')
@@ -157,6 +158,8 @@ export class kuanJinjiCtrl extends Component {
                     for (let i = 0; i < childrens.length; i++) {
                         const node = childrens[i];
                         node.getChildByName("tiaozhan").off("click")
+                        // ff6 节点池和飞升丹抢夺列表共用，回收前解绑，否则两个列表的头像回调会互串
+                        node.getChildByName("yxjm_df_txk").off(Node.EventType.TOUCH_END)
                         nodePool.put(node)
                     }
                     for (let i = 0; i < userlist.length; i++) {
@@ -169,6 +172,12 @@ export class kuanJinjiCtrl extends Component {
                         item.getChildByName("yxjm_df_txk").getChildByName("header").getComponent(Sprite).spriteFrame =
                             await util.bundle.load(userlist[i].gameImg, SpriteFrame)
                         item.getChildByName("tiaozhan").on("click", () => { this.clickTiaozhanFun(userlist[i].userId) })
+                        // 头像上没有 Button，用 TOUCH_END 接点击；头像在滚动视图内，不会和滑动冲突
+                        const headerNode = item.getChildByName("yxjm_df_txk")
+                        headerNode.off(Node.EventType.TOUCH_END)
+                        headerNode.on(Node.EventType.TOUCH_END, () => {
+                            DzDetailCtrl.open(userlist[i].userId)
+                        })
                         this.ContentNode.addChild(item)
                         continue
                     }

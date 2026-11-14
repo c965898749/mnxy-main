@@ -5,6 +5,7 @@ import { FightMap } from '../../../Fight/Canvas/FightMap';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { HomeCanvas } from '../../HomeCanvas';
 import { RankingCrtl } from '../RankingCrtl/RankingCrtl';
+import { DzDetailCtrl } from 'db://assets/script/prefab/DzDetailCtrl';
 const { ccclass, property } = _decorator;
 
 @ccclass('AscensionPillJinjiCtrl')
@@ -154,6 +155,7 @@ export class AscensionPillJinjiCtrl extends Component {
                     for (let i = 0; i < childrens.length; i++) {
                         const node = childrens[i];
                         node.getChildByName("tiaozhan").off("click")
+                        node.getChildByName("yxjm_df_txk").off(Node.EventType.TOUCH_END)
                         nodePool.put(node)
                     }
                     for (let i = 0; i < userlist.length; i++) {
@@ -166,6 +168,10 @@ export class AscensionPillJinjiCtrl extends Component {
                         item.getChildByName("yxjm_df_txk").getChildByName("header").getComponent(Sprite).spriteFrame =
                             await util.bundle.load(userlist[i].gameImg, SpriteFrame)
                         item.getChildByName("tiaozhan").on("click", () => { this.clickTiaozhanFun(userlist[i].userId) })
+                        // 头像上没有 Button，用 TOUCH_END 接点击；头像在滚动视图内，不会和滑动冲突
+                        item.getChildByName("yxjm_df_txk").on(Node.EventType.TOUCH_END, () => {
+                            DzDetailCtrl.open(userlist[i].userId)
+                        })
                         this.ContentNode.addChild(item)
                         continue
                     }

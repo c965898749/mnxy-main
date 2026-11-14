@@ -4,6 +4,8 @@ import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 import { FightMap } from '../../../Fight/Canvas/FightMap';
 import { HomeCanvas } from '../../HomeCanvas';
+import { DzDetailCtrl } from 'db://assets/script/prefab/DzDetailCtrl';
+import { Rewards } from '../../rewards/Rewards';
 const { ccclass, property } = _decorator;
 
 @ccclass('MessageCrtl')
@@ -65,6 +67,9 @@ export class MessageCrtl extends Component {
                     node.getChildByName("getRewards").off("click")
                     node.getChildByName("fEsmZCGbB").off("click")
                     node.getChildByName("fEsnbpxoT").off("click")
+                    // 头像上挂的是 TOUCH_END，不跟着 off 掉，回收后再取给类型 1/3 的行就会残留上一位申请人的回调
+                    const oldHeader = node.getChildByName("yxjm_df_txk")
+                    if (oldHeader) oldHeader.off(Node.EventType.TOUCH_END)
                     nodePool.put(node)
                 }
 
@@ -124,6 +129,13 @@ export class MessageCrtl extends Component {
                         item.getChildByName("fEsnbpxoT").on("click", () => { this.fEsnbpxoT(messageDetail.id) })
                         item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
                             await util.bundle.load(messageDetail.gameImg, SpriteFrame)
+                        // 点头像先看申请人上阵的战队，合不合眼再决定通过还是拒绝；
+                        // 好友申请只在本服流转（messageList 直接查的主库），不用带 server
+                        const header = item.getChildByName("yxjm_df_txk")
+                        header.off(Node.EventType.TOUCH_END)
+                        header.on(Node.EventType.TOUCH_END, () => {
+                            DzDetailCtrl.open(messageDetail.userId)
+                        })
 
                         let content = null;
                         content = `<color=#E36F1A>主人，我们收到<color=#EEE365>${messageDetail.nickname}</color>好友申请！</color>`
@@ -319,7 +331,10 @@ export class MessageCrtl extends Component {
             })
             .then(async data => {
                 if (data.success == '1') {
-                    let userInfo = data.data;
+                    // 后端改为 { rewards, user } 结构下发，与 DailyView 领取一致：弹 Rewards 窗口直观展示礼包内容
+                    let map = data.data;
+                    let userInfo = map['user'];
+                    let reward = map["rewards"];
                     config.userData.gold = userInfo.gold
                     config.userData.diamond = userInfo.diamond
                     config.userData.soul = userInfo.soul
@@ -327,8 +342,15 @@ export class MessageCrtl extends Component {
                     config.userData.bronze = userInfo.bronze
                     config.userData.darkSteel = userInfo.darkSteel
                     config.userData.purpleGold = userInfo.purpleGold
+                    // 礼包中的功勋（后端已累加并随 userInfo.gongxun 下发）
+                    config.userData.gongxun = (userInfo.gongxun == null ? config.userData.gongxun : userInfo.gongxun)
                     localStorage.setItem("UserConfigData", JSON.stringify(config))
-                    const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                    const rewardsFab = await util.bundle.load("prefab/rewards", Prefab)
+                    const rewards = instantiate(rewardsFab)
+                    this.node.parent.addChild(rewards)
+                    await rewards
+                        .getComponent(Rewards)
+                        .read(reward)
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })
                 }

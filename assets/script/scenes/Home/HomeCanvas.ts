@@ -16,8 +16,8 @@ export class HomeCanvas extends Component {
     private wbQueue: string[] = []
     private wbAll: string[] = []
     private wbCyclesPlayed = 0
-    private wbMaxCycles = 3
-    private wbLastSignature = ''
+    // 整批公告的重复播报轮数：1 表示只播一轮就收起，不循环重播（新公告由 wbSeen 当天未播报判定触发重置，仍只播一轮）
+    private wbMaxCycles = 1
     private wbCurX = 0
     private wbTextW = 0
     private wbScrolling = false
@@ -26,6 +26,8 @@ export class HomeCanvas extends Component {
     private wbPollInterval = 20
     private wbFetching = false
     private wbInited = false
+    // 当天已播报过的公告文案（按天存 localStorage）：每条公告每天只提醒一次，重进游戏不再重复播报
+    private wbSeen: string[] = []
 
     start() {
         this.audioSource = this.node.getComponent(AudioSource)
@@ -86,6 +88,7 @@ export class HomeCanvas extends Component {
     private ensureWbBanner() {
         if (this.wbInited) return
         this.wbInited = true
+        this.wbSeen = this.loadWbSeen()
         const canvasUT = this.node.getComponent(UITransform)
         const cw = canvasUT ? canvasUT.width : screen.windowSize.width
         const ch = canvasUT ? canvasUT.height : screen.windowSize.height
@@ -194,11 +197,13 @@ export class HomeCanvas extends Component {
                 if (data && data.success == '1' && Array.isArray(data.data)) {
                     // 只保留世界BOSS相关公告（开启/击杀/半血均包含“世界BOSS”关键字）
                     const list = data.data.filter((s: string) => typeof s === 'string' && s.indexOf('世界BOSS') !== -1)
-                    const sig = list.join('|')
-                    this.wbAll = list
-                    // 公告内容变化（出现新事件）时重置播放轮数，重新播报
-                    if (sig !== this.wbLastSignature) {
-                        this.wbLastSignature = sig
+                    // 过滤掉当天已播报过的：同一天内重进游戏不会再次提醒，跨天新公告仍会播报
+                    const unseen = list.filter((s: string) => this.wbSeen.indexOf(s) === -1)
+                    if (unseen.length > 0) {
+                        // 入队即登记：避免播报期间下一次轮询又把同一条当作新公告重复入队
+                        unseen.forEach(s => this.wbSeen.push(s))
+                        this.saveWbSeen(this.wbSeen)
+                        this.wbAll = unseen
                         this.wbCyclesPlayed = 0
                         this.wbQueue = []
                     }
@@ -208,6 +213,40 @@ export class HomeCanvas extends Component {
                 this.wbFetching = false
                 console.error('世界BOSS公告拉取失败:', error)
             })
+    }
+
+    /** 当天日期串，作为已播报记录的归档维度（公告表每天01:00会清空，公告本身按天存在） */
+    private wbToday(): string {
+        const d = new Date()
+        return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate()
+    }
+
+    /** 已播报记录按用户隔离，避免同设备切换账号时互相影响 */
+    private wbSeenKey(): string {
+        const config = getConfig()
+        const uid = config && config.userData ? config.userData.userId : 'anon'
+        return 'wbNoticeSeen_' + uid
+    }
+
+    private loadWbSeen(): string[] {
+        try {
+            const raw = localStorage.getItem(this.wbSeenKey())
+            if (!raw) return []
+            const obj = JSON.parse(raw)
+            // 不是今天的记录直接丢弃，自然过期不需清理
+            if (!obj || obj.date !== this.wbToday() || !Array.isArray(obj.list)) return []
+            return obj.list
+        } catch (e) {
+            return []
+        }
+    }
+
+    private saveWbSeen(list: string[]) {
+        try {
+            localStorage.setItem(this.wbSeenKey(), JSON.stringify({ date: this.wbToday(), list: list }))
+        } catch (e) {
+            // localStorage 不可用时降级为不记忆，不影响公告播放
+        }
     }
 
     public onSliderMusic(event: Slider, customEventData) {

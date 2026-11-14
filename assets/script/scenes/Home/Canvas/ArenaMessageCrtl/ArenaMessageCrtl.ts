@@ -4,6 +4,7 @@ import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 import { FightMap } from '../../../Fight/Canvas/FightMap';
 import { HomeCanvas } from '../../HomeCanvas';
+import { DzDetailCtrl } from 'db://assets/script/prefab/DzDetailCtrl';
 const { ccclass, property } = _decorator;
 
 @ccclass('ArenaMessageCrtl')
@@ -64,6 +65,7 @@ export class ArenaMessageCrtl extends Component {
                     node.getChildByName("getRewards").off("click")
                     node.getChildByName("fEsmZCGbB").off("click")
                     node.getChildByName("fEsnbpxoT").off("click")
+                    node.getChildByName("yxjm_df_txk").off(Node.EventType.TOUCH_END)
                     nodePool.put(node)
                 }
 
@@ -78,6 +80,14 @@ export class ArenaMessageCrtl extends Component {
                     item.getChildByName("regitPlaye").on("click", () => { this.clickFun(messageDetail.gameFightId) })
                     item.getChildByName("yxjm_df_txk").children[0].getComponent(Sprite).spriteFrame =
                         await util.bundle.load(messageDetail.img, SpriteFrame)
+                    // 头像用的是发起方头像，所以发起方是我时取被挑战方，否则取发起方；擂台赛打的是报名队，看擂台阵容
+                    const txkNode = item.getChildByName("yxjm_df_txk")
+                    txkNode.off(Node.EventType.TOUCH_END)
+                    txkNode.on(Node.EventType.TOUCH_END, () => {
+                        const enemyUserId = config.userData.userId == messageDetail.userId
+                            ? messageDetail.toUserId : messageDetail.userId
+                        DzDetailCtrl.open(enemyUserId, undefined, { arenaLevel: this.ArenaId })
+                    })
 
                     let content = `<color=#E36F1A>${messageDetail.timeStr}  <color=#EEE365>${messageDetail.userName}</color>在<color=#EEE365>擂台赛</color>攻击了<color=#EEE365>${messageDetail.toUserName}</color>，激烈战斗后最终<color=#00BCD4>${messageDetail.isWin == 0 ? '获胜' : '落败'}</color>。</color>`
 

@@ -227575,7 +227575,7 @@
       "a": 255
     },
     "_spriteFrame": {
-      "__uuid__": "c38a5734-ec31-4ef4-a03f-1cc7eb3478ea@f9941",
+      "__uuid__": "0471cafe-aeb2-4cc1-bf42-60395827b41b@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_type": 0,
@@ -227901,7 +227901,7 @@
       "b": 255,
       "a": 255
     },
-    "_string": "轩辕剑",
+    "_string": "女娲石",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 18,

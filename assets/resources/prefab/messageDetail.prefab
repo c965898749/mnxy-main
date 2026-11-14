@@ -1578,7 +1578,7 @@
     "_contentSize": {
       "__type__": "cc.Size",
       "width": 330,
-      "height": 37.8
+      "height": 31.5
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -1603,11 +1603,11 @@
     "__prefab": {
       "__id__": 66
     },
-    "_lineHeight": 30,
+    "_lineHeight": 25,
     "_string": "",
     "_horizontalAlign": 0,
     "_verticalAlign": 0,
-    "_fontSize": 25,
+    "_fontSize": 20,
     "_fontColor": {
       "__type__": "cc.Color",
       "r": 255,

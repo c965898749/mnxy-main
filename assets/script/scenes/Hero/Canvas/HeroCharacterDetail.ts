@@ -4,7 +4,7 @@ import { HolCharacter } from '../../../prefab/HolCharacter';
 import { util } from '../../../util/util';
 import { HolAnimation } from '../../../prefab/HolAnimation';
 import { CharacterEnum } from '../../../game/fight/character/CharacterEnum';
-import { HeroCharacterDetailPorperty } from './CharacterDetail/HeroCharacterDetailPorperty';
+import { HeroCharacterDetailPorperty, RenderPropertyOption } from './CharacterDetail/HeroCharacterDetailPorperty';
 import { HeroAllHeros } from './HeroAllHeros';
 import { getConfig } from '../../../common/config/config';
 import { AudioMgr } from '../../../util/resource/AudioMgr';
@@ -50,7 +50,7 @@ export class HeroCharacterDetail extends Component {
     // 上一次的角色动画
     private $lastaNimation: Node
     // 设置角色
-    async setCharacter(create: CharacterStateCreate) {
+    async setCharacter(create: CharacterStateCreate, option?: RenderPropertyOption) {
         const propertyNode = this.node.getChildByName("Property")
         // const close = await util.message.load()
         // const characterAnimationNode = this.node.getChildByName("CharacterAnimation")
@@ -71,7 +71,7 @@ export class HeroCharacterDetail extends Component {
         // this.$lastaNimation = holAnimationNode
         // holAnimationNode.active = false
         // 设置属性
-        await propertyNode.getComponent(HeroCharacterDetailPorperty).renderProperty(create)
+        await propertyNode.getComponent(HeroCharacterDetailPorperty).renderProperty(create, option)
         // close()
         // setTimeout(async () => {
         //     holAnimationNode.active = true

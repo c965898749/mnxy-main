@@ -430,7 +430,7 @@ export class ArenaApplyCrtl extends Component {
         if (this.arenaRanking100 && this.arenaRanking100.length > 0) {
             await this.node.parent.getChildByName("ArenaRankingCrtl")
                 .getComponent(ArenaRankingCrtl)
-                .render(this.arenaRanking100, "--")
+                .render(this.arenaRanking100, "--", this.ArenaId)
         }
     }
 }

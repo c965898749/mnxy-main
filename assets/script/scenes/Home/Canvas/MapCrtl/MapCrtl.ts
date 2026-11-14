@@ -1,7 +1,7 @@
 import { _decorator, Component, find, instantiate, Label, Node, Prefab, sp, tween, v3, Vec3 } from 'cc';
 import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { PveCtrl } from '../PveCtrl/PveCtrl';
-import { battleCache, BattleLogItem, getConfig, getToken } from 'db://assets/script/common/config/config';
+import { battleCache, BattleLogItem, getConfig, getToken, updateTiAndHuoli } from 'db://assets/script/common/config/config';
 import { util } from 'db://assets/script/util/util';
 import { MapRankingCrtl } from '../MapRankingCrtl/MapRankingCrtl';
 import { TrialTowerCrtl } from '../TrialTowerCrtl/TrialTowerCrtl';
@@ -223,10 +223,12 @@ export class MapCrtl extends Component {
             .then(async data => {
                 if (data.success == '1') {
                     const info = data.data;
-                    // 挑战成功：同步最新功勋（+5）并进入 60 秒冷却
+                    // 挑战成功：同步最新功勋（+5）与活力（服务端每次扣 10 点）并进入 60 秒冷却
                     if (info && info.userInfo) {
                         config.userData.gongxun = info.userInfo.gongxun
                         localStorage.setItem("UserConfigData", JSON.stringify(config))
+                        // 体力/活力写到 localStorage 同其它战斗入口（PveCtrl/RankingCrtl 等），左上角活力才会当场掉 10
+                        updateTiAndHuoli(info.userInfo)
                     }
                     this.startBossCd(60)
                     // 重新拉取排班：本次若击杀BOSS(hp_rate=0)，按钮立即切换为“已被击败”状态
@@ -252,6 +254,7 @@ export class MapCrtl extends Component {
                     }
                 } else {
                     util.message.confirm({ message: data.errorMsg || "服务器异常" })
+                    // 活力不足时服务端在 CD 占位前就拦了，不消耗冷却也不需同步排班，面板自己会按恢复时间推算
                     // 服务端判定仍在冷却（如前端本地CD丢失）：同步本地CD
                     if (data.errorMsg && data.errorMsg.indexOf("冷却") >= 0) {
                         this.startBossCd(60)

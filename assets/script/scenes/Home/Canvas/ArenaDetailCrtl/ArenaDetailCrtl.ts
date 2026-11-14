@@ -7,6 +7,7 @@ import { FightMap } from '../../../Fight/Canvas/FightMap';
 import { HomeCanvas } from '../../HomeCanvas';
 import { ArenaRankingCrtl } from '../ArenaRankingCrtl/ArenaRankingCrtl';
 import { ArenaMessageCrtl } from '../ArenaMessageCrtl/ArenaMessageCrtl';
+import { DzDetailCtrl } from 'db://assets/script/prefab/DzDetailCtrl';
 const { ccclass, property } = _decorator;
 
 @ccclass('ArenaDetailCrtl')
@@ -35,6 +36,8 @@ export class ArenaDetailCrtl extends Component {
     @property(Node)
     ranking
     ArenaId: number
+    // 当前战报里的对手 userId，点头像查看对方战队用
+    enemyUserId = null
     tempId = 0
     touchId = null
     lastTouchId = null
@@ -43,7 +46,12 @@ export class ArenaDetailCrtl extends Component {
     moveSpeed = 0.15
     spacingY = 10
     start() {
-
+        // 战报头像没有 Button，用 TOUCH_END 接点击；擂台赛打的是报名队，所以看擂台阵容
+        if (this.header)
+            this.header.on(Node.EventType.TOUCH_END, () => {
+                if (this.enemyUserId != null)
+                    DzDetailCtrl.open(this.enemyUserId, undefined, { arenaLevel: this.ArenaId })
+            })
     }
 
     update(deltaTime: number) {
@@ -118,6 +126,9 @@ export class ArenaDetailCrtl extends Component {
                         this.RichText.getComponent(RichText).string = content
                         this.header.getComponent(Sprite).spriteFrame =
                             await util.bundle.load(gameArenaBattle.img, SpriteFrame)
+                        // 头像是发起方，发起方是我则看被挑战方
+                        this.enemyUserId = config.userData.userId == gameArenaBattle.userId
+                            ? gameArenaBattle.toUserId : gameArenaBattle.userId
                     }
                     this.Item.children.forEach(element => {
                         element.children[0].getComponent(Sprite).spriteFrame = null;
@@ -337,6 +348,9 @@ export class ArenaDetailCrtl extends Component {
                         this.RichText.getComponent(RichText).string = content
                         this.header.getComponent(Sprite).spriteFrame =
                             await util.bundle.load(gameArenaBattle.img, SpriteFrame)
+                        // 头像是发起方，发起方是我则看被挑战方
+                        this.enemyUserId = config.userData.userId == gameArenaBattle.userId
+                            ? gameArenaBattle.toUserId : gameArenaBattle.userId
                     }
                     await holAnimationNode
                         .getComponent(FightMap)
@@ -394,7 +408,7 @@ export class ArenaDetailCrtl extends Component {
                     var data = data.data;
                     await this.node.parent.getChildByName("ArenaRankingCrtl")
                         .getComponent(ArenaRankingCrtl)
-                        .render(data, this.arenaScore.getComponent(Label).string)
+                        .render(data, this.arenaScore.getComponent(Label).string, this.ArenaId)
 
                 } else {
                     const close = util.message.confirm({ message: data.errorMsg || "服务器异常" })

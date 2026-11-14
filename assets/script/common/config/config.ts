@@ -241,6 +241,12 @@ export interface BattleLogItem {
     battleId: string;
     saveTime: number;
     battleData: BattleFullData; // 存储后端整套map数据
+    /**
+     * 该条缓存归属的用户ID。
+     * 一场战斗的 battleId 是攻守双方共用的，而 battleData 里的 name0/name1、campA/campB、isWin
+     * 都是带视角的，因此禁止跨账号复用本地缓存，读取时会校验归属。
+     */
+    ownerId?: string;
 }
 
 
@@ -251,15 +257,42 @@ export class BattleLogStorage {
     private readonly MAX_STORE_COUNT = 200;
 
 
+    /** 当前登录用户ID：直读 localStorage，不走 getConfig 以免触发它的写入副作用 */
+    private currentUid(): string {
+        try {
+            const raw = localStorage.getItem("UserConfigData");
+            // 登录流程里会 setItem("UserConfigData", null)，实际存的是字符串 "null"
+            if (!raw || raw === "null" || raw === "undefined") return "";
+            const uid = JSON.parse(raw)?.userData?.userId;
+            return uid == null ? "" : String(uid);
+        } catch (e) {
+            return "";
+        }
+    }
+
+
+    /** 按用户隔离的存储key：换号后读到不同的key，从根上避开上一个账号的录像 */
+    private storageKey(): string {
+        const uid = this.currentUid();
+        return uid ? this.STORAGE_KEY + "_" + uid : this.STORAGE_KEY;
+    }
+
+
     /** 读取本地缓存列表（localStorage 整体存JSON字符串） */
     private getAllLocalList(): BattleLogItem[] {
-        const jsonStr = localStorage.getItem(this.STORAGE_KEY);
+        const uid = this.currentUid();
+        // 旧版不分用户的全局key会串号，升级后直接清除，不再参与命中
+        if (uid && localStorage.getItem(this.STORAGE_KEY)) {
+            localStorage.removeItem(this.STORAGE_KEY);
+        }
+        const key = this.storageKey();
+        const jsonStr = localStorage.getItem(key);
         if (!jsonStr) return [];
         try {
             const list = JSON.parse(jsonStr);
             return Array.isArray(list) ? list : [];
         } catch (err) {
-            localStorage.removeItem(this.STORAGE_KEY);
+            localStorage.removeItem(key);
             return [];
         }
     }
@@ -267,19 +300,20 @@ export class BattleLogStorage {
 
     /** 写入本地，数组转JSON字符串持久化，增加溢出容错 */
     private saveToLocal(list: BattleLogItem[]) {
+        const key = this.storageKey();
         try {
             const jsonStr = JSON.stringify(list);
-            localStorage.setItem(this.STORAGE_KEY, jsonStr);
+            localStorage.setItem(key, jsonStr);
         } catch (e) {
             console.warn("BattleLogStorage 存储溢出，降级处理", e);
             // 存储超限：减半裁剪重试
             const shrinkList = list.slice(-Math.floor(list.length / 2));
             try {
                 const jsonStr = JSON.stringify(shrinkList);
-                localStorage.setItem(this.STORAGE_KEY, jsonStr);
+                localStorage.setItem(key, jsonStr);
             } catch {
                 // 仍然失败，直接清空
-                localStorage.removeItem(this.STORAGE_KEY);
+                localStorage.removeItem(key);
             }
         }
     }
@@ -295,17 +329,23 @@ export class BattleLogStorage {
 
     /** 根据战斗ID查询本地缓存 */
     public getLocalBattle(battleId: string): BattleLogItem | null {
+        const uid = this.currentUid();
         const list = this.getAllLocalList();
-        return list.find(item => item.battleId === battleId) ?? null;
+        return list.find(item => item.battleId === battleId
+            // 兜底：归属不匹配的脏数据一律不命中，回源服务端重拉
+            && (!item.ownerId || !uid || item.ownerId === uid)) ?? null;
     }
 
 
     /** 新增/更新缓存，自动控容量 */
     public saveBattleItem(item: BattleLogItem) {
+        // 归属由本类统一打标，各业务调用方无需改动
+        const uid = this.currentUid();
+        const stamped: BattleLogItem = { ...item, ownerId: uid || item.ownerId }
         let list = this.getAllLocalList();
         // 去重，同ID只保留最新
-        list = list.filter(v => v.battleId !== item.battleId);
-        list.push(item);
+        list = list.filter(v => v.battleId !== stamped.battleId);
+        list.push(stamped);
         // 超过上限循环删最旧
         while (list.length > this.MAX_STORE_COUNT) {
             list.shift();
@@ -381,8 +421,9 @@ export class BattleLogStorage {
     }
 
 
-    /** 清空所有战斗本地缓存 */
+    /** 清空当前用户的战斗本地缓存（连带清掉旧版全局key） */
     public clearAll() {
+        localStorage.removeItem(this.storageKey());
         localStorage.removeItem(this.STORAGE_KEY);
     }
 }

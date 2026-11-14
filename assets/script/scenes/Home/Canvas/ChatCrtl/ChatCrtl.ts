@@ -5,6 +5,7 @@ import { util } from 'db://assets/script/util/util';
 import { FightMap } from '../../../Fight/Canvas/FightMap';
 import { HomeCanvas } from '../../HomeCanvas';
 import { ChannelType, ChatMsg, MsgContentType } from 'db://assets/script/common/config/ChatMsg';
+import { DzDetailCtrl } from 'db://assets/script/prefab/DzDetailCtrl';
 const { ccclass, property } = _decorator;
 
 @ccclass('ChatCrtl')
@@ -43,6 +44,7 @@ export class ChatCrtl extends Component {
             for (let i = 0; i < childrens.length; i++) {
                 const node = childrens[i];
                 node.off("click")
+                node.getChildByName("top").getChildByName("name").off(Node.EventType.TOUCH_END)
                 node.getComponent(Button).interactable = true
                 nodePool.put(node)
             }
@@ -67,6 +69,13 @@ export class ChatCrtl extends Component {
 
                 }
                 item.getChildByName("top").getChildByName("name").getComponent(Label).string = messageDetail.senderName + "（战力：999999）"
+                // 点发送者名字看对方战队；挡掉冒泡，避免误触整行的“播放录像”
+                const senderNameNode = item.getChildByName("top").getChildByName("name")
+                senderNameNode.off(Node.EventType.TOUCH_END)
+                senderNameNode.on(Node.EventType.TOUCH_END, (event) => {
+                    event.propagationStopped = true
+                    DzDetailCtrl.open(messageDetail.senderId)
+                })
                 item.getChildByName("top").getChildByName("time").getComponent(Label).string = messageDetail.sendTime
                 let content = null;
                 content = `<color=#E36F1A>${messageDetail.content}</color>`

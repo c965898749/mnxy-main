@@ -4,6 +4,7 @@ import { AudioMgr } from 'db://assets/script/util/resource/AudioMgr';
 import { util } from 'db://assets/script/util/util';
 import { FightMap } from '../../../Fight/Canvas/FightMap';
 import { HomeCanvas } from '../../HomeCanvas';
+import { DzDetailCtrl } from 'db://assets/script/prefab/DzDetailCtrl';
 const { ccclass, property } = _decorator;
 
 @ccclass('MyFriendsCrtl')
@@ -61,6 +62,7 @@ export class MyFriendsCrtl extends Component {
                         const node = childrens[i];
                         node.getChildByName("tiaozhan").off("click")
                         node.getChildByName("zhufu").off("click")
+                        node.getChildByName("yxjm_df_txk").off(Node.EventType.TOUCH_END)
                         nodePool.put(node)
                     }
                     for (let i = 0; i < userlist.length; i++) {
@@ -72,6 +74,12 @@ export class MyFriendsCrtl extends Component {
                         item.getChildByName("ranking").getChildByName("num").getComponent(Label).string = i + 1 + ""
                         item.getChildByName("yxjm_df_txk").getChildByName("header").getComponent(Sprite).spriteFrame =
                             await util.bundle.load(userlist[i].gameImg, SpriteFrame)
+                        // 点头像看对方战队；ff 节点池跨面板复用，先 off 再 on
+                        const headerNode = item.getChildByName("yxjm_df_txk")
+                        headerNode.off(Node.EventType.TOUCH_END)
+                        headerNode.on(Node.EventType.TOUCH_END, () => {
+                            DzDetailCtrl.open(userlist[i].userId)
+                        })
                         item.getChildByName("tiaozhan").on("click", () => { this.clickTiaozhanFun(userlist[i].userId) })
                         if (userlist[i].fbId == null || userlist[i].fbId == "") {
                             item.getChildByName("zhufu").active = true

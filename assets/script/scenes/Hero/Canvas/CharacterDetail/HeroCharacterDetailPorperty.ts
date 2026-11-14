@@ -9,6 +9,14 @@ import { EqHeroCharacterDetail } from '../../../Equipment/Canvas/EqHeroCharacter
 import { EquipmentStateCreate } from 'db://assets/script/game/fight/equipment/EquipmentState';
 import { SelectEqCardCtrl } from '../../../Home/Canvas/qianghua/SelectEqCardCtrl';
 const { ccclass, property } = _decorator;
+
+// 渲染选项：查看他人卡牌时传 readOnly，屏蔽所有写操作
+export type RenderPropertyOption = {
+    // 只读：不绑装备槽点击，上阵/升级/出售/重生直接早退
+    readOnly?: boolean
+    // 装备数据源，默认取本地 config.userData.equipments；查看对方卡牌时必须传对方的装备，否则会显示成我自己的装备
+    equipments?: EquipmentStateCreate[]
+}
 enum Style { 纯色描边, 透明衰减, 明暗衰减 }
 // 升级所需金币
 function levelUpNeedGold(create: CharacterStateCreate): number {
@@ -39,7 +47,13 @@ export class HeroCharacterDetailPorperty extends Component {
     // 是否询问升级
     private $answerSell: boolean = true
 
+    // 是否询问重生
     private $answerCS: boolean = true
+
+    // 只读模式（查看他人卡牌）
+    private $readOnly: boolean = false
+    // 上阵/升级/出售入口进场景时的默认显示状态，退出只读时按它还原
+    private $actionDefaults: { levelUp: boolean, sell: boolean, state: boolean } = null
 
     rankDict: Record<number, string> = {
         0: "",
@@ -69,7 +83,8 @@ export class HeroCharacterDetailPorperty extends Component {
 
 
     // 渲染属性
-    async renderProperty(create: CharacterStateCreate) {
+    async renderProperty(create: CharacterStateCreate, option?: RenderPropertyOption) {
+        this.$readOnly = !!option?.readOnly
         console.log(create, 444);
 
         var cc = [
@@ -174,7 +189,21 @@ export class HeroCharacterDetailPorperty extends Component {
         } else {
             this.node.getChildByName("State").getChildByName("shanzhen").children[0].active = false
         }
-        let eqCharactersList = getConfig().userData.equipments
+        let eqCharactersList = option?.equipments ?? getConfig().userData.equipments
+        // 只读时隐藏上阵/升级/出售入口；场景里的 CharacterDetail 是长期复用的节点，非只读时要还原成进场景时的默认值
+        const stateNode = this.node.getChildByName("State")
+        const levelUpNode = this.node.getChildByName("LevelUp")
+        const sellNode = this.node.getChildByName("sell")
+        if (!this.$actionDefaults) {
+            this.$actionDefaults = {
+                levelUp: levelUpNode ? levelUpNode.active !== false : true,
+                sell: sellNode ? sellNode.active !== false : true,
+                state: stateNode ? stateNode.active !== false : true,
+            }
+        }
+        if (levelUpNode) levelUpNode.active = this.$readOnly ? false : this.$actionDefaults.levelUp
+        if (sellNode) sellNode.active = this.$readOnly ? false : this.$actionDefaults.sell
+        if (stateNode) stateNode.active = this.$readOnly ? false : this.$actionDefaults.state
         this.empNode.children.forEach(async (n, index) => {
             n.off("click")
             let eqCharacters = eqCharactersList.find(x => x.eqType == index && x.goIntoNum + "" == create.id)
@@ -211,7 +240,8 @@ export class HeroCharacterDetailPorperty extends Component {
 
 
             }
-            n.on("click", () => this.empOnclick(create, index))
+            if (!this.$readOnly)
+                n.on("click", () => this.empOnclick(create, index))
         })
     }
 
@@ -238,6 +268,8 @@ export class HeroCharacterDetailPorperty extends Component {
     }
 
     async empOnclick(create, empType) {
+        // 只读查看他人卡牌时不允许换装
+        if (this.$readOnly) return
         // AudioMgr.inst.playOneShot("sound/other/click");
         const config = getConfig()
         var cahracterQueue = []
@@ -391,6 +423,7 @@ export class HeroCharacterDetailPorperty extends Component {
 
     // 上阵
     async changeState() {
+        if (this.$readOnly) return
         AudioMgr.inst.playOneShot("sound/other/click");
         const config = getConfig()
         const token = getToken()
@@ -431,6 +464,7 @@ export class HeroCharacterDetailPorperty extends Component {
 
     // 英雄升级
     async characterLevelUp() {
+        if (this.$readOnly) return
         this.node.getChildByName("Name").getComponent(Label).string = "名称: " + this.$state.meta.name
         const config = getConfig()
         // 是否询问
@@ -482,6 +516,7 @@ export class HeroCharacterDetailPorperty extends Component {
     }
 
     async characteSell() {
+        if (this.$readOnly) return
         // 是否询问
         if (this.$answerSell) {
             const result = await util.message.confirm({
@@ -535,6 +570,7 @@ export class HeroCharacterDetailPorperty extends Component {
     }
 
     async characterCS() {
+        if (this.$readOnly) return
         // 是否询问
         if (this.$answerCS) {
             const result = await util.message.confirm({

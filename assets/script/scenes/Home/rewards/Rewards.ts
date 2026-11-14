@@ -28,6 +28,10 @@ export class Rewards extends Component {
                     //魂魄
                     this.itemNode.children[i].getChildByName("hero").getComponent(Sprite).spriteFrame =
                         await util.bundle.load('image/ui/qiu/spriteFrame', SpriteFrame)
+                } else if ("7" == rewards[i].rewardType) {
+                    //功勋
+                    this.itemNode.children[i].getChildByName("hero").getComponent(Sprite).spriteFrame =
+                        await util.bundle.load('image/ui/icon_sd_zsl/spriteFrame', SpriteFrame)
                 } else if ("4" == rewards[i].rewardType) {
                     //护法、装备
                     const meta = CharacterEnum[rewards[i].itemId]
